@@ -2,5 +2,6 @@
 
 ## Members
 
-Kun Yu
-Zachary Garces
+Kun Yu  
+Zachary Garces  
+Thomas Westfall  
