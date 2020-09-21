@@ -1,26 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:lit_firebase_auth/lit_firebase_auth.dart';
 
 import 'Pages/Login/screen_login.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
-}
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ScreenStart();
-  }
-}
-
-class ScreenStart extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ScreenLogin(),
+    return LitAuthInit(
+      authProviders: AuthProviders(
+        emailAndPassword: true,
+        google: true,
+      ),
+      child: MaterialApp(
+        title: 'Test',
+        home: ScreenAuth(),
+      ),
     );
   }
 }
