@@ -15,9 +15,8 @@ app.use(express.urlencoded({
     extended: false
 }));
 app.use(cookieParser());
-app.use('/api', apiRouter);
 
-const db = require("./models/index");
-db.sequelize.sync();
+app.get("/", (req, res, next) => res.send("LocalHelper Backend"));
+app.use('/api', apiRouter);
 
 module.exports = app;
