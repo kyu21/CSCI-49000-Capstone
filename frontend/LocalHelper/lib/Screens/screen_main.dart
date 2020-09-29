@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 // Screens
-import 'Pages/screen_myposts.dart';
-import 'Pages/screen_search.dart';
-import 'Pages/screen_settings.dart';
-import 'Pages/screen_login.dart';
-import 'Pages/screen_messages.dart';
+import 'MainPages/screen_myposts.dart';
+import 'MainPages/screen_search.dart';
+import 'MainPages/screen_settings.dart';
+import 'MainPages/screen_messages.dart';
+import 'MainPages/screen_posts.dart';
 
 class ScreenHome extends StatefulWidget {
   @override
@@ -17,7 +17,7 @@ class _ScreenHomeState extends State<ScreenHome> {
 
   @override
   void initState() {
-    pageList.add(ScreenLogin());
+    pageList.add(ScreenPosts());
     pageList.add(ScreenMessages());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSearch());

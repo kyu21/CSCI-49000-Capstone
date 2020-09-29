@@ -1,13 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:lit_firebase_auth/lit_firebase_auth.dart';
 
 import 'screen_main.dart';
+import 'package:lit_firebase_auth/lit_firebase_auth.dart';
 
-void main() => runApp(MyApp());
-
-class MyApp extends StatelessWidget {
+class ScreenStart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
