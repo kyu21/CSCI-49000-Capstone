@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 // Screens
+import 'MainPages/Messages/screen_messages.dart';
 import 'MainPages/screen_myposts.dart';
-import 'MainPages/screen_search.dart';
 import 'MainPages/screen_settings.dart';
-import 'MainPages/screen_messages.dart';
 import 'MainPages/screen_posts.dart';
 
 class ScreenHome extends StatefulWidget {
@@ -20,7 +19,6 @@ class _ScreenHomeState extends State<ScreenHome> {
     pageList.add(ScreenPosts());
     pageList.add(ScreenMessages());
     pageList.add(ScreenMyPosts());
-    pageList.add(ScreenSearch());
     pageList.add(ScreenSettings());
     super.initState();
   }
@@ -61,11 +59,6 @@ class _ScreenHomeState extends State<ScreenHome> {
           BottomNavigationBarItem(
             label: 'My Posts',
             icon: Icon(Icons.post_add),
-            backgroundColor: Colors.white,
-          ),
-          BottomNavigationBarItem(
-            label: 'Search',
-            icon: Icon(Icons.search),
             backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(
