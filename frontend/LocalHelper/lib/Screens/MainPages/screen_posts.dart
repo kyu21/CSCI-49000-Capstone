@@ -13,7 +13,9 @@ class ScreenPosts extends StatefulWidget {
 class _ScreenPostsState extends State<ScreenPosts> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
-  List<String> _backgroundsList = List();
+
+  List<String> _backgroundInfo = List(); // Holds the background images url
+  List<dynamic> _networkInfo = List(); // Holds a json of people
 
   @override
   Widget build(BuildContext context) {
@@ -86,9 +88,9 @@ class _ScreenPostsState extends State<ScreenPosts> {
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  return Posts(_backgroundsList[index]);
+                  return Posts(_networkInfo[index], _backgroundInfo[index]);
                 },
-                childCount: _backgroundsList.length,
+                childCount: _networkInfo.length,
               ),
             ),
           ],
@@ -98,20 +100,29 @@ class _ScreenPostsState extends State<ScreenPosts> {
   }
 
   void _onRefresh() async {
-    _backgroundsList.clear();
+    // Clear the lists
+    _networkInfo.clear();
+    _backgroundInfo.clear();
+
+    // Find Images
     _onLoading();
+
+    // Trigger controller complete
     _refreshController.refreshCompleted();
   }
 
   void _onLoading() async {
     // Get five dog pictures
     for (int i = 0; i < 5; i++) {
-      final response =
+      final response = await http.get('https://randomuser.me/api/');
+      final reponseBackground =
           await http.get('https://dog.ceo/api/breeds/image/random');
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && reponseBackground.statusCode == 200) {
         setState(() {
-          _backgroundsList.add(jsonDecode(response.body)['message']);
+          Map<String, dynamic> json = jsonDecode(response.body);
+          _networkInfo.add(json);
+          _backgroundInfo.add(jsonDecode(reponseBackground.body)['message']);
         });
       } else {
         throw Exception('Failed to load image');
@@ -124,28 +135,65 @@ class _ScreenPostsState extends State<ScreenPosts> {
 // POSTS STUFF
 class Posts extends StatelessWidget {
   final double rad = 30;
-  final bUrl;
-  Posts(this.bUrl);
+  final Map<String, dynamic> info;
+  final String background;
+  Posts(this.info, this.background);
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(bUrl),
-            fit: BoxFit.cover,
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(background),
+                fit: BoxFit.cover,
+              ),
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(rad),
+                topRight: Radius.circular(rad),
+                bottomLeft: Radius.circular(rad),
+                bottomRight: Radius.circular(rad),
+              ),
+            ),
+            width: double.infinity,
+            height: 300,
           ),
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(rad),
-            topRight: Radius.circular(rad),
-            bottomLeft: Radius.circular(rad),
-            bottomRight: Radius.circular(rad),
+          Container(
+            color: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage:
+                        NetworkImage(info['results'][0]['picture']['large']),
+                    radius: 25,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    height: 30,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.white,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(info['results'][0]['name']['first'] +
+                          ' ' +
+                          info['results'][0]['name']['last']),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        width: double.infinity,
-        height: 300,
+        ],
       ),
     );
   }
