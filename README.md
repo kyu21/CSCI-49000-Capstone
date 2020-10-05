@@ -14,7 +14,6 @@ Alexander Yang
 
 ## How to Run node/express backend
 
-1. cd into backend directory
-2. Paste .env file into here (Ask Kun for details)
-3. npm install
-4. npm run dev
+1. Paste .env file into top-level directory (Ask Kun for details)
+2. npm install
+3. npm run dev
