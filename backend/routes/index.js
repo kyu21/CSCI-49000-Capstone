@@ -3,9 +3,11 @@ const router = express.Router();
 
 // Subrouters;
 const userRouter = require("./users");
+const userZipsRouter = require("./userZips");
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
+router.use("/userzips", userZipsRouter);
 
 
 // Error handling middleware;
