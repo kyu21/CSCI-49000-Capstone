@@ -8,7 +8,8 @@ module.exports = function (sequelize, DataTypes) {
         },
         name: {
             type: DataTypes.TEXT,
-            allowNull: false
+            allowNull: false,
+            unique: true
         }
     }, {
         tableName: 'languages'

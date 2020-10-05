@@ -5,11 +5,13 @@ const router = express.Router();
 const userRouter = require("./users");
 const userZipsRouter = require("./userZips");
 const userLanguagesRouter = require("./userLanguages");
+const userPostsRouter = require("./userPosts")
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
-router.use("/userzips", userZipsRouter);
-router.use("/userlanguages", userLanguagesRouter);
+router.use("/userZips", userZipsRouter);
+router.use("/userLanguages", userLanguagesRouter);
+router.use("/userPosts", userPostsRouter)
 
 
 // Error handling middleware;

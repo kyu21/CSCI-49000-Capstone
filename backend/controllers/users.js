@@ -97,8 +97,28 @@ async function getUserById(req, res, next) {
             })
         );
 
+        // posts
+        const allUserPosts = await db.userPosts.findAll({
+            where: {
+                userId: userId
+            }
+        });
+        const allPosts = await Promise.all(
+            allUserPosts.map(async (postEle) => {
+                var post = await db.posts.findOne({
+                    raw: true,
+                    where: {
+                        id: postEle.postId
+                    }
+                });
+                delete post.id
+                return post
+            })
+        );
+
         user["zips"] = allZipsInfo
         user["languages"] = allLangInfo
+        user["posts"] = allPosts
 
         res.status(200).json(user)
     } catch (err) {

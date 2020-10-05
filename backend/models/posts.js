@@ -1,21 +1,24 @@
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('zips', {
+    return sequelize.define('posts', {
         id: {
             type: DataTypes.BIGINT,
             allowNull: false,
             primaryKey: true,
             autoIncrement: true
         },
-        zip: {
+        title: {
             type: DataTypes.TEXT,
-            allowNull: false,
-            unique: true
+            allowNull: false
         },
-        name: {
+        description: {
             type: DataTypes.TEXT,
+            allowNull: false
+        },
+        dateCreated: {
+            type: DataTypes.DATE,
             allowNull: false
         }
     }, {
-        tableName: 'zips'
+        tableName: 'posts'
     });
 };
