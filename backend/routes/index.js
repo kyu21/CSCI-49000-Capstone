@@ -6,12 +6,14 @@ const userRouter = require("./users");
 const userZipsRouter = require("./userZips");
 const userLanguagesRouter = require("./userLanguages");
 const userPostsRouter = require("./userPosts")
+const postsRouter = require("./posts")
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
 router.use("/userZips", userZipsRouter);
 router.use("/userLanguages", userLanguagesRouter);
 router.use("/userPosts", userPostsRouter)
+router.use("/posts", postsRouter)
 
 
 // Error handling middleware;

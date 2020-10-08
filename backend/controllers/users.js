@@ -11,7 +11,6 @@ async function getAllUsers(req, res, next) {
     try {
         const users = await db.users.findAll();
         res.status(200).json(users);
-        console.log("attempting to find users");
     } catch (err) {
         console.log(err);
     }
@@ -66,16 +65,14 @@ async function getUserById(req, res, next) {
             }
         });
         const allZipsInfo = await Promise.all(
-            allUserZips.map(async (zipEle) => {
-                var zip = await db.zips.findOne({
+            allUserZips.map(async (zipEle) => (
+                await db.zips.findOne({
                     raw: true,
                     where: {
                         id: zipEle.zipId
                     }
-                });
-                delete zip.id
-                return zip
-            })
+                })
+            ))
         );
 
         // languages
@@ -85,16 +82,14 @@ async function getUserById(req, res, next) {
             }
         });
         const allLangInfo = await Promise.all(
-            allUserLang.map(async (langEle) => {
-                var lang = await db.languages.findOne({
+            allUserLang.map(async (langEle) => (
+                await db.languages.findOne({
                     raw: true,
                     where: {
                         id: langEle.languageId
                     }
-                });
-                delete lang.id
-                return lang
-            })
+                })
+            ))
         );
 
         // posts
@@ -104,16 +99,14 @@ async function getUserById(req, res, next) {
             }
         });
         const allPosts = await Promise.all(
-            allUserPosts.map(async (postEle) => {
-                var post = await db.posts.findOne({
+            allUserPosts.map(async (postEle) => (
+                await db.posts.findOne({
                     raw: true,
                     where: {
                         id: postEle.postId
                     }
-                });
-                delete post.id
-                return post
-            })
+                })
+            ))
         );
 
         user["zips"] = allZipsInfo
