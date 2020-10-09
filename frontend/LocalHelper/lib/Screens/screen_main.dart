@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:localhelper/settings.dart';
+import 'package:provider/provider.dart';
 
 // Screens
 import 'MainPages/Messages/screen_messages.dart';
@@ -13,17 +15,20 @@ class ScreenHome extends StatefulWidget {
 
 class _ScreenHomeState extends State<ScreenHome> {
   List<Widget> pageList = List<Widget>();
+  int _currentIndex = 0;
+  Settings settings;
 
   @override
   void initState() {
+    // Clear the list and add the pages
+    pageList.clear();
     pageList.add(ScreenPosts());
     pageList.add(ScreenMessages());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSettings());
+    settings = context.read<Settings>();
     super.initState();
   }
-
-  int _currentIndex = 0;
 
   void setIndex(int index) {
     setState(() {
@@ -33,6 +38,10 @@ class _ScreenHomeState extends State<ScreenHome> {
 
   @override
   Widget build(BuildContext context) {
+    // Update the values on change
+    settings = context.watch<Settings>();
+
+    // Widget
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -40,31 +49,28 @@ class _ScreenHomeState extends State<ScreenHome> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: setIndex,
-        backgroundColor: Colors.black,
-        fixedColor: Colors.white,
+        elevation: 0,
         unselectedItemColor: Colors.grey,
+        backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+        selectedItemColor: settings.darkMode ? Colors.white : Colors.black,
         type: BottomNavigationBarType.fixed,
         currentIndex: _currentIndex,
         items: [
           BottomNavigationBarItem(
             label: 'Local Posts',
             icon: Icon(Icons.local_activity),
-            backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(
             label: 'Messages',
             icon: Icon(Icons.message),
-            backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(
             label: 'My Posts',
             icon: Icon(Icons.post_add),
-            backgroundColor: Colors.white,
           ),
           BottomNavigationBarItem(
             label: 'Settings',
             icon: Icon(Icons.settings),
-            backgroundColor: Colors.white,
           ),
         ],
       ),

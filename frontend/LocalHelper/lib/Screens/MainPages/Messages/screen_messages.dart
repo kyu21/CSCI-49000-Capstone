@@ -62,7 +62,7 @@ class ScreenMessages extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'Chats',
+                      'WORK IN PROGRESS',
                       style:
                           TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                     ),

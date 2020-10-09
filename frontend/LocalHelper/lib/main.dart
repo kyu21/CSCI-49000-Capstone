@@ -3,7 +3,6 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'Screens/screen_error.dart';
 import 'Screens/screen_load.dart';
-import 'Screens/screen_main.dart';
 import 'Screens/screen_start.dart';
 
 void main() {
@@ -36,7 +35,7 @@ class App extends StatelessWidget {
 
         // Once complete, show your application
         if (snapshot.connectionState == ConnectionState.done) {
-          return ScreenHome();
+          return ScreenStart();
         }
 
         // Otherwise, show something whilst waiting for initialization to complete
