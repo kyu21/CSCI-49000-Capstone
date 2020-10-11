@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 
 import 'Screens/screen_error.dart';
 import 'Screens/screen_load.dart';
 import 'Screens/screen_start.dart';
+import 'settings.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(ChangeNotifierProvider(
+    create: (_) => Settings(),
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

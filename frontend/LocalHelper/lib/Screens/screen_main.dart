@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 // Screens
 import 'MainPages/Messages/screen_messages.dart';
-import 'MainPages/screen_myposts.dart';
+import 'MainPages/MyPosts/screen_myposts.dart';
 import 'MainPages/screen_settings.dart';
 import 'MainPages/screen_posts.dart';
 

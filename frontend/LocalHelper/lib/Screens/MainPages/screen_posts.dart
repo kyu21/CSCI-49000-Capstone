@@ -19,14 +19,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
   List<String> _backgroundInfo = List(); // Holds the background images url
   List<dynamic> _networkInfo = List(); // Holds a json of people
 
-  Settings settings;
-
-  @override
-  void initState() {
-    settings = context.read<Settings>();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<Settings>(

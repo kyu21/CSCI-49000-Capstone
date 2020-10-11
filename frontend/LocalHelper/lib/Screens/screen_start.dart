@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 import 'screen_main.dart';
 import 'package:lit_firebase_auth/lit_firebase_auth.dart';
-import 'package:localhelper/settings.dart';
 
 class ScreenStart extends StatelessWidget {
   @override
@@ -27,10 +25,7 @@ class ScreenLogin extends StatelessWidget {
         home: LitAuthState(
           authenticated: WillPopScope(
             onWillPop: () async => false,
-            child: ChangeNotifierProvider(
-              create: (_) => Settings(),
-              child: ScreenHome(),
-            ),
+            child: ScreenHome(),
           ),
           unauthenticated: SignIn(),
         ),
