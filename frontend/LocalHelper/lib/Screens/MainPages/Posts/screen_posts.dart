@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/authSettings.dart';
+import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
-import 'package:localhelper/settings.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:pull_to_refresh/pull_to_refresh.dart';
@@ -21,94 +22,91 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Settings>(
-      builder: (context, settings, child) {
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).requestFocus(FocusNode());
-          },
-          child: Scaffold(
-            backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-            body: SmartRefresher(
-              physics: BouncingScrollPhysics(),
-              enablePullDown: true,
-              enablePullUp: true,
-              controller: _refreshController,
-              onLoading: _onLoading,
-              onRefresh: _onRefresh,
-              header: MaterialClassicHeader(),
-              child: CustomScrollView(
-                reverse: true,
-                slivers: [
-                  // Search Bar
-                  SliverPadding(
-                    padding: EdgeInsets.only(left: 4, right: 4),
-                    sliver: SliverAppBar(
-                      shape: ContinuousRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(50),
-                          topRight: Radius.circular(50),
-                        ),
-                      ),
-                      floating: true,
-                      pinned: false,
-                      expandedHeight: 100,
-                      backgroundColor:
-                          settings.darkMode ? Colors.black45 : Colors.white54,
-                      flexibleSpace: FlexibleSpaceBar(
-                        centerTitle: true,
-                        titlePadding: EdgeInsetsDirectional.only(top: 75),
-                        collapseMode: CollapseMode.parallax,
-                        background: Column(
-                          children: [
-                            SizedBox(height: 20),
-                            Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: TextField(
-                                onSubmitted: (str) {
-                                  print(str);
-                                  // Empty for now
-                                },
-                                decoration: InputDecoration(
-                                  hintText: "Search...",
-                                  hintStyle:
-                                      TextStyle(color: Colors.grey.shade400),
-                                  prefixIcon: Icon(
-                                    Icons.search,
-                                    color: Colors.grey.shade400,
-                                    size: 20,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(30),
-                                    borderSide: BorderSide(
-                                      color: Colors.grey.shade100,
-                                    ),
-                                  ),
+    // Providers
+    Settings settings = Provider.of<Settings>(context);
+
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Scaffold(
+        backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+        body: SmartRefresher(
+          physics: BouncingScrollPhysics(),
+          enablePullDown: true,
+          enablePullUp: true,
+          controller: _refreshController,
+          onLoading: _onLoading,
+          onRefresh: _onRefresh,
+          header: MaterialClassicHeader(),
+          child: CustomScrollView(
+            reverse: true,
+            slivers: [
+              // Search Bar
+              SliverPadding(
+                padding: EdgeInsets.only(left: 4, right: 4),
+                sliver: SliverAppBar(
+                  shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(50),
+                      topRight: Radius.circular(50),
+                    ),
+                  ),
+                  floating: true,
+                  pinned: false,
+                  expandedHeight: 100,
+                  backgroundColor:
+                      settings.darkMode ? Colors.black45 : Colors.white54,
+                  flexibleSpace: FlexibleSpaceBar(
+                    centerTitle: true,
+                    titlePadding: EdgeInsetsDirectional.only(top: 75),
+                    collapseMode: CollapseMode.parallax,
+                    background: Column(
+                      children: [
+                        SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: TextField(
+                            onSubmitted: (str) {
+                              print(str);
+                              // Empty for now
+                            },
+                            decoration: InputDecoration(
+                              hintText: "Search...",
+                              hintStyle: TextStyle(color: Colors.grey.shade400),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey.shade400,
+                                size: 20,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide(
+                                  color: Colors.grey.shade100,
                                 ),
                               ),
                             ),
-                          ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return Posts(
-                            _networkInfo[index], _backgroundInfo[index]);
-                      },
-                      childCount: _networkInfo.length,
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return Posts(_networkInfo[index], _backgroundInfo[index]);
+                  },
+                  childCount: _networkInfo.length,
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

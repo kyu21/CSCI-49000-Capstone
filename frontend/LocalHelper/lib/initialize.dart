@@ -1,7 +1,17 @@
 import 'package:flutter/material.dart';
-
-import 'screen_main.dart';
 import 'package:lit_firebase_auth/lit_firebase_auth.dart';
+import 'package:localhelper/Additions/authSettings.dart';
+import 'package:provider/provider.dart';
+
+import 'home.dart';
+
+/*
+  After firebase is initialized, Then we do a credential check.
+
+    1. Using the package lit firebase, check if already authenticated or not
+      - If authenticated then run Intialized Class
+      - If not then run SignIn page
+*/
 
 class ScreenStart extends StatelessWidget {
   @override
@@ -25,7 +35,7 @@ class ScreenLogin extends StatelessWidget {
         home: LitAuthState(
           authenticated: WillPopScope(
             onWillPop: () async => false,
-            child: ScreenHome(),
+            child: Initialize(),
           ),
           unauthenticated: SignIn(),
         ),
@@ -83,5 +93,23 @@ class SignIn extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// Update profile settings
+class Initialize extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final AuthSettings settings = context.watch<AuthSettings>();
+    // Update the values on change
+    final litUser = context.getSignedInUser();
+    litUser.when(
+      (user) {
+        settings.updateProfile(user);
+      },
+      empty: () {},
+      initializing: () {},
+    );
+    return ScreenHome();
   }
 }

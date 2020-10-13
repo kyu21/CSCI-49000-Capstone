@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/MyPosts/personalPosts.dart';
 import 'package:localhelper/Screens/MainPages/MyPosts/screen_createposts.dart';
 import 'package:provider/provider.dart';
-import 'package:localhelper/settings.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class ScreenMyPosts extends StatefulWidget {
@@ -18,93 +18,90 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Settings>(
-      builder: (context, settings, child) {
-        return GestureDetector(
-          onTap: () {
-            FocusScope.of(context).requestFocus(FocusNode());
-          },
-          child: Scaffold(
-            backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-            body: SmartRefresher(
-              physics: BouncingScrollPhysics(),
-              enablePullDown: true,
-              enablePullUp: true,
-              controller: _refreshController,
-              onLoading: _onLoading,
-              onRefresh: _onRefresh,
-              header: MaterialClassicHeader(),
-              child: CustomScrollView(
-                reverse: true,
-                slivers: [
-                  SliverList(
-                    delegate: SliverChildListDelegate([
-                      FlatButton(
-                        splashColor:
-                            settings.darkMode ? Colors.red : Colors.black,
-                        highlightColor:
-                            settings.darkMode ? Colors.red : Colors.grey,
-                        minWidth: double.infinity,
-                        height: 70,
-                        child: Text(
-                          'Create New Post',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        onPressed: () async {
-                          var navResults = await Navigator.push(context,
-                              MaterialPageRoute(builder: (context) {
-                            return ScreenCreatePosts();
-                          }));
-                          if (navResults != null) {
-                            setState(() {
-                              _testList.add(navResults);
-                            });
-                          }
-                        },
-                      ),
-                    ]),
-                  ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (_testList.isEmpty)
-                          return Column(
-                            children: [
-                              Icon(
-                                Icons.device_unknown_rounded,
-                                color: Colors.white,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'You have no posts...',
-                                style: TextStyle(
-                                  color: settings.darkMode
-                                      ? Colors.white
-                                      : Colors.black,
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 300),
-                            ],
-                          );
-                        else
-                          return _testList[index];
-                      },
-                      childCount: _testList.isEmpty ? 1 : _testList.length,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
+    // Providers
+    Settings settings = Provider.of<Settings>(context);
+
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
       },
+      child: Scaffold(
+        backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+        body: SmartRefresher(
+          physics: BouncingScrollPhysics(),
+          enablePullDown: true,
+          enablePullUp: true,
+          controller: _refreshController,
+          onLoading: _onLoading,
+          onRefresh: _onRefresh,
+          header: MaterialClassicHeader(),
+          child: CustomScrollView(
+            reverse: true,
+            slivers: [
+              SliverList(
+                delegate: SliverChildListDelegate([
+                  FlatButton(
+                    splashColor: settings.darkMode ? Colors.red : Colors.black,
+                    highlightColor:
+                        settings.darkMode ? Colors.red : Colors.grey,
+                    minWidth: double.infinity,
+                    height: 70,
+                    child: Text(
+                      'Create New Post',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    onPressed: () async {
+                      var navResults = await Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return ScreenCreatePosts();
+                      }));
+                      if (navResults != null) {
+                        setState(() {
+                          _testList.add(navResults);
+                        });
+                      }
+                    },
+                  ),
+                ]),
+              ),
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    if (_testList.isEmpty)
+                      return Column(
+                        children: [
+                          Icon(
+                            Icons.device_unknown_rounded,
+                            color: Colors.white,
+                          ),
+                          SizedBox(height: 10),
+                          Text(
+                            'You have no posts...',
+                            style: TextStyle(
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 300),
+                        ],
+                      );
+                    else
+                      return _testList[index];
+                  },
+                  childCount: _testList.isEmpty ? 1 : _testList.length,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

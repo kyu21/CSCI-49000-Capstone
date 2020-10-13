@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:localhelper/settings.dart';
 import 'package:provider/provider.dart';
 
-// Screens
-import 'MainPages/Messages/screen_messages.dart';
-import 'MainPages/MyPosts/screen_myposts.dart';
-import 'MainPages/screen_settings.dart';
-import 'MainPages/screen_posts.dart';
+import 'Additions/settings.dart';
+import 'Screens/MainPages/Messages/screen_messages.dart';
+import 'Screens/MainPages/MyPosts/screen_myposts.dart';
+import 'Screens/MainPages/Posts/screen_posts.dart';
+import 'Screens/MainPages/Settings/screen_settings.dart';
+
+/*
+  This is the main module that holds all the screens in a list.
+
+*/
 
 class ScreenHome extends StatefulWidget {
   @override
@@ -16,7 +20,6 @@ class ScreenHome extends StatefulWidget {
 class _ScreenHomeState extends State<ScreenHome> {
   List<Widget> pageList = List<Widget>();
   int _currentIndex = 0;
-  Settings settings;
 
   @override
   void initState() {
@@ -26,7 +29,6 @@ class _ScreenHomeState extends State<ScreenHome> {
     pageList.add(ScreenMessages());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSettings());
-    settings = context.read<Settings>();
     super.initState();
   }
 
@@ -38,8 +40,7 @@ class _ScreenHomeState extends State<ScreenHome> {
 
   @override
   Widget build(BuildContext context) {
-    // Update the values on change
-    settings = context.watch<Settings>();
+    final Settings settings = context.watch<Settings>();
 
     // Widget
     return Scaffold(

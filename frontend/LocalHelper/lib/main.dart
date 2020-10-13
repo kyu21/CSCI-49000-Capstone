@@ -1,17 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'Additions/Screens/screen_error.dart';
+import 'Additions/Screens/screen_load.dart';
+import 'Additions/authSettings.dart';
+import 'Additions/settings.dart';
+import 'initialize.dart';
 
-import 'Screens/screen_error.dart';
-import 'Screens/screen_load.dart';
-import 'Screens/screen_start.dart';
-import 'settings.dart';
+/*
+  This is How the apps starts.
+
+  1. Creates Multiproviders for Settings and AuthSettings
+      - Settings is for local stuff
+      - AuthSettings is credential stuff
+
+  2. Initializes firebase
+*/
 
 void main() {
-  runApp(ChangeNotifierProvider(
-    create: (_) => Settings(),
-    child: MyApp(),
-  ));
+  runApp(
+    MultiProvider(
+      child: MyApp(),
+      providers: [
+        ChangeNotifierProvider(create: (_) => Settings()),
+        ChangeNotifierProvider(create: (_) => AuthSettings()),
+      ],
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
