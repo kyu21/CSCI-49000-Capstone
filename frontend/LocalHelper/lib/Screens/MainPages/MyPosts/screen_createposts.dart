@@ -30,6 +30,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Scaffold(
+        resizeToAvoidBottomPadding: false,
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
         appBar: AppBar(
           elevation: 0,
@@ -159,8 +160,8 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
             Expanded(
               child: Container(
                 color: Colors.transparent,
-                child: ListView(
-                  reverse: true,
+                child: Column(
+                  verticalDirection: VerticalDirection.up,
                   children: [
                     FlatButton(
                       onPressed: () {

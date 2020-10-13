@@ -5,6 +5,6 @@ class AuthSettings extends ChangeNotifier {
 
   void updateProfile(user) {
     profileName = user.displayName;
-    notifyListeners();
+    // notifyListeners();
   }
 }

@@ -14,46 +14,21 @@ class ScreenSettings extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-      body: Column(
-        verticalDirection: VerticalDirection.up,
-        children: [
-          FlatButton(
-            height: 60,
-            onPressed: () {
-              context.signOut();
-              Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => ScreenStart()),
-                  (Route<dynamic> route) => false);
-            },
-            child: Text(
-              'Sign Out',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          SwitchListTile(
-            value: settings.darkMode,
-            onChanged: (value) => settings.changeDark(),
-            title: Text(
-              'Dark Mode',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          Expanded(
-            child: Container(
+      body: SafeArea(
+        child: Column(
+          verticalDirection: VerticalDirection.up,
+          children: [
+            FlatButton(
+              height: 60,
+              onPressed: () {
+                context.signOut();
+                Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => ScreenStart()),
+                    (Route<dynamic> route) => false);
+              },
               child: Text(
-                authSettings.profileName != null
-                    ? authSettings.profileName
-                    : 'None',
-                textAlign: TextAlign.center,
+                'Sign Out',
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -61,9 +36,36 @@ class ScreenSettings extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-          SizedBox(height: 30),
-        ],
+            SwitchListTile(
+              value: settings.darkMode,
+              onChanged: (value) => settings.changeDark(),
+              title: Text(
+                'Dark Mode',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Container(
+                child: Text(
+                  authSettings.profileName != null
+                      ? authSettings.profileName
+                      : 'None',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }
