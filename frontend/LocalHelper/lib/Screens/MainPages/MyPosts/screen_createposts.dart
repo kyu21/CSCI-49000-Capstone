@@ -11,7 +11,6 @@ class ScreenCreatePosts extends StatefulWidget {
 class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   final titleController = TextEditingController();
   final nameController = TextEditingController();
-  final addressController = TextEditingController();
   final descriptionController = TextEditingController();
 
   @override
@@ -99,32 +98,6 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               ),
             ),
 
-            SizedBox(height: 10),
-
-            // Address
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: addressController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  labelStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
             SizedBox(height: 40),
 
             // Description
@@ -175,7 +148,6 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                                 titleController.text,
                                 descriptionController.text,
                                 nameController.text,
-                                addressController.text,
                               ));
                         }
                       },
