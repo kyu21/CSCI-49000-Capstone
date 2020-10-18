@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
 
@@ -17,8 +16,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
 
-  List<String> _backgroundInfo = List(); // Holds the background images url
-  List<dynamic> _networkInfo = List(); // Holds a json of people
+  List postInfo = List(); // Holds a json of people
 
   @override
   Widget build(BuildContext context) {
@@ -98,9 +96,9 @@ class _ScreenPostsState extends State<ScreenPosts> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    return Posts(_networkInfo[index], _backgroundInfo[index]);
+                    return Posts(postInfo[index]);
                   },
-                  childCount: _networkInfo.length,
+                  childCount: postInfo.length,
                 ),
               ),
             ],
@@ -111,100 +109,150 @@ class _ScreenPostsState extends State<ScreenPosts> {
   }
 
   void _onRefresh() async {
-    // Clear the lists
-    _networkInfo.clear();
-    _backgroundInfo.clear();
+    setState(() {
+      // Reset start value
+      Provider.of<Settings>(context, listen: false).updateListNum(0);
 
-    // Find Images
-    _onLoading();
+      // Clear the lists
+      postInfo.clear();
 
-    // Trigger controller complete
-    _refreshController.refreshCompleted();
+      // Find Images
+      _onLoading();
+
+      // Trigger controller complete
+      _refreshController.refreshCompleted();
+    });
   }
 
   void _onLoading() async {
-    // Get five dog pictures
-    for (int i = 0; i < 5; i++) {
-      final response = await http.get('https://randomuser.me/api/');
-      final reponseBackground =
-          await http.get('https://dog.ceo/api/breeds/image/random');
+    // Settings
+    final maxLoad = 3;
 
-      if (response.statusCode == 200 && reponseBackground.statusCode == 200) {
-        setState(() {
-          Map<String, dynamic> json = jsonDecode(response.body);
-          _networkInfo.add(json);
-          _backgroundInfo.add(jsonDecode(reponseBackground.body)['message']);
-        });
-      } else {
-        throw Exception('Failed to load image');
-      }
+    // Starting index
+    int startI = Provider.of<Settings>(context, listen: false).listNum;
+
+    // Api information
+    final response =
+        await http.get('https://localhelper-backend.herokuapp.com/api/posts');
+
+    // What happens when getting a response
+    if (response.statusCode == 200) {
+      // Set state
+      setState(() {
+        // Save the variable in a json
+        List json = jsonDecode(response.body);
+
+        // If there's more to the posts...
+        if (startI <= json.length) {
+          for (int i = 0; (i < (json.length - startI)) && i < maxLoad; i++) {
+            // Add from the saved placement
+            int newIndex = startI + i;
+            postInfo.add(json[newIndex]);
+
+            // Remember placement
+            Provider.of<Settings>(context, listen: false)
+                .updateListNum(newIndex + 1);
+          }
+        }
+      });
+
+      // Stop the refresh animation
+      _refreshController.loadComplete();
     }
-    _refreshController.loadComplete();
   }
 }
 
 // POSTS STUFF
 class Posts extends StatelessWidget {
   final double rad = 30;
-  final Map<String, dynamic> info;
-  final String background;
-  Posts(this.info, this.background);
+  final info;
+  Posts(this.info);
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(background),
-                fit: BoxFit.cover,
-              ),
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(rad),
-                topRight: Radius.circular(rad),
-                bottomLeft: Radius.circular(rad),
-                bottomRight: Radius.circular(rad),
-              ),
-            ),
-            width: double.infinity,
-            height: 300,
+      child: Container(
+        decoration: BoxDecoration(
+          color: settings.darkMode ? Colors.white : Colors.black,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(rad),
+            topRight: Radius.circular(rad),
+            bottomLeft: Radius.circular(rad),
+            bottomRight: Radius.circular(rad),
           ),
-          Container(
-            color: Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Row(
+        ),
+        width: double.infinity,
+        height: 300,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  CircleAvatar(
-                    backgroundImage:
-                        NetworkImage(info['results'][0]['picture']['large']),
-                    radius: 25,
+                  // Name / Date
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        info['owner']['first'] + ' ' + info['owner']['last'],
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.black : Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.left,
+                      ),
+                      Text(
+                        info['post']['dateCreated'],
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.black : Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Container(
-                    height: 30,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.white,
+
+                  // Title
+                  SizedBox(width: 30),
+                  Expanded(
+                    child: Container(
+                      child: Text(
+                        info['post']['title'],
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.black : Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.left,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                      ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(info['results'][0]['name']['first'] +
-                          ' ' +
-                          info['results'][0]['name']['last']),
-                    ),
-                  ),
+                  )
                 ],
               ),
-            ),
+
+              // Description
+              SizedBox(height: 30),
+              Expanded(
+                child: Container(
+                  child: Text(
+                    info['post']['description'],
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.black : Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
