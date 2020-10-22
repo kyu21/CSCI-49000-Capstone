@@ -1,8 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
+import 'package:localhelper/Screens/MainPages/Posts/screen_full.dart';
 import 'package:provider/provider.dart';
 
 import 'package:http/http.dart' as http;
@@ -128,36 +131,47 @@ class _ScreenPostsState extends State<ScreenPosts> {
   void _onLoading() async {
     // Settings
     final maxLoad = 3;
+    int timeout = 10;
 
     // Starting index
     int startI = Provider.of<Settings>(context, listen: false).listNum;
 
-    // Api information
-    final response =
-        await http.get('https://localhelper-backend.herokuapp.com/api/posts');
+    try {
+      http.Response response = await http
+          .get('https://localhelper-backend.herokuapp.com/api/posts')
+          .timeout(Duration(seconds: timeout));
+      if (response.statusCode == 200) {
+        // Set state
+        setState(() {
+          // Save the variable in a json
+          List json = jsonDecode(response.body);
 
-    // What happens when getting a response
-    if (response.statusCode == 200) {
-      // Set state
-      setState(() {
-        // Save the variable in a json
-        List json = jsonDecode(response.body);
+          // If there's more to the posts...
+          if (startI <= json.length) {
+            for (int i = 0; (i < (json.length - startI)) && i < maxLoad; i++) {
+              // Add from the saved placement
+              int newIndex = startI + i;
+              postInfo.add(json[newIndex]);
 
-        // If there's more to the posts...
-        if (startI <= json.length) {
-          for (int i = 0; (i < (json.length - startI)) && i < maxLoad; i++) {
-            // Add from the saved placement
-            int newIndex = startI + i;
-            postInfo.add(json[newIndex]);
-
-            // Remember placement
-            Provider.of<Settings>(context, listen: false)
-                .updateListNum(newIndex + 1);
+              // Remember placement
+              Provider.of<Settings>(context, listen: false)
+                  .updateListNum(newIndex + 1);
+            }
           }
-        }
-      });
+        });
 
-      // Stop the refresh animation
+        // Stop the refresh animation
+        _refreshController.loadComplete();
+      } else {
+        // handle it
+        print("Can't get info.");
+        // Stop the refresh animation
+        _refreshController.loadComplete();
+      }
+    } on TimeoutException catch (e) {
+      print('Timeout Error: $e');
+      _refreshController.loadComplete();
+    } on SocketException {
       _refreshController.loadComplete();
     }
   }
@@ -256,11 +270,30 @@ class Posts extends StatelessWidget {
               // Description
               SizedBox(height: 30),
               Expanded(
-                child: Container(
-                  child: Text(
-                    info['post']['description'],
-                    style: TextStyle(
+                child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return ScreenPostsFull(info['post']['id']);
+                    }));
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        info['post']['description'],
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                    decoration: BoxDecoration(
                       color: settings.darkMode ? Colors.black : Colors.white,
+                      borderRadius: BorderRadius.circular(
+                        10,
+                      ),
                     ),
                   ),
                 ),

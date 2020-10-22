@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/MyPosts/personalPosts.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class ScreenCreatePosts extends StatefulWidget {
   @override
@@ -17,6 +20,36 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   void dispose() {
     titleController.dispose();
     super.dispose();
+  }
+
+  Future<bool> sendPost(String title, String desc) async {
+    // Flutter Json
+    Map<String, String> jsonMap = {
+      'title': title,
+      'description': desc,
+    };
+
+    // Encode
+    String jsonString = json.encode(jsonMap);
+
+    try {
+      var response = await http.post(
+        'https://localhelper-backend.herokuapp.com/api/posts/1',
+        headers: {"Content-Type": "application/json"},
+        body: jsonString,
+      );
+
+      // Error
+      if (response.statusCode != 201) {
+        print(response.statusCode.toString());
+        return false;
+      } else {
+        return true;
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 
   @override
@@ -137,18 +170,24 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                   verticalDirection: VerticalDirection.up,
                   children: [
                     FlatButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (titleController.text.isEmpty &&
                             descriptionController.text.isEmpty) {
                           Navigator.pop(context, null);
                         } else {
-                          Navigator.pop(
-                              context,
-                              MyPosts(
-                                titleController.text,
-                                descriptionController.text,
-                                nameController.text,
-                              ));
+                          // Send post to internet.
+                          var result = await sendPost(
+                              titleController.text, descriptionController.text);
+
+                          if (result) {
+                            Navigator.pop(
+                                context,
+                                MyPosts(
+                                  titleController.text,
+                                  descriptionController.text,
+                                  nameController.text,
+                                ));
+                          }
                         }
                       },
                       splashColor:

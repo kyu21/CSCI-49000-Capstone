@@ -2,18 +2,30 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class ScreenOwner extends StatelessWidget {
+class ScreenOwner extends StatefulWidget {
   // Variables
   final int ownerId;
-  var info;
   ScreenOwner(this.ownerId);
 
+  @override
+  _ScreenOwnerState createState() => _ScreenOwnerState();
+}
+
+class _ScreenOwnerState extends State<ScreenOwner> {
+  // Json info
+  var info;
+
   Future getOwnerDetails() async {
-    String link = 'https://localhelper-backend.herokuapp.com/api/users' +
-        '/' +
-        ownerId.toString();
-    var result = await http.get(link);
-    info = jsonDecode(result.body);
+    try {
+      String link = 'https://localhelper-backend.herokuapp.com/api/users' +
+          '/' +
+          widget.ownerId.toString();
+      var result = await http.get(link);
+      info = jsonDecode(result.body);
+    } catch (e) {
+      print(e);
+      Navigator.pop(context);
+    }
   }
 
   @override
