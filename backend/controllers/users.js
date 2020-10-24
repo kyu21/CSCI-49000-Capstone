@@ -21,7 +21,7 @@ async function createUser(req, res, next) {
         let newUser = req.body;
         const userExists = await db.users.findOne({
             where: {
-                name: newUser.name
+                email: newUser.email
             },
         });
         if (!userExists) {
