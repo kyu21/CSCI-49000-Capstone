@@ -86,7 +86,8 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                                   ? Colors.white
                                   : Colors.black,
                               fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w900,
+                              fontStyle: FontStyle.italic,
                             ),
                           ),
                           SizedBox(height: 300),

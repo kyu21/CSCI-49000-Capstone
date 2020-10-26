@@ -41,72 +41,91 @@ class _ScreenPostsState extends State<ScreenPosts> {
           onLoading: _onLoading,
           onRefresh: _onRefresh,
           header: MaterialClassicHeader(),
-          child: CustomScrollView(
-            reverse: true,
-            slivers: [
-              // Search Bar
-              SliverPadding(
-                padding: EdgeInsets.only(left: 4, right: 4),
-                sliver: SliverAppBar(
-                  shape: ContinuousRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(50),
-                      topRight: Radius.circular(50),
+          child: postInfo.isNotEmpty
+              ? CustomScrollView(
+                  reverse: true,
+                  slivers: [
+                    // // Search Bar
+                    // SliverPadding(
+                    //   padding: EdgeInsets.only(left: 4, right: 4),
+                    //   sliver: SliverAppBar(
+                    //     shape: ContinuousRectangleBorder(
+                    //       borderRadius: BorderRadius.only(
+                    //         topLeft: Radius.circular(50),
+                    //         topRight: Radius.circular(50),
+                    //       ),
+                    //     ),
+                    //     floating: true,
+                    //     pinned: false,
+                    //     expandedHeight: 100,
+                    //     backgroundColor:
+                    //         settings.darkMode ? Colors.black45 : Colors.white54,
+                    //     flexibleSpace: FlexibleSpaceBar(
+                    //       centerTitle: true,
+                    //       titlePadding: EdgeInsetsDirectional.only(top: 75),
+                    //       collapseMode: CollapseMode.parallax,
+                    //       background: Column(
+                    //         children: [
+                    //           SizedBox(height: 20),
+                    //           Padding(
+                    //             padding: const EdgeInsets.all(10),
+                    //             child: TextField(
+                    //               onSubmitted: (str) {
+                    //                 print(str);
+                    //                 // Empty for now
+                    //               },
+                    //               decoration: InputDecoration(
+                    //                 hintText: "Search...",
+                    //                 hintStyle: TextStyle(color: Colors.grey.shade400),
+                    //                 prefixIcon: Icon(
+                    //                   Icons.search,
+                    //                   color: Colors.grey.shade400,
+                    //                   size: 20,
+                    //                 ),
+                    //                 filled: true,
+                    //                 fillColor: Colors.grey.shade100,
+                    //                 enabledBorder: OutlineInputBorder(
+                    //                   borderRadius: BorderRadius.circular(30),
+                    //                   borderSide: BorderSide(
+                    //                     color: Colors.grey.shade100,
+                    //                   ),
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ),
+                    //         ],
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+
+                    // Posts
+                    SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (postInfo.isEmpty) {
+                            return Container(
+                              color: Colors.black,
+                            );
+                          } else {
+                            return Posts(postInfo[index]);
+                          }
+                        },
+                        childCount: postInfo.length,
+                      ),
                     ),
-                  ),
-                  floating: true,
-                  pinned: false,
-                  expandedHeight: 100,
-                  backgroundColor:
-                      settings.darkMode ? Colors.black45 : Colors.white54,
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    titlePadding: EdgeInsetsDirectional.only(top: 75),
-                    collapseMode: CollapseMode.parallax,
-                    background: Column(
-                      children: [
-                        SizedBox(height: 20),
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: TextField(
-                            onSubmitted: (str) {
-                              print(str);
-                              // Empty for now
-                            },
-                            decoration: InputDecoration(
-                              hintText: "Search...",
-                              hintStyle: TextStyle(color: Colors.grey.shade400),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.grey.shade400,
-                                size: 20,
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey.shade100,
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                  color: Colors.grey.shade100,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  ],
+                )
+              : Center(
+                  child: Text(
+                    'No Posts Found...',
+                    style: TextStyle(
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                        fontWeight: FontWeight.w900,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 20),
                   ),
                 ),
-              ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return Posts(postInfo[index]);
-                  },
-                  childCount: postInfo.length,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

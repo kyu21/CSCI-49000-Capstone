@@ -32,17 +32,17 @@ class _ScreenOwnerState extends State<ScreenOwner> {
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: getOwnerDetails(),
-      builder: (context, mywidget) {
+      builder: (context, snapshot) {
         // When  not connected
-        if (mywidget.connectionState == ConnectionState.none) {
+        if (snapshot.connectionState == ConnectionState.none) {
           return OwnerNone();
 
           // When loading
-        } else if (mywidget.connectionState == ConnectionState.waiting) {
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
           return OwnerWait();
 
           // When finished
-        } else if (mywidget.connectionState == ConnectionState.done) {
+        } else if (snapshot.connectionState == ConnectionState.done) {
           return OwnerDone(info);
         }
 
