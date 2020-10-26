@@ -62,7 +62,7 @@ class _ScreenHomeState extends State<ScreenHome> {
             icon: Icon(Icons.local_activity),
           ),
           BottomNavigationBarItem(
-            label: 'Messages',
+            label: 'Users',
             icon: Icon(Icons.message),
           ),
           BottomNavigationBarItem(
