@@ -27,20 +27,20 @@ async function loginUser(req, res, next) {
 				res.status(200).json({ accessToken });
 			} else {
 				res.status(401).json({
-					code: "error",
+					code: "Error",
 					message: "Email or password is wrong.",
 				});
 			}
 		} else {
 			res.status(401).json({
-				code: "error",
+				code: "Error",
 				message: "Email or password is wrong.",
 			});
 		}
 	} catch (err) {
 		console.log(err);
 		res.status(401).json({
-			code: "error",
+			code: "Error",
 			message: "Error logging in, please try again.",
 		});
 	}

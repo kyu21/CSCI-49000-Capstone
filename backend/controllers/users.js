@@ -1,11 +1,15 @@
 const db = require("../models");
 
 const decodeJwt = require("../utils/decodeJwt");
+var bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const userController = {
 	getAllUsers: getAllUsers,
 	getUserById: getUserById,
 	getLoggedInUser: getLoggedInUser,
+	editUser: editUser,
+	deleteUser: deleteUser,
 };
 
 async function getAllUsers(req, res, next) {
@@ -83,6 +87,21 @@ async function getDetailedUserInfo(userId, user) {
 	}
 }
 
+async function getLoggedInUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
+
+		user = await getDetailedUserInfo(currentUser.id, currentUser);
+		res.status(200).json(user);
+	} catch (err) {
+		console.log(err);
+	}
+}
+
 async function getUserById(req, res, next) {
 	try {
 		const { userId } = req.params;
@@ -102,7 +121,7 @@ async function getUserById(req, res, next) {
 	}
 }
 
-async function getLoggedInUser(req, res) {
+async function editUser(req, res) {
 	try {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
@@ -110,8 +129,55 @@ async function getLoggedInUser(req, res) {
 			where: { email: decodedJwt.email },
 		});
 
-		user = await getDetailedUserInfo(currentUser.id, currentUser);
-		res.status(200).json(user);
+		const validKeys = [
+			"first",
+			"last",
+			"gender",
+			"phone",
+			"email",
+			"password",
+		];
+		let newInfo = {};
+		for (let key in req.body) {
+			if (validKeys.indexOf(key) >= 0) {
+				newInfo[key] = req.body[key];
+				if (key === "password") {
+					let hashedPassword = await bcrypt.hash(
+						req.body[key],
+						saltRounds
+					);
+					newInfo[key] = hashedPassword;
+				}
+			}
+		}
+
+		let [_, users] = await db.users.update(newInfo, {
+			where: { id: currentUser.id },
+			returning: true,
+			raw: true,
+		});
+
+		res.status(200).json(users[0]);
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function deleteUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
+
+		await db.users.destroy({
+			where: { id: currentUser.id },
+		});
+
+		res.status(200).json({
+			code: "Success",
+		});
 	} catch (err) {
 		console.log(err);
 	}

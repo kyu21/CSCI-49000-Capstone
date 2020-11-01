@@ -46,6 +46,10 @@ async function updateOne(modelName, params, body) {
 async function deleteOne(modelName, params, body) {
 	try {
 		await db[modelName].destroy({ where: params });
+
+		res.status(200).json({
+			code: "Success",
+		});
 	} catch (err) {
 		console.log(err);
 	}

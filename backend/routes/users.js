@@ -4,8 +4,10 @@ const auth = require("../utils/auth");
 
 const userController = require("../controllers/users");
 
-router.route("/").get(userController.getAllUsers);
+router.route("/").get(auth, userController.getAllUsers);
 router.route("/me").get(auth, userController.getLoggedInUser);
-router.route("/:userId").get(userController.getUserById);
+router.route("/:userId").get(auth, userController.getUserById);
+router.route("/").put(auth, userController.editUser);
+router.route("/").delete(auth, userController.deleteUser);
 
 module.exports = router;
