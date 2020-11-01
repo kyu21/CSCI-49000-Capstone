@@ -1,13 +1,11 @@
 const db = require("../models");
 
-var bcrypt = require("bcrypt");
-const saltRounds = 10;
+const decodeJwt = require("../utils/decodeJwt");
 
 const userController = {
 	getAllUsers: getAllUsers,
-	createUser: createUser,
 	getUserById: getUserById,
-	registerUser: registerUser,
+	getLoggedInUser: getLoggedInUser,
 };
 
 async function getAllUsers(req, res, next) {
@@ -19,46 +17,8 @@ async function getAllUsers(req, res, next) {
 	}
 }
 
-async function createUser(req, res, next) {
+async function getDetailedUserInfo(userId, user) {
 	try {
-		let newUser = req.body;
-		const userExists = await db.users.findOne({
-			where: {
-				name: newUser.name,
-			},
-		});
-		if (!userExists) {
-			await db.users.create(newUser);
-			res.status(200).json({
-				code: "Success",
-				message: "User created",
-			});
-		} else {
-			res.status(401).json({
-				code: "error",
-				message: "Email exists.",
-			});
-		}
-	} catch (err) {
-		console.log(err);
-		res.status(401).json({
-			code: "error",
-			message: "Error with creating account. Please retry.",
-		});
-	}
-}
-
-async function getUserById(req, res, next) {
-	try {
-		const { userId } = req.params;
-
-		var user = await db.users.findOne({
-			raw: true,
-			where: {
-				id: userId,
-			},
-		});
-
 		// zips
 		const allUserZips = await db.userZips.findAll({
 			where: {
@@ -117,37 +77,43 @@ async function getUserById(req, res, next) {
 		user["languages"] = allLangInfo;
 		user["posts"] = allPosts;
 
+		return user;
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function getUserById(req, res, next) {
+	try {
+		const { userId } = req.params;
+
+		var user = await db.users.findOne({
+			raw: true,
+			where: {
+				id: userId,
+			},
+		});
+
+		user = await getDetailedUserInfo(userId, user);
+
 		res.status(200).json(user);
 	} catch (err) {
 		console.log(err);
 	}
 }
 
-async function registerUser(req, res) {
+async function getLoggedInUser(req, res) {
 	try {
-		let newUser = req.body;
-		const userExists = await db.users.findOne({
-			where: { email: newUser.email },
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
 		});
 
-		if (!userExists) {
-			let hashedPassword = await bcrypt.hash(
-				newUser.password,
-				saltRounds
-			);
-			newUser.password = hashedPassword;
-			let user = await db.users.create(newUser);
-
-			res.status(201).json(user);
-		} else {
-			res.status(401).json({ code: "Error", message: "Email exists." });
-		}
+		user = await getDetailedUserInfo(currentUser.id, currentUser);
+		res.status(200).json(user);
 	} catch (err) {
 		console.log(err);
-		res.status(401).json({
-			code: "error",
-			message: "Error with creating account. Please retry.",
-		});
 	}
 }
 
