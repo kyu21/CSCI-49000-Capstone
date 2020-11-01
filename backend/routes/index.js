@@ -9,6 +9,7 @@ const userPostsRouter = require("./userPosts");
 const postsRouter = require("./posts");
 const languageRouter = require("./languages");
 const zipRouter = require("./zips");
+const authRouter = require("./auth");
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
@@ -18,6 +19,7 @@ router.use("/userPosts", userPostsRouter);
 router.use("/posts", postsRouter);
 router.use("/languages", languageRouter);
 router.use("/zips", zipRouter);
+router.use("/auth", authRouter);
 
 // Error handling middleware;
 router.use((req, res, next) => {
