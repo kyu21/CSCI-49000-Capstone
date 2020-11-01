@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:localhelper/Additions/settings.dart';
+import 'package:provider/provider.dart';
+
 class ScreenPostsFull extends StatefulWidget {
   // Variables
   final int ownerId;
@@ -83,17 +86,28 @@ class FullDone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+
     final title = info['post']['title'];
     final ownerName = info['owner']['first'] + ' ' + info['owner']['last'];
     final date = info['post']['dateCreated'];
     final description = info['post']['description'];
 
     return Scaffold(
+      backgroundColor: settings.darkMode ? Colors.black : Colors.white,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+          color: settings.darkMode
+              ? Colors.white
+              : Colors.black, //change your color here
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         centerTitle: true,
         title: Text(
           title,
           style: TextStyle(
+            color: settings.darkMode ? Colors.white : Colors.black,
             fontSize: 50,
             fontWeight: FontWeight.bold,
           ),
@@ -118,6 +132,7 @@ class FullDone extends StatelessWidget {
                     Text(
                       'Owner: ' + ownerName,
                       style: TextStyle(
+                        color: settings.darkMode ? Colors.white : Colors.black,
                         fontSize: 25,
                         fontWeight: FontWeight.bold,
                       ),
@@ -125,6 +140,7 @@ class FullDone extends StatelessWidget {
                     Text(
                       'Date: ' + date,
                       style: TextStyle(
+                        color: settings.darkMode ? Colors.white : Colors.black,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
                       ),
@@ -155,6 +171,7 @@ class FullDone extends StatelessWidget {
                     Text(
                       'Description:',
                       style: TextStyle(
+                        color: settings.darkMode ? Colors.white : Colors.black,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -163,6 +180,7 @@ class FullDone extends StatelessWidget {
                     Text(
                       description,
                       style: TextStyle(
+                        color: settings.darkMode ? Colors.white : Colors.black,
                         fontSize: 20,
                       ),
                     ),

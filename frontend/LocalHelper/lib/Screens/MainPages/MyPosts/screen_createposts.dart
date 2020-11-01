@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Screens/MainPages/MyPosts/personalPosts.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,13 +11,19 @@ class ScreenCreatePosts extends StatefulWidget {
 }
 
 class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
+  // Text Controllers
   final titleController = TextEditingController();
   final nameController = TextEditingController();
   final descriptionController = TextEditingController();
 
+  // Prevent Multi sending
+  bool enableSend = true;
+
   @override
   void dispose() {
     titleController.dispose();
+    nameController.dispose();
+    descriptionController.dispose();
     super.dispose();
   }
 
@@ -66,7 +71,11 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
         appBar: AppBar(
           elevation: 0,
-          iconTheme: IconThemeData(color: Colors.black),
+          iconTheme: IconThemeData(
+            color: settings.darkMode
+                ? Colors.white
+                : Colors.black, //change your color here
+          ),
           centerTitle: true,
           title: Text(
             'Create New Post',
@@ -84,7 +93,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               padding: const EdgeInsets.only(left: 20, right: 20),
               child: TextField(
                 controller: titleController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
+                cursorColor: settings.darkMode ? Colors.white : Colors.black,
                 keyboardType: TextInputType.name,
                 style: TextStyle(
                   color: settings.darkMode ? Colors.white : Colors.black,
@@ -92,7 +101,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                 decoration: InputDecoration(
                   labelText: 'Title',
                   labelStyle: TextStyle(
-                    color: Colors.grey,
+                    color: settings.darkMode ? Colors.white : Colors.black,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),
@@ -105,33 +114,31 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               ),
             ),
 
-            SizedBox(height: 10),
-
-            // Author
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: nameController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Name',
-                  labelStyle: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
             SizedBox(height: 40),
+
+            // // Author
+            // Padding(
+            //   padding: const EdgeInsets.only(left: 20, right: 20),
+            //   child: TextField(
+            //     controller: nameController,
+            //     cursorColor: settings.darkMode ? Colors.white : Colors.grey,
+            //     keyboardType: TextInputType.name,
+            //     style: TextStyle(
+            //       color: settings.darkMode ? Colors.white : Colors.black,
+            //     ),
+            //     decoration: InputDecoration(
+            //       labelText: 'Name',
+            //       labelStyle: TextStyle(
+            //         color: Colors.grey,
+            //         fontSize: 30,
+            //         fontWeight: FontWeight.bold,
+            //       ),
+            //       enabledBorder: UnderlineInputBorder(
+            //         borderSide: BorderSide(color: Colors.grey),
+            //       ),
+            //     ),
+            //   ),
+            // ),
 
             // Description
             Padding(
@@ -148,7 +155,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                 decoration: InputDecoration(
                   labelText: 'Description',
                   labelStyle: TextStyle(
-                    color: Colors.grey,
+                    color: settings.darkMode ? Colors.white : Colors.black,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
@@ -171,22 +178,26 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                   children: [
                     FlatButton(
                       onPressed: () async {
-                        if (titleController.text.isEmpty &&
-                            descriptionController.text.isEmpty) {
-                          Navigator.pop(context, null);
-                        } else {
-                          // Send post to internet.
-                          var result = await sendPost(
-                              titleController.text, descriptionController.text);
-
-                          if (result) {
-                            Navigator.pop(
+                        if (enableSend) {
+                          setState(() {
+                            enableSend = false;
+                          });
+                          if (titleController.text.isEmpty &&
+                              descriptionController.text.isEmpty) {
+                            Navigator.pop(context, null);
+                          } else {
+                            // Send post to internet.
+                            var result = await sendPost(titleController.text,
+                                descriptionController.text);
+                            if (result) {
+                              Navigator.pop(
                                 context,
-                                MyPosts(
-                                  titleController.text,
-                                  descriptionController.text,
-                                  nameController.text,
-                                ));
+                              );
+                            } else {
+                              setState(() {
+                                enableSend = true;
+                              });
+                            }
                           }
                         }
                       },

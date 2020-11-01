@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:localhelper/Additions/settings.dart';
+import 'package:provider/provider.dart';
 
 class ScreenOwner extends StatefulWidget {
   // Variables
@@ -58,6 +60,7 @@ class OwnerNone extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: true,
         title: Text('Owner not found!'),
       ),
     );
@@ -80,9 +83,27 @@ class OwnerDone extends StatelessWidget {
   OwnerDone(this.info);
   @override
   Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
     return Scaffold(
+      backgroundColor: settings.darkMode ? Colors.black : Colors.white,
       appBar: AppBar(
-        title: Text(info['first'] + ' ' + info['last']),
+        automaticallyImplyLeading: true,
+        iconTheme: IconThemeData(
+          color: settings.darkMode
+              ? Colors.white
+              : Colors.black, //change your color here
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          info['first'] + ' ' + info['last'],
+          style: TextStyle(
+            color: settings.darkMode ? Colors.white : Colors.black,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: ListView(
         children: [
@@ -92,6 +113,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               'Gender: ' + info['gender'],
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -104,6 +126,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               'Phone: ' + info['phone'],
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -116,6 +139,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               'Email: ' + info['email'],
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -128,6 +152,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               'Address:',
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -138,6 +163,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               info['zips'][0]['zip'] + ' ' + info['zips'][0]['name'],
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
               ),
             ),
@@ -149,6 +175,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               'Languages: ',
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -157,6 +184,7 @@ class OwnerDone extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(10),
             child: ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
               itemCount: info['languages'].length,
@@ -164,6 +192,7 @@ class OwnerDone extends StatelessWidget {
                 return Text(
                   info['languages'][index]['name'],
                   style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
                     fontSize: 30,
                   ),
                 );
@@ -177,6 +206,7 @@ class OwnerDone extends StatelessWidget {
             child: Text(
               'Posts: ',
               style: TextStyle(
+                color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
@@ -185,6 +215,7 @@ class OwnerDone extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(10),
             child: ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
               scrollDirection: Axis.vertical,
               shrinkWrap: true,
               itemCount: info['posts'].length,
@@ -192,6 +223,7 @@ class OwnerDone extends StatelessWidget {
                 return Text(
                   info['posts'][index]['title'],
                   style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
                     fontSize: 30,
                   ),
                 );
