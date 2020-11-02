@@ -60,26 +60,15 @@ async function getDetailedUserInfo(userId, user) {
 		);
 
 		// posts
-		const allUserPosts = await db.userPosts.findAll({
+		const allUserPosts = await db.posts.findAll({
 			where: {
-				userId: userId,
+				ownerId: userId,
 			},
 		});
-		const allPosts = await Promise.all(
-			allUserPosts.map(
-				async (postEle) =>
-					await db.posts.findOne({
-						raw: true,
-						where: {
-							id: postEle.postId,
-						},
-					})
-			)
-		);
 
 		user["zips"] = allZipsInfo;
 		user["languages"] = allLangInfo;
-		user["posts"] = allPosts;
+		user["posts"] = allUserPosts;
 
 		return user;
 	} catch (err) {

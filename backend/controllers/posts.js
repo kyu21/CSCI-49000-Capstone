@@ -120,9 +120,9 @@ async function getPostById(req, res) {
 				id: postId,
 			},
 		});
-		post = await appendOwnerInfo(post);
+		post = await appendOwnerInfo([post]);
 
-		res.status(201).json(post);
+		res.status(200).json(post);
 	} catch (err) {
 		console.log(err);
 	}
