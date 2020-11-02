@@ -69,17 +69,13 @@ class _ScreenLoginState extends State<ScreenLogin> {
                       padding: EdgeInsets.symmetric(horizontal: 20.0),
                       child: RaisedButton(
                         onPressed: () async {
-                          setState(() {
-                            _isLoading = true;
-                          });
-
                           var result = await signIn(
                               emailController.text, passwordController.text);
 
                           if (result != null) {
                             authSettings.updateToken(result);
 
-                            userInfo(result);
+                            await userInfo(result);
 
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
@@ -89,6 +85,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
                               );
                             }));
                           }
+
+                          setState(() {
+                            _isLoading = true;
+                          });
                         },
                         color: Colors.blue,
                         shape: RoundedRectangleBorder(
@@ -183,9 +183,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
       http.Response response = await http
           .get('https://localhelper-backend.herokuapp.com/api/users/me',
               headers: headers)
-          .timeout(Duration(seconds: 3));
+          .timeout(Duration(seconds: 5));
 
       print(response.statusCode);
+      print(response.body);
     } catch (e) {
       print(e);
     }
