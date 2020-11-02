@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
@@ -18,6 +19,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
 
   // Prevent Multi sending
   bool enableSend = true;
+  bool request = false;
 
   @override
   void dispose() {
@@ -27,20 +29,27 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
     super.dispose();
   }
 
-  Future<bool> sendPost(String title, String desc) async {
+  Future<bool> sendPost(
+      String token, String title, String desc, bool request) async {
     // Flutter Json
-    Map<String, String> jsonMap = {
+    Map<String, dynamic> jsonMap = {
       'title': title,
       'description': desc,
+      'is_request': request,
     };
 
     // Encode
     String jsonString = json.encode(jsonMap);
 
     try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
       var response = await http.post(
-        'https://localhelper-backend.herokuapp.com/api/posts/1',
-        headers: {"Content-Type": "application/json"},
+        'https://localhelper-backend.herokuapp.com/api/posts',
+        headers: headers,
         body: jsonString,
       );
 
@@ -61,6 +70,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   Widget build(BuildContext context) {
     // Providers
     Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     return GestureDetector(
       onTap: () {
@@ -114,31 +124,22 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               ),
             ),
 
-            SizedBox(height: 40),
+            SizedBox(height: 20),
 
-            // // Author
-            // Padding(
-            //   padding: const EdgeInsets.only(left: 20, right: 20),
-            //   child: TextField(
-            //     controller: nameController,
-            //     cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-            //     keyboardType: TextInputType.name,
-            //     style: TextStyle(
-            //       color: settings.darkMode ? Colors.white : Colors.black,
-            //     ),
-            //     decoration: InputDecoration(
-            //       labelText: 'Name',
-            //       labelStyle: TextStyle(
-            //         color: Colors.grey,
-            //         fontSize: 30,
-            //         fontWeight: FontWeight.bold,
-            //       ),
-            //       enabledBorder: UnderlineInputBorder(
-            //         borderSide: BorderSide(color: Colors.grey),
-            //       ),
-            //     ),
-            //   ),
-            // ),
+            SwitchListTile(
+              title: Text(
+                'Request?',
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+              ),
+              value: request,
+              onChanged: (value) {
+                setState(() {
+                  request = !request;
+                });
+              },
+            ),
+
+            SizedBox(height: 40),
 
             // Description
             Padding(
@@ -187,8 +188,11 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                             Navigator.pop(context, null);
                           } else {
                             // Send post to internet.
-                            var result = await sendPost(titleController.text,
-                                descriptionController.text);
+                            var result = await sendPost(
+                                authSettings.token,
+                                titleController.text,
+                                descriptionController.text,
+                                request);
                             if (result) {
                               Navigator.pop(
                                 context,

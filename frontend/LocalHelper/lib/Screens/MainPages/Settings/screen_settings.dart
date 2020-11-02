@@ -4,7 +4,6 @@ import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/Settings/screen_userSettings.dart';
 import 'package:localhelper/initialize.dart';
 import 'package:provider/provider.dart';
-import 'package:lit_firebase_auth/lit_firebase_auth.dart';
 
 class ScreenSettings extends StatelessWidget {
   @override
@@ -24,7 +23,7 @@ class ScreenSettings extends StatelessWidget {
               height: 60,
               minWidth: double.infinity,
               onPressed: () {
-                context.signOut();
+                authSettings.updateToken("");
                 Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(builder: (context) => ScreenStart()),
@@ -40,6 +39,7 @@ class ScreenSettings extends StatelessWidget {
               ),
             ),
 
+            // User Settings
             FlatButton(
               height: 60,
               minWidth: double.infinity,
@@ -76,9 +76,7 @@ class ScreenSettings extends StatelessWidget {
             Expanded(
               child: Container(
                 child: Text(
-                  authSettings.profileName != null
-                      ? authSettings.profileName
-                      : 'None',
+                  authSettings.token != null ? authSettings.token : 'None',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 30,

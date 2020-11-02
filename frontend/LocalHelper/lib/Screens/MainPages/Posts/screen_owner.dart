@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
 
@@ -17,13 +18,20 @@ class _ScreenOwnerState extends State<ScreenOwner> {
   // Json info
   var info;
 
-  Future getOwnerDetails() async {
+  Future getOwnerDetails(String token) async {
     try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
       String link = 'https://localhelper-backend.herokuapp.com/api/users' +
           '/' +
           widget.ownerId.toString();
-      var result = await http.get(link);
-      info = jsonDecode(result.body);
+      var result = await http.get(link, headers: headers);
+      if (result.body.isNotEmpty) {
+        info = jsonDecode(result.body)[0];
+      }
     } catch (e) {
       print(e);
       Navigator.pop(context);
@@ -32,8 +40,9 @@ class _ScreenOwnerState extends State<ScreenOwner> {
 
   @override
   Widget build(BuildContext context) {
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return FutureBuilder(
-      future: getOwnerDetails(),
+      future: getOwnerDetails(authSettings.token),
       builder: (context, snapshot) {
         // When  not connected
         if (snapshot.connectionState == ConnectionState.none) {
@@ -45,7 +54,8 @@ class _ScreenOwnerState extends State<ScreenOwner> {
 
           // When finished
         } else if (snapshot.connectionState == ConnectionState.done) {
-          return OwnerDone(info);
+          // return OwnerDone(info);
+          return OwnerNone();
         }
 
         // Failsafe

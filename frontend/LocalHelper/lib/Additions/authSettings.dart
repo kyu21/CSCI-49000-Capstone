@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 class AuthSettings extends ChangeNotifier {
-  String profileName = 'test';
+  String token = "";
 
-  void updateProfile(user) {
-    profileName = user.displayName;
+  void updateToken(newToken) {
+    token = newToken;
     // notifyListeners();
   }
 }

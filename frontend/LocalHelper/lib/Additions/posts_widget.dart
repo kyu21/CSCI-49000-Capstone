@@ -3,11 +3,21 @@ import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
 import 'package:localhelper/Screens/MainPages/Posts/screen_full.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart'; //for date format
 
 class Posts extends StatelessWidget {
   final double rad = 30;
   final info;
   Posts(this.info);
+
+  String convertDateTimeDisplay(String date) {
+    final DateFormat displayFormater = DateFormat('yyyy-MM-dd HH:mm:ss.SSS');
+    final DateFormat serverFormater = DateFormat('dd-MM-yyyy');
+    final DateTime displayDate = displayFormater.parse(date);
+    final String formatted = serverFormater.format(displayDate);
+    return formatted;
+  }
+
   @override
   Widget build(BuildContext context) {
     Settings settings = Provider.of<Settings>(context);
@@ -58,7 +68,7 @@ class Posts extends StatelessWidget {
                             textAlign: TextAlign.left,
                           ),
                           Text(
-                            info['post']['dateCreated'],
+                            info['post']['createdAt'],
                             style: TextStyle(
                               color: settings.darkMode
                                   ? Colors.black

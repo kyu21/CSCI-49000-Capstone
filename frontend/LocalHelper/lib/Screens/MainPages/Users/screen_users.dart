@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,7 @@ class _ScreenUsersState extends State<ScreenUsers> {
 
   List userList = List();
 
-  void _onRefresh() async {
+  void _onRefresh(String token) async {
     setState(() {
       // Reset start value
       Provider.of<Settings>(context, listen: false).updateUserNum(0);
@@ -28,14 +29,14 @@ class _ScreenUsersState extends State<ScreenUsers> {
       userList.clear();
 
       // Find Images
-      _onLoading();
+      _onLoading(token);
 
       // Trigger controller complete
       _refreshController.refreshCompleted();
     });
   }
 
-  void _onLoading() async {
+  void _onLoading(String token) async {
     // Settings
     final maxLoad = 3;
     int timeout = 10;
@@ -44,8 +45,14 @@ class _ScreenUsersState extends State<ScreenUsers> {
     int startI = Provider.of<Settings>(context, listen: false).userNum;
 
     try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
       http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/users')
+          .get('https://localhelper-backend.herokuapp.com/api/users',
+              headers: headers)
           .timeout(Duration(seconds: timeout));
       if (response.statusCode == 200) {
         // Set state
@@ -85,7 +92,8 @@ class _ScreenUsersState extends State<ScreenUsers> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = Provider.of<Settings>(context);
+    Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
       body: SmartRefresher(
@@ -93,8 +101,8 @@ class _ScreenUsersState extends State<ScreenUsers> {
         enablePullDown: true,
         enablePullUp: true,
         controller: _refreshController,
-        onLoading: _onLoading,
-        onRefresh: _onRefresh,
+        onLoading: () => _onLoading(authSettings.token),
+        onRefresh: () => _onRefresh(authSettings.token),
         header: MaterialClassicHeader(),
         child: userList.isNotEmpty
             ? CustomScrollView(

@@ -1,115 +1,233 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:lit_firebase_auth/lit_firebase_auth.dart';
-import 'package:localhelper/Additions/authSettings.dart';
+import 'package:localhelper/home.dart';
+import 'package:localhelper/register.dart';
 import 'package:provider/provider.dart';
 
-import 'home.dart';
-
-/*
-  After firebase is initialized, Then we do a credential check.
-
-    1. Using the package lit firebase, check if already authenticated or not
-      - If authenticated then run Intialized Class
-      - If not then run SignIn page
-*/
+import 'Additions/authSettings.dart';
 
 class ScreenStart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: ScreenLogin(),
     );
   }
 }
 
-// Check Authentication
-class ScreenLogin extends StatelessWidget {
+class ScreenLogin extends StatefulWidget {
+  @override
+  _ScreenLoginState createState() => _ScreenLoginState();
+}
+
+class _ScreenLoginState extends State<ScreenLogin> {
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
-    return LitAuthInit(
-      authProviders: AuthProviders(
-        emailAndPassword: true,
-        google: true,
-      ),
-      child: MaterialApp(
-        home: LitAuthState(
-          authenticated: WillPopScope(
-            onWillPop: () async => false,
-            child: Initialize(),
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
+
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.blue,
+                Colors.teal,
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
-          unauthenticated: SignIn(),
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator())
+              : ListView(
+                  children: [
+                    // Title
+                    SizedBox(height: 50),
+                    Center(child: headerSection()),
+
+                    // Inputs
+                    SizedBox(height: 50),
+                    textSection(),
+
+                    // Sign In
+                    SizedBox(height: 20),
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: 40,
+                      margin: EdgeInsets.only(top: 30.0),
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: RaisedButton(
+                        onPressed: () async {
+                          setState(() {
+                            _isLoading = true;
+                          });
+
+                          var result = await signIn(
+                              emailController.text, passwordController.text);
+
+                          if (result != null) {
+                            authSettings.updateToken(result);
+
+                            userInfo(result);
+
+                            Navigator.push(context,
+                                MaterialPageRoute(builder: (context) {
+                              return WillPopScope(
+                                onWillPop: () async => false,
+                                child: ScreenHome(),
+                              );
+                            }));
+                          }
+                        },
+                        color: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0)),
+                        child: Text('Sign In',
+                            style: TextStyle(color: Colors.white70)),
+                      ),
+                    ),
+
+                    // Register
+                    Container(
+                      width: MediaQuery.of(context).size.width,
+                      height: 40,
+                      margin: EdgeInsets.only(top: 30.0),
+                      padding: EdgeInsets.symmetric(horizontal: 20.0),
+                      child: RaisedButton(
+                        onPressed: () {
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) {
+                            return ScreenRegister();
+                          }));
+                        },
+                        color: Colors.blue,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0)),
+                        child: Text('Register',
+                            style: TextStyle(color: Colors.white70)),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       ),
     );
   }
-}
 
-// Sign Screen
-class SignIn extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      body: Column(
+  // WIDGETS ======================================================
+
+  Container textSection() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0),
+      margin: EdgeInsets.only(top: 30.0),
+      child: Column(
         children: [
-          Expanded(
-            child: Container(
-              child: Column(
-                children: [
-                  SizedBox(height: 75),
-                  Expanded(
-                    child: Text(
-                      'Local Helper',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 75,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              color: Colors.blueAccent,
-            ),
-          ),
-          Container(
-            child: LitAuth(
-              onAuthSuccess: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ScreenHome()),
-                );
-              },
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(30),
-                topRight: Radius.circular(30),
-              ),
-              color: Colors.white,
-            ),
-          ),
+          txtSection("Email", Icons.email, emailController),
+          SizedBox(height: 30.0),
+          txtSection("Password", Icons.lock, passwordController),
         ],
       ),
     );
   }
-}
 
-// Update profile settings
-class Initialize extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final AuthSettings settings = context.watch<AuthSettings>();
-    // Update the values on change
-    final litUser = context.getSignedInUser();
-    litUser.when(
-      (user) {
-        settings.updateProfile(user);
-      },
-      empty: () {},
-      initializing: () {},
+  TextFormField txtSection(
+      String title, IconData icons, TextEditingController control) {
+    return TextFormField(
+      controller: control,
+      style: TextStyle(color: Colors.white70),
+      decoration: InputDecoration(
+        hintText: title,
+        hintStyle: TextStyle(color: Colors.white70),
+        icon: Icon(icons),
+      ),
     );
-    return ScreenHome();
+  }
+
+  Container headerSection() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+      child: Text(
+        "Local Helper",
+        style: TextStyle(
+          fontSize: 50,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // ==============================================================
+
+  // FUNCTIONS ===================================================
+
+  Future userInfo(String token) async {
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+
+      http.Response response = await http
+          .get('https://localhelper-backend.herokuapp.com/api/users/me',
+              headers: headers)
+          .timeout(Duration(seconds: 3));
+
+      print(response.statusCode);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future signIn(String email, String password) async {
+    // Flutter Json
+    Map<String, String> jsonMap = {
+      'email': email,
+      'password': password,
+    };
+
+    // Encode
+    String jsonString = json.encode(jsonMap);
+
+    // Try sending the info
+    try {
+      var response = await http.post(
+        'https://localhelper-backend.herokuapp.com/api/auth/login',
+        headers: {"Content-Type": "application/json"},
+        body: jsonString,
+      );
+
+      // Error
+      if (response.statusCode == 401) {
+        setState(() {
+          _isLoading = false;
+        });
+        print(response.statusCode.toString());
+        return null;
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+        return jsonDecode(response.body)['accessToken'];
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      print(e);
+      return null;
+    }
   }
 }

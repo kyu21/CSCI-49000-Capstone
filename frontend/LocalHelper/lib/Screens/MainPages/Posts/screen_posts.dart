@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/posts_widget.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
   Widget build(BuildContext context) {
     // Providers
     Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     return GestureDetector(
       onTap: () {
@@ -35,8 +37,8 @@ class _ScreenPostsState extends State<ScreenPosts> {
           enablePullDown: true,
           enablePullUp: true,
           controller: _refreshController,
-          onLoading: _onLoading,
-          onRefresh: _onRefresh,
+          onLoading: () => _onLoading(authSettings.token),
+          onRefresh: () => _onRefresh(authSettings.token),
           header: MaterialClassicHeader(),
           child: postInfo.isNotEmpty
               ? CustomScrollView(
@@ -74,7 +76,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
     );
   }
 
-  void _onRefresh() async {
+  void _onRefresh(String token) async {
     setState(() {
       // Reset start value
       Provider.of<Settings>(context, listen: false).updateListNum(0);
@@ -83,14 +85,14 @@ class _ScreenPostsState extends State<ScreenPosts> {
       postInfo.clear();
 
       // Find Images
-      _onLoading();
+      _onLoading(token);
 
       // Trigger controller complete
       _refreshController.refreshCompleted();
     });
   }
 
-  void _onLoading() async {
+  void _onLoading(String token) async {
     // Settings
     final maxLoad = 3;
     int timeout = 10;
@@ -99,9 +101,17 @@ class _ScreenPostsState extends State<ScreenPosts> {
     int startI = Provider.of<Settings>(context, listen: false).listNum;
 
     try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+
       http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/posts')
+          .get('https://localhelper-backend.herokuapp.com/api/posts',
+              headers: headers)
           .timeout(Duration(seconds: timeout));
+
       if (response.statusCode == 200) {
         // Set state
         setState(() {

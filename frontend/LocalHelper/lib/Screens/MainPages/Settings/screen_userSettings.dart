@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
 
@@ -17,10 +18,14 @@ class _ScreenUserSettingsState extends State<ScreenUserSettings> {
   // Json info
   var info;
 
-  Future getOwnerDetails() async {
+  Future getOwnerDetails(String token) async {
     try {
-      String link = 'https://localhelper-backend.herokuapp.com/api/users/1';
-      var result = await http.get(link);
+      Map<String, String> headers = {
+        'authorization': token,
+      };
+      String link = 'https://localhelper-backend.herokuapp.com/api/users/me';
+      var result = await http.get(link, headers: headers);
+      print(result.body);
       info = jsonDecode(result.body);
     } catch (e) {
       print(e);
@@ -30,8 +35,9 @@ class _ScreenUserSettingsState extends State<ScreenUserSettings> {
 
   @override
   Widget build(BuildContext context) {
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return FutureBuilder(
-      future: getOwnerDetails(),
+      future: getOwnerDetails(authSettings.token),
       builder: (context, snapshot) {
         // When  not connected
         if (snapshot.connectionState == ConnectionState.none) {
@@ -88,11 +94,11 @@ class OwnerDone extends StatelessWidget {
   final emailController = TextEditingController();
 
   OwnerDone(this.info) {
-    firstNController.text = info['first'];
-    lastNController.text = info['last'];
-    genderController.text = info['gender'];
-    phoneController.text = info['phone'];
-    emailController.text = info['email'];
+    // firstNController.text = info['first'];
+    // lastNController.text = info['last'];
+    // genderController.text = info['gender'];
+    // phoneController.text = info['phone'];
+    // emailController.text = info['email'];
   }
 
   @override

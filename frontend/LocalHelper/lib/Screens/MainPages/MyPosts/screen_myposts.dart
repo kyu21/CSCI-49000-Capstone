@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/posts_widget.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/MyPosts/screen_createposts.dart';
@@ -25,6 +26,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
   Widget build(BuildContext context) {
     // Providers
     Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     return GestureDetector(
       onTap: () {
@@ -37,8 +39,8 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
           enablePullDown: true,
           enablePullUp: true,
           controller: _refreshController,
-          onLoading: _onLoading,
-          onRefresh: _onRefresh,
+          onLoading: () => _onLoading(authSettings.token),
+          onRefresh: () => _onRefresh(authSettings.token),
           header: MaterialClassicHeader(),
           child: CustomScrollView(
             reverse: true,
@@ -85,7 +87,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
   }
 
   // FUNCTIONS
-  void _onRefresh() async {
+  void _onRefresh(String token) async {
     setState(() {
       // Reset start value
       Provider.of<Settings>(context, listen: false).updatePersonalNum(0);
@@ -94,14 +96,14 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
       _testList.clear();
 
       // Find Personal Posts again
-      _onLoading();
+      _onLoading(token);
 
       // Trigger controller complete
       _refreshController.refreshCompleted();
     });
   }
 
-  void _onLoading() async {
+  void _onLoading(String token) async {
     // Settings
     final maxLoad = 3;
     int timeout = 10;
@@ -110,9 +112,16 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
     int startI = Provider.of<Settings>(context, listen: false).personalNum;
 
     try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+
       // Get the user info
       http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/users/1')
+          .get('https://localhelper-backend.herokuapp.com/api/posts/me',
+              headers: headers)
           .timeout(Duration(seconds: timeout));
 
       // If got a response
@@ -120,7 +129,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
         // Set state
         setState(() {
           // Save the variable in a json
-          List json = jsonDecode(response.body)['posts'];
+          List json = jsonDecode(response.body);
 
           // If there's more to the posts...
           if (startI <= json.length) {
@@ -128,16 +137,8 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
               // Add from the saved placement
               int newIndex = startI + i;
 
-              var ownerStuff = {
-                "owner": {
-                  'id': jsonDecode(response.body)['id'],
-                  'first': jsonDecode(response.body)['first'],
-                  'last': jsonDecode(response.body)['last']
-                },
-                "post": json[newIndex],
-              };
+              _testList.add(json[newIndex]);
 
-              _testList.add(ownerStuff);
               // Remember placement
               Provider.of<Settings>(context, listen: false)
                   .updatePersonalNum(newIndex + 1);
