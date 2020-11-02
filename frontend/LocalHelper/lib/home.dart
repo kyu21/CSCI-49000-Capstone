@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'Additions/settings.dart';
-import 'Screens/MainPages/Messages/screen_messages.dart';
 import 'Screens/MainPages/MyPosts/screen_myposts.dart';
 import 'Screens/MainPages/Posts/screen_posts.dart';
 import 'Screens/MainPages/Settings/screen_settings.dart';
+import 'Screens/MainPages/Users/screen_users.dart';
 
 /*
   This is the main module that holds all the screens in a list.
@@ -26,7 +26,7 @@ class _ScreenHomeState extends State<ScreenHome> {
     // Clear the list and add the pages
     pageList.clear();
     pageList.add(ScreenPosts());
-    pageList.add(ScreenMessages());
+    pageList.add(ScreenUsers());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSettings());
     super.initState();
@@ -62,7 +62,7 @@ class _ScreenHomeState extends State<ScreenHome> {
             icon: Icon(Icons.local_activity),
           ),
           BottomNavigationBarItem(
-            label: 'Messages',
+            label: 'Users',
             icon: Icon(Icons.message),
           ),
           BottomNavigationBarItem(

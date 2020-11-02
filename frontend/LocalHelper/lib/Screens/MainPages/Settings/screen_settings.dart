@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
+import 'package:localhelper/Screens/MainPages/Settings/screen_userSettings.dart';
 import 'package:localhelper/initialize.dart';
 import 'package:provider/provider.dart';
 import 'package:lit_firebase_auth/lit_firebase_auth.dart';
@@ -18,8 +19,10 @@ class ScreenSettings extends StatelessWidget {
         child: Column(
           verticalDirection: VerticalDirection.up,
           children: [
+            // Sign Out
             FlatButton(
               height: 60,
+              minWidth: double.infinity,
               onPressed: () {
                 context.signOut();
                 Navigator.pushAndRemoveUntil(
@@ -36,6 +39,26 @@ class ScreenSettings extends StatelessWidget {
                 ),
               ),
             ),
+
+            FlatButton(
+              height: 60,
+              minWidth: double.infinity,
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return ScreenUserSettings();
+                }));
+              },
+              child: Text(
+                'User Settings',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+
+            // Dark Mode
             SwitchListTile(
               value: settings.darkMode,
               onChanged: (value) => settings.changeDark(),
@@ -48,6 +71,8 @@ class ScreenSettings extends StatelessWidget {
                 ),
               ),
             ),
+
+            // User Name
             Expanded(
               child: Container(
                 child: Text(

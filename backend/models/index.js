@@ -13,7 +13,7 @@ const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
         native: true,
     },
     define: {
-        timestamps: false,
+        timestamps: true,
     }
 });
 
