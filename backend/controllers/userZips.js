@@ -120,6 +120,14 @@ async function getAllUsersforZip(req, res) {
 
 async function bulkEditUserZips(req, res) {
 	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
+
+		// 3 cases
+		// 1 - all new ()
 	} catch (err) {
 		console.log(err);
 	}
