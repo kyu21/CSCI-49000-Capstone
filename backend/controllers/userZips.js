@@ -15,6 +15,7 @@ const userZipsController = {
 	insertElement: insertElement,
 	editElement: editElement,
 	deleteElement: deleteElement,
+	getAllZipsforUser: getAllZipsforUser,
 };
 
 async function getAllElements(req, res) {
@@ -69,5 +70,26 @@ async function deleteElement(req, res) {
 		console.log(err);
 	}
 }
+
+async function getAllZipsforUser(req, res) {
+	try {
+		const { userId } = req.params;
+
+		let zips = await db.userZips.findAll({
+			raw: true,
+			where: { userId: userId },
+		});
+		let zipIds = zips.map((z) => z.zipId);
+		zips = await db.zips.findAll({ raw: true, where: zipIds });
+
+		res.status(200).json(zips);
+	} catch (err) {
+		console.log(err);
+	}
+}
+// /user
+// /zip
+// mass add
+// mass edit
 
 module.exports = userZipsController;

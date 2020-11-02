@@ -5,9 +5,8 @@ const router = express.Router();
 const userRouter = require("./users");
 const userZipsRouter = require("./userZips");
 const userLanguagesRouter = require("./userLanguages");
-const userPostsRouter = require("./userPosts")
-const messagesRouter = require("./messages")
-const convosRouter = require("./convos")
+const messagesRouter = require("./messages");
+const convosRouter = require("./convos");
 const postsRouter = require("./posts");
 const languagesRouter = require("./languages");
 const zipRouter = require("./zips");
@@ -17,8 +16,8 @@ const authRouter = require("./auth");
 router.use("/users", userRouter);
 router.use("/userZips", userZipsRouter);
 router.use("/userLanguages", userLanguagesRouter);
-router.use("/messages", messagesRouter)
-router.use("/convos", convosRouter)
+router.use("/messages", messagesRouter);
+router.use("/convos", convosRouter);
 router.use("/posts", postsRouter);
 router.use("/languages", languagesRouter);
 router.use("/zips", zipRouter);

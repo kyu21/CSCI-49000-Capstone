@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const auth = require("../utils/auth");
+
 const userLanguagesController = require("../controllers/userLanguages");
 
 router.route("/").get(auth, userLanguagesController.getAllElements);
