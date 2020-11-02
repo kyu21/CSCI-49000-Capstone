@@ -69,6 +69,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
                       padding: EdgeInsets.symmetric(horizontal: 20.0),
                       child: RaisedButton(
                         onPressed: () async {
+                          setState(() {
+                            _isLoading = true;
+                          });
+
                           var result = await signIn(
                               emailController.text, passwordController.text);
 
@@ -87,7 +91,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                           }
 
                           setState(() {
-                            _isLoading = true;
+                            _isLoading = false;
                           });
                         },
                         color: Colors.blue,
