@@ -27,6 +27,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
   TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _hidePass = true;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +140,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
         children: [
           txtSection("Email", Icons.email, emailController),
           SizedBox(height: 30.0),
-          txtSection("Password", Icons.lock, passwordController),
+          passSection("Password", Icons.lock, passwordController),
         ],
       ),
     );
@@ -154,6 +155,29 @@ class _ScreenLoginState extends State<ScreenLogin> {
         hintText: title,
         hintStyle: TextStyle(color: Colors.white70),
         icon: Icon(icons),
+      ),
+    );
+  }
+
+  TextFormField passSection(
+      String title, IconData icons, TextEditingController control) {
+    return TextFormField(
+      obscureText: _hidePass,
+      controller: control,
+      style: TextStyle(color: Colors.white70),
+      decoration: InputDecoration(
+        hintText: title,
+        hintStyle: TextStyle(color: Colors.white70),
+        icon: Icon(icons),
+        suffixIcon: IconButton(
+          icon: Icon(Icons.remove_red_eye),
+          color: _hidePass ? Colors.blue : Colors.grey,
+          onPressed: () {
+            setState(() {
+              _hidePass = !_hidePass;
+            });
+          },
+        ),
       ),
     );
   }
