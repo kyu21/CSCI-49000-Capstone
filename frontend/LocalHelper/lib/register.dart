@@ -132,7 +132,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
         icon: Icon(icons),
         suffixIcon: IconButton(
           icon: Icon(Icons.remove_red_eye),
-          color: _hidePass ? Colors.blue : Colors.grey,
+          color: _hidePass ? Colors.black87 : Colors.grey,
           onPressed: () {
             setState(() {
               _hidePass = !_hidePass;

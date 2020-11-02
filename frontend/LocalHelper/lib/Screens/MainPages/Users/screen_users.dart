@@ -38,7 +38,7 @@ class _ScreenUsersState extends State<ScreenUsers> {
 
   void _onLoading(String token) async {
     // Settings
-    final maxLoad = 3;
+    final maxLoad = 10;
     int timeout = 10;
 
     // Starting index

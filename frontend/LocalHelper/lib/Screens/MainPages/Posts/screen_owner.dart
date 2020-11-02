@@ -29,9 +29,8 @@ class _ScreenOwnerState extends State<ScreenOwner> {
           '/' +
           widget.ownerId.toString();
       var result = await http.get(link, headers: headers);
-      if (result.body.isNotEmpty) {
-        info = jsonDecode(result.body)[0];
-      }
+      print(result.body);
+      info = jsonDecode(result.body);
     } catch (e) {
       print(e);
       Navigator.pop(context);
@@ -54,8 +53,7 @@ class _ScreenOwnerState extends State<ScreenOwner> {
 
           // When finished
         } else if (snapshot.connectionState == ConnectionState.done) {
-          // return OwnerDone(info);
-          return OwnerNone();
+          return OwnerDone(info);
         }
 
         // Failsafe
@@ -170,13 +168,21 @@ class OwnerDone extends StatelessWidget {
           ),
           Container(
             padding: EdgeInsets.all(10),
-            child: Text(
-              info['zips'][0]['zip'] + ' ' + info['zips'][0]['name'],
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-              ),
-            ),
+            child: info['zips'].length > 0
+                ? Text(
+                    info['zips'][0]['zip'] + ' ' + info['zips'][0]['name'],
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                    ),
+                  )
+                : Text(
+                    'None',
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                    ),
+                  ),
           ),
 
           // Languages
@@ -230,13 +236,17 @@ class OwnerDone extends StatelessWidget {
               shrinkWrap: true,
               itemCount: info['posts'].length,
               itemBuilder: (context, index) {
-                return Text(
-                  info['posts'][index]['title'],
-                  style: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                  ),
-                );
+                if (info['posts'].length > 0) {
+                  return Text(
+                    info['posts'][index]['title'],
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                    ),
+                  );
+                } else {
+                  return Text('None');
+                }
               },
             ),
           ),

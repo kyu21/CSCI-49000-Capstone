@@ -79,9 +79,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
                           if (result != null) {
                             authSettings.updateToken(result);
-
-                            await userInfo(result);
-
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
                               return WillPopScope(
@@ -171,7 +168,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
         icon: Icon(icons),
         suffixIcon: IconButton(
           icon: Icon(Icons.remove_red_eye),
-          color: _hidePass ? Colors.blue : Colors.grey,
+          color: _hidePass ? Colors.black87 : Colors.grey,
           onPressed: () {
             setState(() {
               _hidePass = !_hidePass;
@@ -200,25 +197,25 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   // FUNCTIONS ===================================================
 
-  Future userInfo(String token) async {
-    try {
-      Map<String, String> headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'authorization': token,
-      };
+  // Future userInfo(String token) async {
+  //   try {
+  //     Map<String, String> headers = {
+  //       'content-type': 'application/json',
+  //       'accept': 'application/json',
+  //       'authorization': token,
+  //     };
 
-      http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/users/me',
-              headers: headers)
-          .timeout(Duration(seconds: 5));
+  //     http.Response response = await http
+  //         .get('https://localhelper-backend.herokuapp.com/api/users/me',
+  //             headers: headers)
+  //         .timeout(Duration(seconds: 5));
 
-      print(response.statusCode);
-      print(response.body);
-    } catch (e) {
-      print(e);
-    }
-  }
+  //     print(response.statusCode);
+  //     print(response.body);
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   Future signIn(String email, String password) async {
     // Flutter Json

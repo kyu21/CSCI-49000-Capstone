@@ -1,6 +1,7 @@
 // Screen for viewing the posts in full screen.
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:localhelper/Additions/authSettings.dart';
 import 'dart:convert';
 
 import 'package:localhelper/Additions/settings.dart';
@@ -20,13 +21,18 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
   var info;
 
   // Get details
-  Future getOwnerDetails() async {
+  Future getOwnerDetails(String token) async {
     try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
       String link = 'https://localhelper-backend.herokuapp.com/api/posts' +
           '/' +
           widget.ownerId.toString();
-      var result = await http.get(link);
-      info = jsonDecode(result.body);
+      var result = await http.get(link, headers: headers);
+      info = jsonDecode(result.body)[0];
     } catch (e) {
       print(e);
       Navigator.pop(context);
@@ -35,8 +41,9 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
 
   @override
   Widget build(BuildContext context) {
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return FutureBuilder(
-      future: getOwnerDetails(),
+      future: getOwnerDetails(authSettings.token),
       builder: (context, mywidget) {
         // When  not connected
         if (mywidget.connectionState == ConnectionState.none) {
@@ -63,7 +70,7 @@ class FullNone extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Owner not found!'),
+        title: Text('Post Not Found!'),
       ),
     );
   }
@@ -90,7 +97,7 @@ class FullDone extends StatelessWidget {
 
     final title = info['post']['title'];
     final ownerName = info['owner']['first'] + ' ' + info['owner']['last'];
-    final date = info['post']['dateCreated'];
+    final date = info['post']['dateCreated'].toString();
     final description = info['post']['description'];
 
     return Scaffold(
