@@ -1,9 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const languageController = require("../controllers/languages");
+const auth = require("../utils/auth");
 
-router.route("/").get(languageController.getAllLanguages);
-router.route("/").post(languageController.createLanguage);
-router.route("/:languageId").get(languageController.getLanguageById);
+const languagesController = require("../controllers/languages");
+
+router.route("/").get(auth, languagesController.getAllElements);
+router.route("/:id").get(auth, languagesController.getElement);
+router.route("/").post(auth, languagesController.insertElement);
+router.route("/:id").put(auth, languagesController.editElement);
+router.route("/:id").delete(auth, languagesController.deleteElement);
 
 module.exports = router;
