@@ -1,5 +1,5 @@
 const db = require("../models");
-const modelName = "userLanguages";
+const modelName = "zips";
 
 const {
 	getAll,
@@ -9,7 +9,7 @@ const {
 	deleteOne,
 } = require("../utils/crud.js");
 
-const userLanguagesController = {
+const zipsController = {
 	getAllElements: getAllElements,
 	getElement: getElement,
 	insertElement: insertElement,
@@ -70,4 +70,4 @@ async function deleteElement(req, res) {
 	}
 }
 
-module.exports = userLanguagesController;
+module.exports = zipsController;

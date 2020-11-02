@@ -1,122 +1,186 @@
 const db = require("../models");
-const Op = db.Sequelize.Op;
+
+const decodeJwt = require("../utils/decodeJwt");
+var bcrypt = require("bcrypt");
+const saltRounds = 10;
 
 const userController = {
-    getAllUsers: getAllUsers,
-    createUser: createUser,
-    getUserById: getUserById
+	getAllUsers: getAllUsers,
+	getUserById: getUserById,
+	getLoggedInUser: getLoggedInUser,
+	editUser: editUser,
+	deleteUser: deleteUser,
 };
 
 async function getAllUsers(req, res, next) {
-    try {
-        const users = await db.users.findAll();
-        res.status(200).json(users);
-    } catch (err) {
-        console.log(err);
-    }
+	try {
+		const users = await db.users.findAll();
+		res.status(200).json(users);
+	} catch (err) {
+		console.log(err);
+	}
 }
 
-async function createUser(req, res, next) {
-    try {
-        let newUser = req.body;
-        const userExists = await db.users.findOne({
-            where: {
-                name: newUser.name
-            },
-        });
-        if (!userExists) {
-            await db.users.create(newUser);
-            res.status(200).json({
-                code: "Success",
-                message: "User created"
-            });
-        } else {
-            res.status(401).json({
-                code: "error",
-                message: "Email exists."
-            });
-        }
-    } catch (err) {
-        console.log(err);
-        res.status(401).json({
-            code: "error",
-            message: "Error with creating account. Please retry.",
-        });
-    }
+async function getDetailedUserInfo(userId, user) {
+	try {
+		// zips
+		const allUserZips = await db.userZips.findAll({
+			where: {
+				userId: userId,
+			},
+		});
+		const allZipsInfo = await Promise.all(
+			allUserZips.map(
+				async (zipEle) =>
+					await db.zips.findOne({
+						raw: true,
+						where: {
+							id: zipEle.zipId,
+						},
+					})
+			)
+		);
+
+		// languages
+		const allUserLang = await db.userLanguages.findAll({
+			where: {
+				userId: userId,
+			},
+		});
+		const allLangInfo = await Promise.all(
+			allUserLang.map(
+				async (langEle) =>
+					await db.languages.findOne({
+						raw: true,
+						where: {
+							id: langEle.languageId,
+						},
+					})
+			)
+		);
+
+		// posts
+		const allUserPosts = await db.userPosts.findAll({
+			where: {
+				userId: userId,
+			},
+		});
+		const allPosts = await Promise.all(
+			allUserPosts.map(
+				async (postEle) =>
+					await db.posts.findOne({
+						raw: true,
+						where: {
+							id: postEle.postId,
+						},
+					})
+			)
+		);
+
+		user["zips"] = allZipsInfo;
+		user["languages"] = allLangInfo;
+		user["posts"] = allPosts;
+
+		return user;
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function getLoggedInUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
+
+		user = await getDetailedUserInfo(currentUser.id, currentUser);
+		res.status(200).json(user);
+	} catch (err) {
+		console.log(err);
+	}
 }
 
 async function getUserById(req, res, next) {
-    try {
-        const {
-            userId
-        } = req.params;
+	try {
+		const { userId } = req.params;
 
-        var user = await db.users.findOne({
-            raw: true,
-            where: {
-                id: userId
-            }
-        });
+		var user = await db.users.findOne({
+			raw: true,
+			where: {
+				id: userId,
+			},
+		});
 
-        // zips
-        const allUserZips = await db.userZips.findAll({
-            where: {
-                userId: userId
-            }
-        });
-        const allZipsInfo = await Promise.all(
-            allUserZips.map(async (zipEle) => (
-                await db.zips.findOne({
-                    raw: true,
-                    where: {
-                        id: zipEle.zipId
-                    }
-                })
-            ))
-        );
+		user = await getDetailedUserInfo(userId, user);
 
-        // languages
-        const allUserLang = await db.userLanguages.findAll({
-            where: {
-                userId: userId
-            }
-        });
-        const allLangInfo = await Promise.all(
-            allUserLang.map(async (langEle) => (
-                await db.languages.findOne({
-                    raw: true,
-                    where: {
-                        id: langEle.languageId
-                    }
-                })
-            ))
-        );
+		res.status(200).json(user);
+	} catch (err) {
+		console.log(err);
+	}
+}
 
-        // posts
-        const allUserPosts = await db.userPosts.findAll({
-            where: {
-                userId: userId
-            }
-        });
-        const allPosts = await Promise.all(
-            allUserPosts.map(async (postEle) => (
-                await db.posts.findOne({
-                    raw: true,
-                    where: {
-                        id: postEle.postId
-                    }
-                })
-            ))
-        );
+async function editUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
 
-        user["zips"] = allZipsInfo
-        user["languages"] = allLangInfo
-        user["posts"] = allPosts
+		const validKeys = [
+			"first",
+			"last",
+			"gender",
+			"phone",
+			"email",
+			"password",
+		];
+		let newInfo = {};
+		for (let key in req.body) {
+			if (validKeys.indexOf(key) >= 0) {
+				newInfo[key] = req.body[key];
+				if (key === "password") {
+					let hashedPassword = await bcrypt.hash(
+						req.body[key],
+						saltRounds
+					);
+					newInfo[key] = hashedPassword;
+				}
+			}
+		}
 
-        res.status(200).json(user)
-    } catch (err) {
-        console.log(err);
-    }
+		let [_, users] = await db.users.update(newInfo, {
+			where: { id: currentUser.id },
+			returning: true,
+			raw: true,
+		});
+
+		res.status(200).json(users[0]);
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function deleteUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
+
+		await db.users.destroy({
+			where: { id: currentUser.id },
+		});
+
+		res.status(200).json({
+			code: "Success",
+		});
+	} catch (err) {
+		console.log(err);
+	}
 }
 
 module.exports = userController;
