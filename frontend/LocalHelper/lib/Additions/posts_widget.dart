@@ -25,7 +25,7 @@ class Posts extends StatelessWidget {
       padding: const EdgeInsets.all(8.0),
       child: Container(
         decoration: BoxDecoration(
-          color: settings.darkMode ? Colors.white : Colors.black,
+          color: settings.darkMode ? Colors.grey[900] : Colors.blue[600],
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(rad),
             topRight: Radius.circular(rad),
@@ -59,9 +59,7 @@ class Posts extends StatelessWidget {
                                 ' ' +
                                 info['owner']['last'],
                             style: TextStyle(
-                              color: settings.darkMode
-                                  ? Colors.black
-                                  : Colors.white,
+                              color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -70,13 +68,31 @@ class Posts extends StatelessWidget {
                           Text(
                             info['post']['createdAt'],
                             style: TextStyle(
-                              color: settings.darkMode
-                                  ? Colors.black
-                                  : Colors.white,
+                              color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+
+                          // Requests
+                          SizedBox(height: 5),
+                          info['post']['is_request']
+                              ? Text(
+                                  'Request: Yes',
+                                  style: TextStyle(
+                                    color: Colors.lightGreen,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : Text(
+                                  'Request: No',
+                                  style: TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                         ],
                       ),
                     ),
@@ -89,8 +105,7 @@ class Posts extends StatelessWidget {
                       child: Text(
                         info['post']['title'],
                         style: TextStyle(
-                          color:
-                              settings.darkMode ? Colors.black : Colors.white,
+                          color: Colors.white,
                           fontSize: 23,
                           fontWeight: FontWeight.bold,
                         ),

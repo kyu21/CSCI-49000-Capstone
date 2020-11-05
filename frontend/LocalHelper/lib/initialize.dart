@@ -79,6 +79,9 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
                           if (result != null) {
                             authSettings.updateToken(result);
+
+                            await userInfo(result, authSettings);
+
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
                               return WillPopScope(
@@ -197,25 +200,39 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
   // FUNCTIONS ===================================================
 
-  // Future userInfo(String token) async {
-  //   try {
-  //     Map<String, String> headers = {
-  //       'content-type': 'application/json',
-  //       'accept': 'application/json',
-  //       'authorization': token,
-  //     };
+  Future userInfo(String token, AuthSettings authSettings) async {
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
 
-  //     http.Response response = await http
-  //         .get('https://localhelper-backend.herokuapp.com/api/users/me',
-  //             headers: headers)
-  //         .timeout(Duration(seconds: 5));
+      http.Response response = await http
+          .get('https://localhelper-backend.herokuapp.com/api/users/me',
+              headers: headers)
+          .timeout(Duration(seconds: 5));
 
-  //     print(response.statusCode);
-  //     print(response.body);
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
+      var json = jsonDecode(response.body);
+
+      // Update player info
+      int _id = json['id'];
+      String _first = json['first'];
+      String _last = json['last'];
+      String _gender = json['gender'];
+      String _phone = json['phone'];
+      String _email = json['email'];
+
+      authSettings.ownerId = _id;
+      authSettings.first = _first;
+      authSettings.last = _last;
+      authSettings.gender = _gender;
+      authSettings.phone = _phone;
+      authSettings.email = _email;
+    } catch (e) {
+      print(e);
+    }
+  }
 
   Future signIn(String email, String password) async {
     // Flutter Json

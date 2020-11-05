@@ -29,7 +29,6 @@ class _ScreenOwnerState extends State<ScreenOwner> {
           '/' +
           widget.ownerId.toString();
       var result = await http.get(link, headers: headers);
-      print(result.body);
       info = jsonDecode(result.body);
     } catch (e) {
       print(e);
@@ -197,23 +196,33 @@ class OwnerDone extends StatelessWidget {
               ),
             ),
           ),
+
           Container(
             padding: EdgeInsets.all(10),
-            child: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              itemCount: info['languages'].length,
-              itemBuilder: (context, index) {
-                return Text(
-                  info['languages'][index]['name'],
-                  style: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
+            child: info['languages'].length > 0
+                ? ListView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: info['languages'].length,
+                    itemBuilder: (context, index) {
+                      return Text(
+                        info['languages'][index]['name'],
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                          fontSize: 30,
+                        ),
+                      );
+                    },
+                  )
+                : Text(
+                    'None',
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                    ),
                   ),
-                );
-              },
-            ),
           ),
 
           // Posts

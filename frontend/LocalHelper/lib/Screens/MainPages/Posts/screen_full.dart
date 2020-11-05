@@ -93,12 +93,20 @@ class FullDone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //
     Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
+    // Names
     final title = info['post']['title'];
     final ownerName = info['owner']['first'] + ' ' + info['owner']['last'];
     final date = info['post']['dateCreated'].toString();
     final description = info['post']['description'];
+    final ownerId = info['owner']['id'];
+    final postId = info['post']['id'];
+
+    // Owner checker
+    final bool isOwners = ownerId == authSettings.ownerId ? true : false;
 
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
@@ -111,12 +119,14 @@ class FullDone extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          title,
-          style: TextStyle(
-            color: settings.darkMode ? Colors.white : Colors.black,
-            fontSize: 50,
-            fontWeight: FontWeight.bold,
+        title: FittedBox(
+          fit: BoxFit.contain,
+          child: Text(
+            title,
+            style: TextStyle(
+              color: settings.darkMode ? Colors.white : Colors.black,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),
@@ -144,14 +154,14 @@ class FullDone extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      'Date: ' + date,
-                      style: TextStyle(
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    // Text(
+                    //   'Date: ' + date,
+                    //   style: TextStyle(
+                    //     color: settings.darkMode ? Colors.white : Colors.black,
+                    //     fontSize: 15,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -196,6 +206,39 @@ class FullDone extends StatelessWidget {
               ),
             ),
           ),
+
+          if (isOwners)
+            // Delete Posts
+            FlatButton(
+              color: Colors.red[300],
+              height: 80,
+              minWidth: double.infinity,
+              onPressed: () async {
+                try {
+                  Map<String, String> headers = {
+                    'content-type': 'application/json',
+                    'accept': 'application/json',
+                    'authorization': authSettings.token,
+                  };
+                  String link =
+                      'https://localhelper-backend.herokuapp.com/api/posts' +
+                          '/' +
+                          postId.toString();
+                  var result = await http.delete(link, headers: headers);
+                  if (result.statusCode == 200) Navigator.pop(context);
+                } catch (e) {
+                  print(e);
+                  Navigator.pop(context);
+                }
+              },
+              child: Text(
+                'Delete',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
         ],
       ),
     );

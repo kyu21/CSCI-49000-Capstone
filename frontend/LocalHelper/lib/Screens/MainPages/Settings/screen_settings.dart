@@ -12,6 +12,12 @@ class ScreenSettings extends StatelessWidget {
     final Settings settings = Provider.of<Settings>(context);
     final AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
+    final _first = authSettings.first;
+    final _last = authSettings.last;
+    final _gender = authSettings.gender;
+    final _phone = authSettings.phone;
+    final _email = authSettings.email;
+
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
       body: SafeArea(
@@ -49,7 +55,7 @@ class ScreenSettings extends StatelessWidget {
                 }));
               },
               child: Text(
-                'User Settings',
+                'Edit User Info',
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.bold,
@@ -75,14 +81,54 @@ class ScreenSettings extends StatelessWidget {
             // User Name
             Expanded(
               child: Container(
-                child: Text(
-                  authSettings.token != null ? authSettings.token : 'None',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      _first + ' ' + _last,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+
+                    // Gender
+                    SizedBox(height: 20),
+                    Text(
+                      'Gender: ' + _gender,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+
+                    // Phone
+                    SizedBox(height: 20),
+                    Text(
+                      'Phone: ' + _phone,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+
+                    // Email
+                    SizedBox(height: 20),
+                    Text(
+                      'Email: ' + _email,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

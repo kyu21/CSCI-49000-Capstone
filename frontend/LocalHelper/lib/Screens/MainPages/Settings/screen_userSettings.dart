@@ -25,7 +25,6 @@ class _ScreenUserSettingsState extends State<ScreenUserSettings> {
       };
       String link = 'https://localhelper-backend.herokuapp.com/api/users/me';
       var result = await http.get(link, headers: headers);
-      print(result.body);
       info = jsonDecode(result.body);
     } catch (e) {
       print(e);
@@ -82,8 +81,16 @@ class OwnerWait extends StatelessWidget {
   }
 }
 
-class OwnerDone extends StatelessWidget {
+class OwnerDone extends StatefulWidget {
   // Json
+  final info;
+  OwnerDone(this.info);
+  @override
+  _OwnerDoneState createState() => _OwnerDoneState(this.info);
+}
+
+class _OwnerDoneState extends State<OwnerDone> {
+  // Save json info
   final info;
 
   // Controllers
@@ -93,17 +100,21 @@ class OwnerDone extends StatelessWidget {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
 
-  OwnerDone(this.info) {
-    // firstNController.text = info['first'];
-    // lastNController.text = info['last'];
-    // genderController.text = info['gender'];
-    // phoneController.text = info['phone'];
-    // emailController.text = info['email'];
+  _OwnerDoneState(this.info) {
+    firstNController.text = info['first'];
+    lastNController.text = info['last'];
+    genderController.text = info['gender'];
+    phoneController.text = info['phone'];
+    emailController.text = info['email'];
   }
+
+  // Loading
+  bool _loading = false;
 
   @override
   Widget build(BuildContext context) {
     Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -257,19 +268,61 @@ class OwnerDone extends StatelessWidget {
             FlatButton(
               height: 60,
               minWidth: double.infinity,
-              onPressed: () {
-                // NEED TO ADD POST API HERE !!!
+              onPressed: () async {
+                try {
+                  // Put body
+                  Map<String, dynamic> jsonMap = {
+                    'first': firstNController.text,
+                    'last': lastNController.text,
+                    'gender': genderController.text,
+                    'phone': phoneController.text,
+                    'email': emailController.text,
+                  };
 
-                Navigator.pop(context);
+                  // Encode
+                  String jsonString = json.encode(jsonMap);
+
+                  // Header
+                  Map<String, String> headers = {
+                    'authorization': authSettings.token,
+                    "Content-Type": "application/json",
+                  };
+                  String link =
+                      'https://localhelper-backend.herokuapp.com/api/users';
+                  var result =
+                      await http.put(link, headers: headers, body: jsonString);
+                  print(result.statusCode);
+                  if (result.statusCode == 200) {
+                    // Update info
+                    authSettings.updateFirst(jsonMap['first']);
+                    authSettings.updateLast(jsonMap['last']);
+                    authSettings.updateGender(jsonMap['gender']);
+                    authSettings.updatePhone(jsonMap['phone']);
+                    authSettings.updateEmail(jsonMap['email']);
+
+                    setState(() {
+                      _loading = false;
+                    });
+                    Navigator.pop(context);
+                  }
+                } catch (e) {
+                  print(e);
+                }
+
+                setState(() {
+                  _loading = false;
+                });
               },
-              child: Text(
-                'Save',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-              ),
+              child: _loading
+                  ? CircularProgressIndicator()
+                  : Text(
+                      'Save',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
             ),
           ],
         ),
