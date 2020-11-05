@@ -10,6 +10,7 @@ class _ScreenConvoState extends State<ScreenConvo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Messages'),
       ),
     );
