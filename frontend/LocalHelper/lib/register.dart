@@ -15,10 +15,13 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController conPasswordController = TextEditingController();
 
   // Lock
   bool _isLoading = false;
   bool _hidePass = true;
+  bool _hideConPass = true;
+  bool _notSame = false;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +53,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                     textSection(),
 
                     // Submit
-                    SizedBox(height: 20),
+                    SizedBox(height: 5),
                     Container(
                       width: MediaQuery.of(context).size.width,
                       height: 40,
@@ -102,6 +105,8 @@ class _ScreenRegisterState extends State<ScreenRegister> {
           txtSection("Email", Icons.email, emailController),
           SizedBox(height: 30.0),
           passSection("Password", Icons.lock, passwordController),
+          SizedBox(height: 30.0),
+          passConSection("Confirm Password", Icons.lock, conPasswordController),
         ],
       ),
     );
@@ -125,7 +130,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     return TextFormField(
       obscureText: _hidePass,
       controller: control,
-      style: TextStyle(color: Colors.white70),
+      style: TextStyle(color: _notSame ? Colors.red : Colors.white70),
       decoration: InputDecoration(
         hintText: title,
         hintStyle: TextStyle(color: Colors.white70),
@@ -136,6 +141,29 @@ class _ScreenRegisterState extends State<ScreenRegister> {
           onPressed: () {
             setState(() {
               _hidePass = !_hidePass;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  TextFormField passConSection(
+      String title, IconData icons, TextEditingController control) {
+    return TextFormField(
+      obscureText: _hideConPass,
+      controller: control,
+      style: TextStyle(color: _notSame ? Colors.red : Colors.white70),
+      decoration: InputDecoration(
+        hintText: title,
+        hintStyle: TextStyle(color: Colors.white70),
+        icon: Icon(icons),
+        suffixIcon: IconButton(
+          icon: Icon(Icons.remove_red_eye),
+          color: _hidePass ? Colors.black87 : Colors.grey,
+          onPressed: () {
+            setState(() {
+              _hideConPass = !_hideConPass;
             });
           },
         ),
@@ -163,14 +191,17 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
   void submitInfo(String first, String last, String gender, String phone,
       String email, String password) async {
-    if (firstController.text.isEmpty ||
-        lastController.text.isEmpty ||
-        genderController.text.isEmpty ||
-        phoneController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        passwordController.text.isEmpty) {
+    if ((firstController.text.isEmpty ||
+            lastController.text.isEmpty ||
+            genderController.text.isEmpty ||
+            phoneController.text.isEmpty ||
+            emailController.text.isEmpty ||
+            passwordController.text.isEmpty) ||
+        (passwordController.text != conPasswordController.text)) {
       setState(() {
         _isLoading = false;
+        if (passwordController.text != conPasswordController.text)
+          _notSame = true;
       });
       print('Empty Strings');
     } else {

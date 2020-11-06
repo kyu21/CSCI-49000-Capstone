@@ -273,70 +273,162 @@ class _OwnerDoneState extends State<OwnerDone> {
             ),
 
             // Save
-            // Sign Out
             SizedBox(height: 40),
-            FlatButton(
-              height: 60,
-              minWidth: double.infinity,
-              onPressed: () async {
-                try {
-                  // Put body
-                  Map<String, dynamic> jsonMap = {
-                    'first': firstNController.text,
-                    'last': lastNController.text,
-                    'gender': genderController.text,
-                    'phone': phoneController.text,
-                    'email': emailController.text,
-                  };
-
-                  // Encode
-                  String jsonString = json.encode(jsonMap);
-
-                  // Header
-                  Map<String, String> headers = {
-                    'authorization': authSettings.token,
-                    "Content-Type": "application/json",
-                  };
-                  String link =
-                      'https://localhelper-backend.herokuapp.com/api/users';
-                  var result =
-                      await http.put(link, headers: headers, body: jsonString);
-                  print(result.statusCode);
-                  if (result.statusCode == 200) {
-                    // Update info
-                    authSettings.updateFirst(jsonMap['first']);
-                    authSettings.updateLast(jsonMap['last']);
-                    authSettings.updateGender(jsonMap['gender']);
-                    authSettings.updatePhone(jsonMap['phone']);
-                    authSettings.updateEmail(jsonMap['email']);
-
-                    setState(() {
-                      _loading = false;
-                    });
-                    Navigator.pop(context);
-                  }
-                } catch (e) {
-                  print(e);
-                }
-
-                setState(() {
-                  _loading = false;
-                });
-              },
-              child: _loading
-                  ? CircularProgressIndicator()
-                  : Text(
-                      'Save',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
+            saveButton(settings, authSettings),
+            Expanded(
+              child: Container(
+                child: Column(
+                  verticalDirection: VerticalDirection.up,
+                  children: [
+                    deleteButton(settings, authSettings),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  // Save button function
+  Widget saveButton(Settings settings, AuthSettings authSettings) {
+    return FlatButton(
+      height: 60,
+      minWidth: double.infinity,
+      onPressed: () async {
+        try {
+          // Put body
+          Map<String, dynamic> jsonMap = {
+            'first': firstNController.text,
+            'last': lastNController.text,
+            'gender': genderController.text,
+            'phone': phoneController.text,
+            'email': emailController.text,
+          };
+
+          // Encode
+          String jsonString = json.encode(jsonMap);
+
+          // Header
+          Map<String, String> headers = {
+            'authorization': authSettings.token,
+            "Content-Type": "application/json",
+          };
+          String link = 'https://localhelper-backend.herokuapp.com/api/users';
+          var result = await http.put(link, headers: headers, body: jsonString);
+          print(result.statusCode);
+          if (result.statusCode == 200) {
+            // Update info
+            authSettings.updateFirst(jsonMap['first']);
+            authSettings.updateLast(jsonMap['last']);
+            authSettings.updateGender(jsonMap['gender']);
+            authSettings.updatePhone(jsonMap['phone']);
+            authSettings.updateEmail(jsonMap['email']);
+
+            setState(() {
+              _loading = false;
+            });
+            Navigator.pop(context);
+          }
+        } catch (e) {
+          print(e);
+        }
+
+        setState(() {
+          _loading = false;
+        });
+      },
+      child: _loading
+          ? CircularProgressIndicator()
+          : Text(
+              'Save',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: settings.darkMode ? Colors.white : Colors.black,
+              ),
+            ),
+    );
+  }
+
+  // Save button function
+  Widget deleteButton(Settings settings, AuthSettings authSettings) {
+    return FlatButton(
+      color: Colors.red[300],
+      height: 80,
+      minWidth: double.infinity,
+      onPressed: () async {
+        bool answer = await _showMyDialog();
+
+        if (answer) {
+          try {
+            // Header
+            Map<String, String> headers = {
+              'authorization': authSettings.token,
+              "Content-Type": "application/json",
+            };
+            String link = 'https://localhelper-backend.herokuapp.com/api/users';
+            var result = await http.delete(link, headers: headers);
+            print(result.statusCode);
+            if (result.statusCode == 200) {
+              setState(() {
+                _loading = false;
+              });
+              Navigator.of(context).popUntil((route) => route.isFirst);
+            }
+          } catch (e) {
+            print(e);
+          }
+
+          setState(() {
+            _loading = false;
+          });
+        }
+      },
+      child: _loading
+          ? CircularProgressIndicator()
+          : Text(
+              'Delete Account',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: settings.darkMode ? Colors.white : Colors.black,
+              ),
+            ),
+    );
+  }
+
+  Future<bool> _showMyDialog() async {
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete User?'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('This action is permanent!'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

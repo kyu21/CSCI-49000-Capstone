@@ -48,31 +48,43 @@ class Posts extends StatelessWidget {
                   // Name / Date
                   GestureDetector(
                     onTap: () async {
-                      await Navigator.push(context,
-                          MaterialPageRoute(builder: (context) {
-                        final ownerId = info['owner']['id'];
-                        if (ownerId != authSettings.ownerId)
-                          return ScreenOwner(ownerId);
-                        else
-                          return ScreenUserSettings();
-                      }));
-                      settings.refreshPage();
+                      if (info['owner'] != null) {
+                        await Navigator.push(context,
+                            MaterialPageRoute(builder: (context) {
+                          final ownerId = info['owner']['id'];
+                          if (ownerId != authSettings.ownerId)
+                            return ScreenOwner(ownerId);
+                          else
+                            return ScreenUserSettings();
+                        }));
+                        settings.refreshPage();
+                      }
                     },
                     child: Container(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            info['owner']['first'] +
-                                ' ' +
-                                info['owner']['last'],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            textAlign: TextAlign.left,
-                          ),
+                          info['owner'] != null
+                              ? Text(
+                                  info['owner']['first'] +
+                                      ' ' +
+                                      info['owner']['last'],
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                )
+                              : Text(
+                                  'Unknown',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.left,
+                                ),
                           Text(
                             info['post']['createdAt'],
                             style: TextStyle(

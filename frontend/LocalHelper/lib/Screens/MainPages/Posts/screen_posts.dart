@@ -137,6 +137,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
             }
           }
         });
+
         // Stop the refresh animation
         _refreshController.loadComplete();
       } else {
