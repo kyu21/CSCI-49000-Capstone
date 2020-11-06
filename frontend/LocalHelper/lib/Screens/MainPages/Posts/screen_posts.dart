@@ -26,6 +26,12 @@ class _ScreenPostsState extends State<ScreenPosts> {
     Settings settings = Provider.of<Settings>(context);
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
+    // Refresh on Command
+    if (settings.refresh_posts) {
+      settings.refresh_posts = false;
+      _onRefresh(authSettings.token);
+    }
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -94,7 +100,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   void _onLoading(String token) async {
     // Settings
-    final maxLoad = 3;
+    final maxLoad = 5;
     int timeout = 10;
 
     // Starting index

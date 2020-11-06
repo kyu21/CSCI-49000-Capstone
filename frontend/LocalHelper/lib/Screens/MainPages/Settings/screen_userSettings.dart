@@ -100,6 +100,16 @@ class _OwnerDoneState extends State<OwnerDone> {
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
 
+  @override
+  void dispose() {
+    firstNController.dispose();
+    lastNController.dispose();
+    genderController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
   _OwnerDoneState(this.info) {
     firstNController.text = info['first'];
     lastNController.text = info['last'];

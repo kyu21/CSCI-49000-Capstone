@@ -6,6 +6,10 @@ class Settings extends ChangeNotifier {
   int userNum = 0; // UserNames
   int personalNum = 0; // Personal Posts
 
+  // Refreshers
+  bool refresh_posts = false;
+  bool refresh_myposts = false;
+
   // FUNCTIONS ================================
   void changeDark() {
     darkMode = !darkMode;
@@ -24,6 +28,12 @@ class Settings extends ChangeNotifier {
 
   void updateUserNum(int i) {
     userNum = i;
+    notifyListeners();
+  }
+
+  void refreshPage() {
+    refresh_posts = true;
+    refresh_myposts = true;
     notifyListeners();
   }
 }

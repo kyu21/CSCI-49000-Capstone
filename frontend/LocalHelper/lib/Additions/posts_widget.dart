@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/authSettings.dart';
 import 'package:localhelper/Additions/settings.dart';
 import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
 import 'package:localhelper/Screens/MainPages/Posts/screen_full.dart';
+import 'package:localhelper/Screens/MainPages/Settings/screen_userSettings.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart'; //for date format
 
@@ -21,6 +23,7 @@ class Posts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -44,11 +47,16 @@ class Posts extends StatelessWidget {
                 children: [
                   // Name / Date
                   GestureDetector(
-                    onTap: () {
-                      Navigator.push(context,
+                    onTap: () async {
+                      await Navigator.push(context,
                           MaterialPageRoute(builder: (context) {
-                        return ScreenOwner(info['owner']['id']);
+                        final ownerId = info['owner']['id'];
+                        if (ownerId != authSettings.ownerId)
+                          return ScreenOwner(ownerId);
+                        else
+                          return ScreenUserSettings();
                       }));
+                      settings.refreshPage();
                     },
                     child: Container(
                       child: Column(
@@ -120,11 +128,12 @@ class Posts extends StatelessWidget {
               SizedBox(height: 30),
               Expanded(
                 child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(context,
+                  onTap: () async {
+                    await Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
                       return ScreenPostsFull(info['post']['id']);
                     }));
+                    settings.refreshPage();
                   },
                   child: Container(
                     width: double.infinity,

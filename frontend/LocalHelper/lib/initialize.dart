@@ -78,9 +78,12 @@ class _ScreenLoginState extends State<ScreenLogin> {
                               emailController.text, passwordController.text);
 
                           if (result != null) {
+                            // Update user info
                             authSettings.updateToken(result);
-
                             await userInfo(result, authSettings);
+
+                            // DEBUG
+                            // await debugger(result, authSettings);
 
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
@@ -199,6 +202,26 @@ class _ScreenLoginState extends State<ScreenLogin> {
   // ==============================================================
 
   // FUNCTIONS ===================================================
+
+  Future debugger(String token, AuthSettings authSettings) async {
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+
+      http.Response response = await http
+          .get('https://localhelper-backend.herokuapp.com/api/users/me',
+              headers: headers)
+          .timeout(Duration(seconds: 5));
+
+      var json = jsonDecode(response.body);
+      print(json);
+    } catch (e) {
+      print(e);
+    }
+  }
 
   Future userInfo(String token, AuthSettings authSettings) async {
     try {

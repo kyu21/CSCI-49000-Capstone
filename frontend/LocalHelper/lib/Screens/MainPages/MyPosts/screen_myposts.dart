@@ -28,6 +28,12 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
     Settings settings = Provider.of<Settings>(context);
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
+    // Refresh on Command
+    if (settings.refresh_myposts) {
+      settings.refresh_myposts = false;
+      _onRefresh(authSettings.token);
+    }
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -46,6 +52,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             reverse: true,
             slivers: [
               SliverAppBar(
+                leading: Container(),
                 floating: true,
                 backgroundColor:
                     settings.darkMode ? Colors.black : Colors.white,
@@ -63,7 +70,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                       color: settings.darkMode ? Colors.white : Colors.black,
                     ),
                   ),
-                  onPressed: () async {
+                  onPressed: () {
                     Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
                       return ScreenCreatePosts();

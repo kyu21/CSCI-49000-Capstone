@@ -5,6 +5,7 @@ import 'package:localhelper/Additions/authSettings.dart';
 import 'dart:convert';
 
 import 'package:localhelper/Additions/settings.dart';
+import 'package:localhelper/Screens/MainPages/MyPosts/screen_editposts.dart';
 import 'package:provider/provider.dart';
 
 class ScreenPostsFull extends StatefulWidget {
@@ -42,6 +43,7 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
   @override
   Widget build(BuildContext context) {
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
+
     return FutureBuilder(
       future: getOwnerDetails(authSettings.token),
       builder: (context, mywidget) {
@@ -100,7 +102,6 @@ class FullDone extends StatelessWidget {
     // Names
     final title = info['post']['title'];
     final ownerName = info['owner']['first'] + ' ' + info['owner']['last'];
-    final date = info['post']['dateCreated'].toString();
     final description = info['post']['description'];
     final ownerId = info['owner']['id'];
     final postId = info['post']['id'];
@@ -208,36 +209,67 @@ class FullDone extends StatelessWidget {
           ),
 
           if (isOwners)
-            // Delete Posts
-            FlatButton(
-              color: Colors.red[300],
-              height: 80,
-              minWidth: double.infinity,
-              onPressed: () async {
-                try {
-                  Map<String, String> headers = {
-                    'content-type': 'application/json',
-                    'accept': 'application/json',
-                    'authorization': authSettings.token,
-                  };
-                  String link =
-                      'https://localhelper-backend.herokuapp.com/api/posts' +
-                          '/' +
-                          postId.toString();
-                  var result = await http.delete(link, headers: headers);
-                  if (result.statusCode == 200) Navigator.pop(context);
-                } catch (e) {
-                  print(e);
-                  Navigator.pop(context);
-                }
-              },
-              child: Text(
-                'Delete',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
+            Column(
+              children: [
+                // EditPosts
+                FlatButton(
+                  color: Colors.green[300],
+                  height: 80,
+                  minWidth: double.infinity,
+                  onPressed: () async {
+                    await Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      final int pId = info['post']['id'];
+                      final title = info['post']['title'];
+                      final des = info['post']['description'];
+                      final req = info['post']['is_request'];
+                      return ScreenEditPosts(pId, title, des, req);
+                    }));
+                    Navigator.pop(context, true);
+                  },
+                  child: Text(
+                    'Edit',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              ),
+
+                // Delete Posts
+                FlatButton(
+                  color: Colors.red[300],
+                  height: 80,
+                  minWidth: double.infinity,
+                  onPressed: () async {
+                    try {
+                      Map<String, String> headers = {
+                        'content-type': 'application/json',
+                        'accept': 'application/json',
+                        'authorization': authSettings.token,
+                      };
+                      String link =
+                          'https://localhelper-backend.herokuapp.com/api/posts' +
+                              '/' +
+                              postId.toString();
+                      var result = await http.delete(link, headers: headers);
+                      if (result.statusCode == 200) {
+                        Navigator.pop(context, true);
+                      }
+                    } catch (e) {
+                      print(e);
+                      Navigator.pop(context);
+                    }
+                  },
+                  child: Text(
+                    'Delete',
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
         ],
       ),

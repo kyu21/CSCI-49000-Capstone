@@ -6,30 +6,39 @@ import 'package:localhelper/Additions/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
-class ScreenCreatePosts extends StatefulWidget {
+class ScreenEditPosts extends StatefulWidget {
+  final int postId;
+  final String title;
+  final String description;
+  final bool req;
+  ScreenEditPosts(this.postId, this.title, this.description, this.req);
   @override
-  _ScreenCreatePostsState createState() => _ScreenCreatePostsState();
+  _ScreenEditPostsState createState() =>
+      _ScreenEditPostsState(title, description, req);
 }
 
-class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
+class _ScreenEditPostsState extends State<ScreenEditPosts> {
   // Text Controllers
   final titleController = TextEditingController();
-  final nameController = TextEditingController();
   final descriptionController = TextEditingController();
 
   // Prevent Multi sending
   bool enableSend = true;
-  bool request = false;
+  bool request;
+
+  _ScreenEditPostsState(String title, String description, this.request) {
+    titleController.text = title;
+    descriptionController.text = description;
+  }
 
   @override
   void dispose() {
     titleController.dispose();
-    nameController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
 
-  Future<bool> sendPost(
+  Future<void> sendPost(
       String token, String title, String desc, bool request) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
@@ -47,22 +56,18 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         'accept': 'application/json',
         'authorization': token,
       };
-      var response = await http.post(
-        'https://localhelper-backend.herokuapp.com/api/posts',
+      var response = await http.put(
+        'https://localhelper-backend.herokuapp.com/api/posts/' +
+            widget.postId.toString(),
         headers: headers,
         body: jsonString,
       );
-
-      // Error
-      if (response.statusCode != 201) {
-        print(response.statusCode.toString());
-        return false;
-      } else {
-        return true;
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        Navigator.pop(context);
       }
     } catch (e) {
       print(e);
-      return false;
     }
   }
 
@@ -71,7 +76,6 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
     // Providers
     Settings settings = Provider.of<Settings>(context);
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
-
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -88,7 +92,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
           ),
           centerTitle: true,
           title: Text(
-            'Create New Post',
+            'Edit Post',
             style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
@@ -183,26 +187,15 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                           setState(() {
                             enableSend = false;
                           });
-                          if (titleController.text.isEmpty &&
-                              descriptionController.text.isEmpty) {
-                            Navigator.pop(context, null);
-                          } else {
-                            // Send post to internet.
-                            var result = await sendPost(
-                                authSettings.token,
-                                titleController.text,
-                                descriptionController.text,
-                                request);
-                            if (result) {
-                              settings.refreshPage();
-                              Navigator.pop(context);
-                            } else {
-                              setState(() {
-                                enableSend = true;
-                              });
-                            }
-                          }
+                          await sendPost(
+                              authSettings.token,
+                              titleController.text,
+                              descriptionController.text,
+                              request);
                         }
+                        setState(() {
+                          enableSend = true;
+                        });
                       },
                       splashColor:
                           settings.darkMode ? Colors.red : Colors.black,
@@ -211,7 +204,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                       minWidth: double.infinity,
                       height: 60,
                       child: Text(
-                        'Submit',
+                        'Save',
                         style: TextStyle(
                           color:
                               settings.darkMode ? Colors.white : Colors.black,
