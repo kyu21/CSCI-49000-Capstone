@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:localhelper/home.dart';
 import 'package:localhelper/register.dart';
 import 'package:provider/provider.dart';
-
 import 'Additions/authSettings.dart';
 
 class ScreenStart extends StatelessWidget {
@@ -82,7 +81,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             authSettings.updateToken(result);
                             await userInfo(result, authSettings);
 
-                            // DEBUG
+                            // // DEBUG
                             // await debugger(result, authSettings);
 
                             Navigator.push(context,
@@ -212,7 +211,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
       };
 
       http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/users/me',
+          .get('https://localhelper-backend.herokuapp.com/api/posts/11',
               headers: headers)
           .timeout(Duration(seconds: 5));
 

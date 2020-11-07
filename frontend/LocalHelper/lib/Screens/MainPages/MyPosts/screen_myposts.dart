@@ -29,8 +29,8 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     // Refresh on Command
-    if (settings.refresh_myposts) {
-      settings.refresh_myposts = false;
+    if (settings.refreshMyposts) {
+      settings.refreshMyposts = false;
       _onRefresh(authSettings.token);
     }
 

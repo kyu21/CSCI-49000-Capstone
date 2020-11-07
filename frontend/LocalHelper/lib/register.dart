@@ -24,6 +24,18 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   bool _notSame = false;
 
   @override
+  void dispose() {
+    firstController.dispose();
+    lastController.dispose();
+    genderController.dispose();
+    phoneController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    conPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {

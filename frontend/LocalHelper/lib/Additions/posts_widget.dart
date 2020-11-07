@@ -94,6 +94,16 @@ class Posts extends StatelessWidget {
                             ),
                           ),
 
+                          // Zip
+                          Text(
+                            "Zip: " + info['zips'][0]['zip'],
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
                           // Requests
                           SizedBox(height: 5),
                           info['post']['is_request']

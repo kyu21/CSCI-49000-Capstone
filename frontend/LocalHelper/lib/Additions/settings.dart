@@ -1,14 +1,16 @@
 import 'package:flutter/cupertino.dart';
 
 class Settings extends ChangeNotifier {
+  bool local = true;
   bool darkMode = false;
+
   int listNum = 0; // Posts
   int userNum = 0; // UserNames
   int personalNum = 0; // Personal Posts
 
   // Refreshers
-  bool refresh_posts = false;
-  bool refresh_myposts = false;
+  bool refreshPosts = false;
+  bool refreshMyposts = false;
 
   // FUNCTIONS ================================
   void changeDark() {
@@ -32,8 +34,8 @@ class Settings extends ChangeNotifier {
   }
 
   void refreshPage() {
-    refresh_posts = true;
-    refresh_myposts = true;
+    refreshPosts = true;
+    refreshMyposts = true;
     notifyListeners();
   }
 }
