@@ -11,6 +11,7 @@ const postsRouter = require("./posts");
 const languagesRouter = require("./languages");
 const zipRouter = require("./zips");
 const authRouter = require("./auth");
+const postZipsRouter = require("./postZips");
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
@@ -22,6 +23,7 @@ router.use("/posts", postsRouter);
 router.use("/languages", languagesRouter);
 router.use("/zips", zipRouter);
 router.use("/auth", authRouter);
+router.use("/postZips", postZipsRouter);
 
 // Error handling middleware;
 router.use((req, res, next) => {

@@ -25,9 +25,25 @@ async function appendOwnerInfo(posts) {
 				},
 			});
 
+			let postZips = await db.postZips.findAll({
+				raw: true,
+				where: {
+					postId: post.id
+				}
+			});
+			let zips = await Promise.all(postZips.map(async (z) => (
+				await db.zips.findOne({
+					raw: true,
+					where: {
+						id: z.zipId
+					}
+				})
+			)));
+
 			postObj.push({
 				owner: user,
 				post: post,
+				zips: zips
 			});
 		}
 
@@ -95,7 +111,7 @@ async function createPost(req, res) {
 			raw: true,
 			where: { email: decodedJwt.email },
 		});
-		const { title, description, is_request } = req.body;
+		const { title, description, is_request} = req.body;
 		const newPost = {
 			title: title,
 			description: description,
