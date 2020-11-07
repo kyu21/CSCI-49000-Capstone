@@ -16,6 +16,7 @@ const userZipsController = {
 	editElement: editElement,
 	deleteElement: deleteElement,
 	getAllZipsforUser: getAllZipsforUser,
+	getAllUsersforZip: getAllUsersforZip,
 };
 
 async function getAllElements(req, res) {
@@ -79,14 +80,59 @@ async function getAllZipsforUser(req, res) {
 			raw: true,
 			where: { userId: userId },
 		});
-		let zipIds = zips.map((z) => z.zipId);
-		zips = await db.zips.findAll({ raw: true, where: zipIds });
+
+		zips =
+			zips.length === 0
+				? []
+				: await db.zips.findAll({
+						raw: true,
+						where: { id: zips.map((z) => z.zipId) },
+				  });
 
 		res.status(200).json(zips);
 	} catch (err) {
 		console.log(err);
 	}
 }
+
+async function getAllUsersforZip(req, res) {
+	try {
+		const { zipId } = req.params;
+
+		let users = await db.userZips.findAll({
+			raw: true,
+			where: { zipId: zipId },
+		});
+
+		users =
+			users.length === 0
+				? []
+				: await db.users.findAll({
+						raw: true,
+						where: { id: users.map((u) => u.userId) },
+				  });
+
+		res.status(200).json(users);
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function bulkEditUserZips(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: { email: decodedJwt.email },
+		});
+
+		// 3 cases
+		// 1 - all new ()
+	} catch (err) {
+		console.log(err);
+	}
+}
+
 // /user
 // /zip
 // mass add
