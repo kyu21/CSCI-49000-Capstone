@@ -28,7 +28,7 @@ class _ScreenHomeState extends State<ScreenHome> {
     pageList.clear();
     pageList.add(ScreenPosts());
     pageList.add(ScreenUsers());
-    pageList.add(ScreenConvo());
+    // pageList.add(ScreenConvo());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSettings());
     super.initState();
@@ -67,10 +67,10 @@ class _ScreenHomeState extends State<ScreenHome> {
             label: 'Users',
             icon: Icon(Icons.supervised_user_circle),
           ),
-          BottomNavigationBarItem(
-            label: 'Messages',
-            icon: Icon(Icons.message),
-          ),
+          // BottomNavigationBarItem(
+          //   label: 'Messages',
+          //   icon: Icon(Icons.message),
+          // ),
           BottomNavigationBarItem(
             label: 'My Posts',
             icon: Icon(Icons.post_add),

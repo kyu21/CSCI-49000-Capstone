@@ -5,6 +5,7 @@ import 'package:localhelper/Additions/authSettings.dart';
 import 'dart:convert';
 
 import 'package:localhelper/Additions/settings.dart';
+import 'package:localhelper/Additions/users.dart';
 import 'package:localhelper/Screens/MainPages/MyPosts/screen_editposts.dart';
 import 'package:provider/provider.dart';
 
@@ -20,20 +21,38 @@ class ScreenPostsFull extends StatefulWidget {
 class _ScreenPostsFullState extends State<ScreenPostsFull> {
   // Json info
   var info;
+  bool interested = false;
+  var interestJson;
 
   // Get details
-  Future getOwnerDetails(String token) async {
+  Future getOwnerDetails(AuthSettings authSettings) async {
     try {
       Map<String, String> headers = {
         'content-type': 'application/json',
         'accept': 'application/json',
-        'authorization': token,
+        'authorization': authSettings.token,
       };
       String link = 'https://localhelper-backend.herokuapp.com/api/posts' +
           '/' +
           widget.ownerId.toString();
       var result = await http.get(link, headers: headers);
       info = jsonDecode(result.body)[0];
+
+      // GET A LIST OF INTERESTED PEOPLE
+      String interLink =
+          'https://localhelper-backend.herokuapp.com/api/postInterests/' +
+              '/' +
+              widget.ownerId.toString();
+
+      var interestResult = await http.get(interLink, headers: headers);
+      interestJson = jsonDecode(interestResult.body);
+
+      for (int i = 0; i < interestJson.length; i++) {
+        if (interestJson[i]['id'] == authSettings.ownerId) {
+          interested = true;
+          break;
+        }
+      }
     } catch (e) {
       print(e);
       Navigator.pop(context);
@@ -45,7 +64,7 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     return FutureBuilder(
-      future: getOwnerDetails(authSettings.token),
+      future: getOwnerDetails(authSettings),
       builder: (context, mywidget) {
         // When  not connected
         if (mywidget.connectionState == ConnectionState.none) {
@@ -57,7 +76,7 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
 
           // When finished
         } else if (mywidget.connectionState == ConnectionState.done) {
-          return FullDone(info);
+          return FullDone(info, interested, interestJson);
         }
 
         // Failsafe
@@ -89,10 +108,20 @@ class FullWait extends StatelessWidget {
   }
 }
 
-class FullDone extends StatelessWidget {
+class FullDone extends StatefulWidget {
   final info;
-  FullDone(this.info);
+  final bool interested;
+  final interestJson;
+  FullDone(this.info, this.interested, this.interestJson);
 
+  @override
+  _FullDoneState createState() => _FullDoneState(interested, interestJson);
+}
+
+class _FullDoneState extends State<FullDone> {
+  bool interested;
+  var interestJson;
+  _FullDoneState(this.interested, this.interestJson);
   @override
   Widget build(BuildContext context) {
     //
@@ -100,11 +129,12 @@ class FullDone extends StatelessWidget {
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     // Names
-    final title = info['post']['title'];
-    final ownerName = info['owner']['first'] + ' ' + info['owner']['last'];
-    final description = info['post']['description'];
-    final ownerId = info['owner']['id'];
-    final postId = info['post']['id'];
+    final title = widget.info['post']['title'];
+    final ownerName =
+        widget.info['owner']['first'] + ' ' + widget.info['owner']['last'];
+    final description = widget.info['post']['description'];
+    final ownerId = widget.info['owner']['id'];
+    final postId = widget.info['post']['id'];
 
     // Owner checker
     final bool isOwners = ownerId == authSettings.ownerId ? true : false;
@@ -175,10 +205,6 @@ class FullDone extends StatelessWidget {
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.transparent,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -186,6 +212,7 @@ class FullDone extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Description
                     Text(
                       'Description:',
                       style: TextStyle(
@@ -195,13 +222,58 @@ class FullDone extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 20),
-                    Text(
-                      description,
-                      style: TextStyle(
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                        fontSize: 20,
+                    Container(
+                      constraints: BoxConstraints(
+                          minHeight: 80,
+                          maxHeight: interestJson.length > 0 ? 200 : 400),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          description,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                            fontSize: 20,
+                          ),
+                        ),
                       ),
                     ),
+
+                    // Interested Users
+                    if (interestJson.length > 0)
+                      Expanded(
+                        child: Container(
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Text(
+                                  'Interested Users:',
+                                  style: TextStyle(
+                                    color: settings.darkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 20),
+                              Expanded(
+                                child: Container(
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.vertical,
+                                    shrinkWrap: true,
+                                    itemBuilder: (context, index) {
+                                      return Users(interestJson[index]);
+                                    },
+                                    itemCount: interestJson.length,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -209,70 +281,138 @@ class FullDone extends StatelessWidget {
           ),
 
           if (isOwners)
-            Column(
-              children: [
-                // EditPosts
-                FlatButton(
-                  color: Colors.green[300],
-                  height: 80,
-                  minWidth: double.infinity,
-                  onPressed: () async {
-                    await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      final int pId = info['post']['id'];
-                      final title = info['post']['title'];
-                      final des = info['post']['description'];
-                      final req = info['post']['is_request'];
-                      return ScreenEditPosts(pId, title, des, req);
-                    }));
-                    Navigator.pop(context, true);
-                  },
-                  child: Text(
-                    'Edit',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-
-                // Delete Posts
-                FlatButton(
-                  color: Colors.red[300],
-                  height: 80,
-                  minWidth: double.infinity,
-                  onPressed: () async {
-                    try {
-                      Map<String, String> headers = {
-                        'content-type': 'application/json',
-                        'accept': 'application/json',
-                        'authorization': authSettings.token,
-                      };
-                      String link =
-                          'https://localhelper-backend.herokuapp.com/api/posts' +
-                              '/' +
-                              postId.toString();
-                      var result = await http.delete(link, headers: headers);
-                      if (result.statusCode == 200) {
-                        Navigator.pop(context, true);
-                      }
-                    } catch (e) {
-                      print(e);
-                      Navigator.pop(context);
-                    }
-                  },
-                  child: Text(
-                    'Delete',
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            ownerWidgets(context, authSettings, widget.info)
+          else
+            interestedWidget(authSettings, settings, postId),
         ],
       ),
     );
+  }
+
+  Widget ownerWidgets(
+      BuildContext context, AuthSettings authSettings, var info) {
+    return Column(
+      children: [
+        // EditPosts
+        FlatButton(
+          color: Colors.green[300],
+          height: 50,
+          minWidth: double.infinity,
+          onPressed: () async {
+            await Navigator.push(context, MaterialPageRoute(builder: (context) {
+              final int pId = info['post']['id'];
+              final title = info['post']['title'];
+              final des = info['post']['description'];
+              final req = info['post']['is_request'];
+              return ScreenEditPosts(pId, title, des, req);
+            }));
+            Navigator.pop(context, true);
+          },
+          child: Text(
+            'Edit',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        // Delete Posts
+        FlatButton(
+          color: Colors.red[300],
+          height: 50,
+          minWidth: double.infinity,
+          onPressed: () async {
+            try {
+              Map<String, String> headers = {
+                'content-type': 'application/json',
+                'accept': 'application/json',
+                'authorization': authSettings.token,
+              };
+              String link =
+                  'https://localhelper-backend.herokuapp.com/api/posts' +
+                      '/' +
+                      info['post']['id'].toString();
+              var result = await http.delete(link, headers: headers);
+              if (result.statusCode == 200) {
+                Navigator.pop(context, true);
+              }
+            } catch (e) {
+              print(e);
+              Navigator.pop(context);
+            }
+          },
+          child: Text(
+            'Delete',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget interestedWidget(
+      AuthSettings authSettings, Settings settings, var postId) {
+    return Container(
+      height: 100,
+      child: Center(
+        heightFactor: double.infinity,
+        widthFactor: double.infinity,
+        child: SwitchListTile(
+          value: interested,
+          onChanged: (value) async {
+            interested =
+                await toggleInterests(authSettings, postId, interested);
+            setState(() {});
+          },
+          title: Text('Interested',
+              style: TextStyle(
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold)),
+        ),
+      ),
+    );
+  }
+
+  // FUNCTIONS
+  Future<bool> toggleInterests(
+      AuthSettings authSettings, var postId, bool interested) async {
+    try {
+      // Header
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': authSettings.token,
+      };
+
+      // Remove user from interested list
+      if (interested) {
+        // Link
+        String interLink =
+            'https://localhelper-backend.herokuapp.com/api/postInterests/' +
+                '/' +
+                postId.toString();
+        await http.delete(interLink, headers: headers);
+        return false;
+      }
+
+      // Add user to interested list
+      else {
+        // Link
+        String interLink =
+            'https://localhelper-backend.herokuapp.com/api/postInterests/' +
+                '/' +
+                postId.toString();
+        await http.post(interLink, headers: headers);
+        return true;
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
   }
 }

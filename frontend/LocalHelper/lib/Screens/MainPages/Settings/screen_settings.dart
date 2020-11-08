@@ -158,16 +158,16 @@ class ScreenSettings extends StatelessWidget {
                           ),
 
                     // Zip ID
-                    SizedBox(height: 20),
-                    Text(
-                      'ZipID: ' + _zipID.toString(),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
+                    // SizedBox(height: 20),
+                    // Text(
+                    //   'ZipID: ' + _zipID.toString(),
+                    //   textAlign: TextAlign.center,
+                    //   style: TextStyle(
+                    //     fontSize: 30,
+                    //     fontWeight: FontWeight.bold,
+                    //     color: settings.darkMode ? Colors.white : Colors.black,
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
