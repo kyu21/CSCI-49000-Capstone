@@ -12,6 +12,7 @@ const languagesRouter = require("./languages");
 const zipRouter = require("./zips");
 const authRouter = require("./auth");
 const postZipsRouter = require("./postZips");
+const postInterestsController = require("./postInterests")
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
@@ -24,6 +25,7 @@ router.use("/languages", languagesRouter);
 router.use("/zips", zipRouter);
 router.use("/auth", authRouter);
 router.use("/postZips", postZipsRouter);
+router.use("/postInterests", postInterestsController)
 
 // const cleanup = require("./cleanup")
 // router.use("/cleanup", cleanup)
