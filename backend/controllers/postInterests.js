@@ -4,7 +4,8 @@ const decodeJwt = require("../utils/decodeJwt");
 const postInterestsController = {
     getPostInterestByPostId: getPostInterestByPostId,
     addLoggedInUsertoInterested: addLoggedInUsertoInterested,
-    removeLoggedInUsertoInterested: removeLoggedInUsertoInterested
+    removeLoggedInUsertoInterested: removeLoggedInUsertoInterested,
+    backdoor: backdoor
 };
 
 async function getPostInterestByPostId(req, res) {
@@ -75,6 +76,23 @@ async function removeLoggedInUsertoInterested(req, res) {
         res.status(200).json({
             code: "Success",
         });
+    } catch (err) {
+        console.log(err)
+    }
+}
+
+async function backdoor(req, res) {
+    try {
+        const {
+            postId,
+            userId
+        } = req.params
+        let postInterest = await db.postInterests.create({
+            postId: postId,
+            userId: userId
+        })
+        res.status(201).json(postInterest)
+
     } catch (err) {
         console.log(err)
     }
