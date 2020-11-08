@@ -25,6 +25,9 @@ router.use("/zips", zipRouter);
 router.use("/auth", authRouter);
 router.use("/postZips", postZipsRouter);
 
+// const cleanup = require("./cleanup")
+// router.use("/cleanup", cleanup)
+
 // Error handling middleware;
 router.use((req, res, next) => {
 	const error = new Error("Not Found, Please Check URL!");
