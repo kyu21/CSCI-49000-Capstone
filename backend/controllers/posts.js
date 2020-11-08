@@ -63,7 +63,10 @@ async function getAllPosts(req, res) {
 			whereClause.is_request = false;
 		}
 
-		let posts = await db.posts.findAll({ raw: true, where: whereClause });
+		let posts = await db.posts.findAll({
+			raw: true,
+			where: whereClause
+		});
 		posts = await appendOwnerInfo(posts);
 
 		res.status(200).json(posts);
@@ -77,10 +80,14 @@ async function getLoggedInUserPosts(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
 
-		let whereClause = { ownerId: currentUser.id };
+		let whereClause = {
+			ownerId: currentUser.id
+		};
 		const postType = req.query.postType;
 		if (postType === "request") {
 			whereClause.is_request = true;
@@ -88,7 +95,10 @@ async function getLoggedInUserPosts(req, res) {
 			whereClause.is_request = false;
 		}
 
-		let posts = await db.posts.findAll({ raw: true, where: whereClause });
+		let posts = await db.posts.findAll({
+			raw: true,
+			where: whereClause
+		});
 
 		let postsWithOwner = [];
 		for (let post of posts) {
@@ -109,9 +119,15 @@ async function createPost(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
-		const { title, description, is_request} = req.body;
+		const {
+			title,
+			description,
+			is_request
+		} = req.body;
 		const newPost = {
 			title: title,
 			description: description,
@@ -129,7 +145,9 @@ async function createPost(req, res) {
 
 async function getPostById(req, res) {
 	try {
-		const { postId } = req.params;
+		const {
+			postId
+		} = req.params;
 		let post = await db.posts.findOne({
 			raw: true,
 			where: {
@@ -149,7 +167,9 @@ async function editPost(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
 
 		const validKeys = ["title", "description", "is_request"];
@@ -160,12 +180,21 @@ async function editPost(req, res) {
 			}
 		}
 
-		const { postId } = req.params;
-		let post = await db.posts.findOne({ raw: true, where: { id: postId } });
+		const {
+			postId
+		} = req.params;
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId
+			}
+		});
 
 		if (post.ownerId === currentUser.id) {
 			let [_, posts] = await db.posts.update(newInfo, {
-				where: { id: postId },
+				where: {
+					id: postId
+				},
 				returning: true,
 				raw: true,
 			});
@@ -187,15 +216,26 @@ async function deletePost(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
 
-		const { postId } = req.params;
-		let post = await db.posts.findOne({ raw: true, where: { id: postId } });
+		const {
+			postId
+		} = req.params;
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId
+			}
+		});
 
 		if (post.ownerId === currentUser.id) {
 			await db.posts.destroy({
-				where: { id: postId },
+				where: {
+					id: postId
+				},
 			});
 
 			await cascadeDelete(postId)
@@ -217,7 +257,14 @@ async function deletePost(req, res) {
 async function cascadeDelete(postId) {
 	try {
 		await db.postZips.destroy({
-			where: {postId: postId}
+			where: {
+				postId: postId
+			}
+		})
+		await db.postInterests.destroy({
+			where: {
+				postId: postId
+			}
 		})
 	} catch (err) {
 		console.log(err);
