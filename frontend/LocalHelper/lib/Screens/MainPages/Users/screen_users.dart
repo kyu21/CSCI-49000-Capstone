@@ -176,7 +176,7 @@ class Users extends StatelessWidget {
                 Text(
                   firstName + ' ' + lastName,
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 25,
                     fontWeight: FontWeight.bold,
                     color: settings.darkMode ? Colors.white : Colors.black,
                   ),
@@ -184,30 +184,40 @@ class Users extends StatelessWidget {
 
                 // Address/
                 SizedBox(width: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 7),
+                Expanded(
+                  child: Container(
+                    child: FittedBox(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(height: 7),
 
-                    // Email
-                    Text(
-                      'Email: ' + email,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: settings.darkMode ? Colors.white : Colors.black,
+                          // Email
+                          Text(
+                            'Email: ' + email,
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+
+                          // Phone
+                          Text(
+                            'Phone: ' + phone,
+                            style: TextStyle(
+                              fontSize: 20,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-
-                    // Phone
-                    Text(
-                      'Phone: ' + phone,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),

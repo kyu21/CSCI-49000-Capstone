@@ -225,7 +225,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
               // Loop through zips
               if (z != "") {
                 bool _found = false;
-                print(newIndex);
+
                 for (int i = 0; i < json[newIndex]['zips'].length; i++) {
                   if (json[newIndex]['zips'][i]['zip'] == z) {
                     postInfo.add(json[newIndex]);

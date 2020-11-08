@@ -214,9 +214,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
           .get('https://localhelper-backend.herokuapp.com/api/posts/me',
               headers: headers)
           .timeout(Duration(seconds: 5));
-
-      var json = jsonDecode(response.body)[1];
-      print(json);
     } catch (e) {
       print(e);
     }
@@ -259,8 +256,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
         authSettings.zipID = -1;
         authSettings.zip = "";
       }
-
-      print(json);
     } catch (e) {
       print(e);
     }

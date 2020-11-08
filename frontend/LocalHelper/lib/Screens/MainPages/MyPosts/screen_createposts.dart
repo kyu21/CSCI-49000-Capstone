@@ -58,6 +58,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         print(response.statusCode.toString());
         return false;
       } else {
+        // If the zip
         if (authSettings.zipID != -1) {
           var postId = await http.get(
             'https://localhelper-backend.herokuapp.com/api/posts/me',

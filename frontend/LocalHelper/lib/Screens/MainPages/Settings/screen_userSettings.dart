@@ -85,7 +85,7 @@ class OwnerWait extends StatelessWidget {
 class OwnerDone extends StatefulWidget {
   // Json
   final info;
-  AuthSettings authSettings;
+  final AuthSettings authSettings;
   OwnerDone(this.info, this.authSettings);
   @override
   _OwnerDoneState createState() => _OwnerDoneState(this.info, authSettings);
@@ -125,6 +125,7 @@ class _OwnerDoneState extends State<OwnerDone> {
 
   // Loading
   bool _loading = false;
+  bool _invalidZip = false;
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +291,11 @@ class _OwnerDoneState extends State<OwnerDone> {
                 decoration: InputDecoration(
                   labelText: 'Zip',
                   labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
+                    color: _invalidZip
+                        ? Colors.red
+                        : settings.darkMode
+                            ? Colors.white
+                            : Colors.black,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),
@@ -326,6 +331,13 @@ class _OwnerDoneState extends State<OwnerDone> {
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
+        if (zipController.text.length < 5) {
+          setState(() {
+            _invalidZip = true;
+          });
+          return false;
+        }
+
         try {
           // Put body
           Map<String, dynamic> jsonMap = {
@@ -346,7 +358,6 @@ class _OwnerDoneState extends State<OwnerDone> {
           };
           String link = 'https://localhelper-backend.herokuapp.com/api/users';
           var result = await http.put(link, headers: headers, body: jsonString);
-          print(result.statusCode);
 
           // ZIP CHECK
           http.Response zipResponse = await http
@@ -368,10 +379,11 @@ class _OwnerDoneState extends State<OwnerDone> {
             }
           }
 
-          authSettings.zipID = _zipID;
-          authSettings.zip = _zip;
           // If the zip was in the database
           if (_found) {
+            authSettings.zipID = _zipID;
+            authSettings.zip = _zip;
+
             // Check if the Zip was already added before
             http.Response zipCheck = await http
                 .get('https://localhelper-backend.herokuapp.com/api/users/me',
@@ -406,6 +418,32 @@ class _OwnerDoneState extends State<OwnerDone> {
                   .timeout(Duration(seconds: 5));
               print(zipPut.statusCode);
             }
+          }
+
+          // If it wasn't in the database add a new one
+          else {
+// Put body
+            Map<String, dynamic> jsonMap = {
+              'zip': zipController.text,
+              'name': "NEW",
+            };
+
+            // Encode
+            String jsonString = json.encode(jsonMap);
+
+            // Header
+            Map<String, String> headers = {
+              'authorization': authSettings.token,
+              "Content-Type": "application/json",
+            };
+            String link = 'https://localhelper-backend.herokuapp.com/api/zips';
+            var newZip =
+                await http.post(link, headers: headers, body: jsonString);
+
+            var newJson = jsonDecode(newZip.body);
+
+            authSettings.zipID = newJson['id'];
+            authSettings.zip = newJson['zip'];
           }
 
           if (result.statusCode == 200) {
