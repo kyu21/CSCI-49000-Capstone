@@ -39,12 +39,6 @@ fs.readdirSync(__dirname)
 		console.log(db[model.name]);
 	});
 
-Object.keys(db).forEach((modelName) => {
-	if (db[modelName].associate) {
-		db[modelName].associate(db);
-	}
-});
-
 sequelize.sync();
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;

@@ -198,6 +198,8 @@ async function deletePost(req, res) {
 				where: { id: postId },
 			});
 
+			await cascadeDelete(postId)
+
 			res.status(200).json({
 				code: "Success",
 			});
@@ -207,6 +209,16 @@ async function deletePost(req, res) {
 				message: "Logged in user is not creator of this post.",
 			});
 		}
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function cascadeDelete(postId) {
+	try {
+		await db.postZips.destroy({
+			where: {postId: postId}
+		})
 	} catch (err) {
 		console.log(err);
 	}

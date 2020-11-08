@@ -9,7 +9,7 @@ const userController = {
 	getUserById: getUserById,
 	getLoggedInUser: getLoggedInUser,
 	editUser: editUser,
-	deleteUser: deleteUser,
+	deleteUser: deleteUser
 };
 
 async function getAllUsers(req, res, next) {
@@ -163,10 +163,32 @@ async function deleteUser(req, res) {
 		await db.users.destroy({
 			where: { id: currentUser.id },
 		});
+		await cascadeDelete(currentUser.id);
 
 		res.status(200).json({
 			code: "Success",
 		});
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function cascadeDelete(userId) {
+	try {
+		await db.userZips.destroy({
+			where: {userId: userId}
+		})
+		await db.userLanguages.destroy({
+			where: {userId: userId}
+		})
+		let posts = await db.posts.findAll({
+			where: {ownerId: userId}
+		})
+		let postIds = posts.map((p) => (p.id))
+		await posts.forEach((p) => p.destroy())
+		await db.postZips.destroy({
+			where: {postId: postIds}
+		})
 	} catch (err) {
 		console.log(err);
 	}
