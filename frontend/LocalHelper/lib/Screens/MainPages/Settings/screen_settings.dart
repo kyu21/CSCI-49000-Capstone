@@ -17,6 +17,8 @@ class ScreenSettings extends StatelessWidget {
     final _gender = authSettings.gender;
     final _phone = authSettings.phone;
     final _email = authSettings.email;
+    final _zip = authSettings.zip;
+    final _zipID = authSettings.zipID;
 
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
@@ -121,6 +123,44 @@ class ScreenSettings extends StatelessWidget {
                     SizedBox(height: 20),
                     Text(
                       'Email: ' + _email,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+
+                    // Zip
+                    SizedBox(height: 20),
+                    _zip == ""
+                        ? Text(
+                            'Zip: None',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          )
+                        : Text(
+                            'Zip: ' + _zip,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+
+                    // Zip ID
+                    SizedBox(height: 20),
+                    Text(
+                      'ZipID: ' + _zipID.toString(),
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 30,

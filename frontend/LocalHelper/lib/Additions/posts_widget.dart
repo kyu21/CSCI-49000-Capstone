@@ -95,14 +95,15 @@ class Posts extends StatelessWidget {
                           ),
 
                           // Zip
-                          Text(
-                            "Zip: " + info['zips'][0]['zip'],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
+                          if (info['zips'] != null && info['zips'].length > 0)
+                            Text(
+                              "Zip: " + info['zips'][0]['zip'],
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
 
                           // Requests
                           SizedBox(height: 5),

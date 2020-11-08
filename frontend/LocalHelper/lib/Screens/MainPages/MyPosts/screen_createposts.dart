@@ -29,8 +29,8 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
     super.dispose();
   }
 
-  Future<bool> sendPost(
-      String token, String title, String desc, bool request) async {
+  Future<bool> sendPost(String token, String title, String desc, bool request,
+      AuthSettings authSettings) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
       'title': title,
@@ -58,6 +58,32 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         print(response.statusCode.toString());
         return false;
       } else {
+        if (authSettings.zipID != -1) {
+          var postId = await http.get(
+            'https://localhelper-backend.herokuapp.com/api/posts/me',
+            headers: headers,
+          );
+
+          var postIDJson = jsonDecode(postId.body).last;
+
+          // Post the new zip
+          Map<String, dynamic> jsonMap = {
+            'postId': postIDJson['post']['id'],
+            'zipId': authSettings.zipID,
+          };
+
+          // Encode
+          String jsonString = json.encode(jsonMap);
+
+          var result = await http.post(
+            'https://localhelper-backend.herokuapp.com/api/postZips',
+            headers: headers,
+            body: jsonString,
+          );
+
+          print(result.statusCode);
+        }
+
         return true;
       }
     } catch (e) {
@@ -192,7 +218,8 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                                 authSettings.token,
                                 titleController.text,
                                 descriptionController.text,
-                                request);
+                                request,
+                                authSettings);
                             if (result) {
                               settings.refreshPage();
                               Navigator.pop(context);

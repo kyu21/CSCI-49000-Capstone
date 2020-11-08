@@ -106,15 +106,20 @@ class _ScreenRegisterState extends State<ScreenRegister> {
       margin: EdgeInsets.only(top: 30.0),
       child: Column(
         children: [
-          txtSection("First Name", Icons.email, firstController),
+          txtSection(
+              "First Name", Icons.person, firstController, TextInputType.name),
           SizedBox(height: 30.0),
-          txtSection("Last Name", Icons.email, lastController),
+          txtSection(
+              "Last Name", Icons.person, lastController, TextInputType.name),
           SizedBox(height: 30.0),
-          txtSection("Gender", Icons.email, genderController),
+          txtSection(
+              "Gender", Icons.person, genderController, TextInputType.name),
           SizedBox(height: 30.0),
-          txtSection("Phone", Icons.email, phoneController),
+          txtSection(
+              "Phone", Icons.phone, phoneController, TextInputType.phone),
           SizedBox(height: 30.0),
-          txtSection("Email", Icons.email, emailController),
+          txtSection("Email", Icons.email, emailController,
+              TextInputType.emailAddress),
           SizedBox(height: 30.0),
           passSection("Password", Icons.lock, passwordController),
           SizedBox(height: 30.0),
@@ -124,10 +129,11 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     );
   }
 
-  TextFormField txtSection(
-      String title, IconData icons, TextEditingController control) {
+  TextFormField txtSection(String title, IconData icons,
+      TextEditingController control, TextInputType type) {
     return TextFormField(
       controller: control,
+      keyboardType: type,
       style: TextStyle(color: Colors.white70),
       decoration: InputDecoration(
         hintText: title,
@@ -232,6 +238,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
       // Try sending the info
       try {
+        // Send new data to database
         var response = await http.post(
           'https://localhelper-backend.herokuapp.com/api/auth/register',
           headers: {"Content-Type": "application/json"},

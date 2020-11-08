@@ -3,6 +3,7 @@
 */
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:localhelper/Additions/authSettings.dart';
@@ -48,7 +49,7 @@ class _ScreenUserSettingsState extends State<ScreenUserSettings> {
 
           // When finished
         } else if (snapshot.connectionState == ConnectionState.done) {
-          return OwnerDone(info);
+          return OwnerDone(info, authSettings);
         }
 
         // Failsafe
@@ -84,9 +85,10 @@ class OwnerWait extends StatelessWidget {
 class OwnerDone extends StatefulWidget {
   // Json
   final info;
-  OwnerDone(this.info);
+  AuthSettings authSettings;
+  OwnerDone(this.info, this.authSettings);
   @override
-  _OwnerDoneState createState() => _OwnerDoneState(this.info);
+  _OwnerDoneState createState() => _OwnerDoneState(this.info, authSettings);
 }
 
 class _OwnerDoneState extends State<OwnerDone> {
@@ -99,6 +101,7 @@ class _OwnerDoneState extends State<OwnerDone> {
   final genderController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
+  final zipController = TextEditingController();
 
   @override
   void dispose() {
@@ -107,15 +110,17 @@ class _OwnerDoneState extends State<OwnerDone> {
     genderController.dispose();
     phoneController.dispose();
     emailController.dispose();
+    zipController.dispose();
     super.dispose();
   }
 
-  _OwnerDoneState(this.info) {
+  _OwnerDoneState(this.info, AuthSettings authSettings) {
     firstNController.text = info['first'];
     lastNController.text = info['last'];
     genderController.text = info['gender'];
     phoneController.text = info['phone'];
     emailController.text = info['email'];
+    zipController.text = authSettings.zip;
   }
 
   // Loading
@@ -206,7 +211,6 @@ class _OwnerDoneState extends State<OwnerDone> {
               child: TextField(
                 controller: genderController,
                 cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
                 style: TextStyle(
                   color: settings.darkMode ? Colors.white : Colors.black,
                 ),
@@ -230,7 +234,7 @@ class _OwnerDoneState extends State<OwnerDone> {
               child: TextField(
                 controller: phoneController,
                 cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
+                keyboardType: TextInputType.phone,
                 style: TextStyle(
                   color: settings.darkMode ? Colors.white : Colors.black,
                 ),
@@ -254,12 +258,37 @@ class _OwnerDoneState extends State<OwnerDone> {
               child: TextField(
                 controller: emailController,
                 cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
+                keyboardType: TextInputType.emailAddress,
                 style: TextStyle(
                   color: settings.darkMode ? Colors.white : Colors.black,
                 ),
                 decoration: InputDecoration(
                   labelText: 'Email',
+                  labelStyle: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
+
+            // Zip
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: TextField(
+                controller: zipController,
+                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: TextStyle(
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Zip',
                   labelStyle: TextStyle(
                     color: settings.darkMode ? Colors.white : Colors.black,
                     fontSize: 30,
@@ -318,6 +347,67 @@ class _OwnerDoneState extends State<OwnerDone> {
           String link = 'https://localhelper-backend.herokuapp.com/api/users';
           var result = await http.put(link, headers: headers, body: jsonString);
           print(result.statusCode);
+
+          // ZIP CHECK
+          http.Response zipResponse = await http
+              .get('https://localhelper-backend.herokuapp.com/api/zips',
+                  headers: headers)
+              .timeout(Duration(seconds: 5));
+
+          var zipJson = jsonDecode(zipResponse.body);
+
+          int _zipID = -1;
+          String _zip = "";
+          bool _found = false;
+          for (int i = 0; i < zipJson.length; i++) {
+            if (zipJson[i]['zip'] == zipController.text.toString()) {
+              _zipID = zipJson[i]['id'];
+              _zip = zipJson[i]['zip'];
+              _found = true;
+              break;
+            }
+          }
+
+          authSettings.zipID = _zipID;
+          authSettings.zip = _zip;
+          // If the zip was in the database
+          if (_found) {
+            // Check if the Zip was already added before
+            http.Response zipCheck = await http
+                .get('https://localhelper-backend.herokuapp.com/api/users/me',
+                    headers: headers)
+                .timeout(Duration(seconds: 5));
+
+            var zipCheckJson = jsonDecode(zipCheck.body);
+
+            bool _found = false;
+            for (int i = 0; i < zipCheckJson['zips'].length; i++) {
+              if (zipCheckJson['zips'][i]['zip'] == _zip) {
+                _found = true;
+                break;
+              }
+            }
+
+            // If it wasn't added before add it
+            if (!_found) {
+              Map<String, dynamic> jsonMap = {
+                'userId': authSettings.ownerId,
+                'zipId': _zipID,
+              };
+
+              // Encode
+              String jsonString = json.encode(jsonMap);
+
+              http.Response zipPut = await http
+                  .post(
+                      'https://localhelper-backend.herokuapp.com/api/userZips',
+                      headers: headers,
+                      body: jsonString)
+                  .timeout(Duration(seconds: 5));
+              print(zipPut.statusCode);
+            }
+          }
+
           if (result.statusCode == 200) {
             // Update info
             authSettings.updateFirst(jsonMap['first']);

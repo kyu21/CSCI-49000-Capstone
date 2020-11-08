@@ -211,11 +211,11 @@ class _ScreenLoginState extends State<ScreenLogin> {
       };
 
       http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/posts/11',
+          .get('https://localhelper-backend.herokuapp.com/api/posts/me',
               headers: headers)
           .timeout(Duration(seconds: 5));
 
-      var json = jsonDecode(response.body);
+      var json = jsonDecode(response.body)[1];
       print(json);
     } catch (e) {
       print(e);
@@ -251,6 +251,16 @@ class _ScreenLoginState extends State<ScreenLogin> {
       authSettings.gender = _gender;
       authSettings.phone = _phone;
       authSettings.email = _email;
+
+      if (json['zips'].length > 0) {
+        authSettings.zipID = json['zips'].last['id'];
+        authSettings.zip = json['zips'].last['zip'];
+      } else {
+        authSettings.zipID = -1;
+        authSettings.zip = "";
+      }
+
+      print(json);
     } catch (e) {
       print(e);
     }

@@ -4,6 +4,8 @@ class AuthSettings extends ChangeNotifier {
   // Authorize
   String token = "";
   int ownerId = -1;
+  int zipID = -1;
+  String zip = "";
 
   // Personal Info
   String first = "";

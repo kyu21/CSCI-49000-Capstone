@@ -78,14 +78,35 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                   },
                 ),
               ),
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    return Posts(_testList[index]);
-                  },
-                  childCount: _testList.length,
-                ),
-              ),
+              _testList.length > 0
+                  ? SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          return Posts(_testList[index]);
+                        },
+                        childCount: _testList.length,
+                      ),
+                    )
+                  : SliverList(
+                      delegate: SliverChildListDelegate([
+                        Container(
+                          width: double.infinity,
+                          height: 625,
+                          child: Center(
+                            child: Text(
+                              'No Created Posts...',
+                              style: TextStyle(
+                                  color: settings.darkMode
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 20),
+                            ),
+                          ),
+                        ),
+                      ]),
+                    ),
             ],
           ),
         ),
@@ -158,11 +179,13 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
       } else {
         // handle it
         print("Can't get info.");
+
         // Stop the refresh animation
         _refreshController.loadComplete();
       }
     } on TimeoutException catch (e) {
       print('Timeout Error: $e');
+
       _refreshController.loadComplete();
     } on SocketException {
       _refreshController.loadComplete();
