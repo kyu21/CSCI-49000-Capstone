@@ -157,7 +157,7 @@ class OwnerDone extends StatelessWidget {
           Container(
             padding: EdgeInsets.all(10),
             child: Text(
-              'Address:',
+              'Main Zip:',
               style: TextStyle(
                 color: settings.darkMode ? Colors.white : Colors.black,
                 fontSize: 30,
@@ -169,7 +169,7 @@ class OwnerDone extends StatelessWidget {
             padding: EdgeInsets.all(10),
             child: info['zips'].length > 0
                 ? Text(
-                    info['zips'][0]['zip'] + ' ' + info['zips'][0]['name'],
+                    info['zips'].last['zip'],
                     style: TextStyle(
                       color: settings.darkMode ? Colors.white : Colors.black,
                       fontSize: 30,
