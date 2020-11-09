@@ -84,58 +84,23 @@ class ScreenSettings extends StatelessWidget {
             Expanded(
               child: Container(
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    Text(
-                      _first + ' ' + _last,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-
-                    // Gender
-                    SizedBox(height: 20),
-                    Text(
-                      'Gender: ' + _gender,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-
-                    // Phone
-                    SizedBox(height: 20),
-                    Text(
-                      'Phone: ' + _phone,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-
-                    // Email
-                    SizedBox(height: 20),
-                    Text(
-                      'Email: ' + _email,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-
-                    // Zip
-                    SizedBox(height: 20),
-                    _zip == ""
-                        ? Text(
-                            'Zip: None',
+                    FittedBox(
+                      alignment: Alignment.center,
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 4),
+                          Icon(
+                            Icons.person,
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "Name: " + _first + ' ' + _last,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 30,
@@ -144,9 +109,82 @@ class ScreenSettings extends StatelessWidget {
                                   ? Colors.white
                                   : Colors.black,
                             ),
-                          )
-                        : Text(
-                            'Zip: ' + _zip,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Gender
+                    SizedBox(height: 20),
+                    FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.family_restroom,
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Gender: ' + _gender,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Phone
+                    SizedBox(height: 20),
+                    FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: Row(children: [
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.phone,
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'Phone: ' + _phone,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ]),
+                    ),
+
+                    // Email
+                    SizedBox(height: 20),
+                    FittedBox(
+                      alignment: Alignment.centerLeft,
+                      fit: BoxFit.scaleDown,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.email,
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Email: ' + _email,
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 30,
@@ -154,6 +192,63 @@ class ScreenSettings extends StatelessWidget {
                               color: settings.darkMode
                                   ? Colors.white
                                   : Colors.black,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Zip
+                    SizedBox(height: 20),
+                    _zip == ""
+                        ? FittedBox(
+                            alignment: Alignment.centerLeft,
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              children: [
+                                SizedBox(width: 8),
+                                Icon(Icons.contact_mail,
+                                    color: settings.darkMode
+                                        ? Colors.white
+                                        : Colors.black),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Zip: None',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                    color: settings.darkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : FittedBox(
+                            alignment: Alignment.centerLeft,
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              children: [
+                                SizedBox(width: 8),
+                                Icon(Icons.contact_mail,
+                                    color: settings.darkMode
+                                        ? Colors.white
+                                        : Colors.black),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Zip: ' + _zip,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 30,
+                                    fontWeight: FontWeight.bold,
+                                    color: settings.darkMode
+                                        ? Colors.white
+                                        : Colors.black,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
 

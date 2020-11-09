@@ -115,54 +115,126 @@ class OwnerDone extends StatelessWidget {
       body: ListView(
         children: [
           // Gender
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Text(
-              'Gender: ' + info['gender'],
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+          FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    child: Icon(
+                      Icons.family_restroom,
+                      size: 20,
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all(5),
+                  child: Text(
+                    'Gender: ' + info['gender'],
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
           // Phone
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Text(
-              'Phone: ' + info['phone'],
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+          FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    child: Icon(
+                      Icons.phone,
+                      size: 20,
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Phone: ' + info['phone'],
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
           // Email
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Text(
-              'Email: ' + info['email'],
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+          FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    child: Icon(
+                      Icons.email,
+                      size: 20,
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Email: ' + info['email'],
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // Address
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Text(
-              'Main Zip:',
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+          // Zip
+          FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    child: Icon(
+                      Icons.house,
+                      size: 20,
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Main Zip:',
+                    style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
@@ -184,57 +256,75 @@ class OwnerDone extends StatelessWidget {
                   ),
           ),
 
-          // Languages
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Text(
-              'Languages: ',
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+          // // Languages
+          // Container(
+          //   padding: EdgeInsets.all(10),
+          //   child: Text(
+          //     'Languages: ',
+          //     style: TextStyle(
+          //       color: settings.darkMode ? Colors.white : Colors.black,
+          //       fontSize: 30,
+          //       fontWeight: FontWeight.bold,
+          //     ),
+          //   ),
+          // ),
 
-          Container(
-            padding: EdgeInsets.all(10),
-            child: info['languages'].length > 0
-                ? ListView.builder(
-                    physics: NeverScrollableScrollPhysics(),
-                    scrollDirection: Axis.vertical,
-                    shrinkWrap: true,
-                    itemCount: info['languages'].length,
-                    itemBuilder: (context, index) {
-                      return Text(
-                        info['languages'][index]['name'],
-                        style: TextStyle(
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
-                          fontSize: 30,
-                        ),
-                      );
-                    },
-                  )
-                : Text(
-                    'None',
+          // Container(
+          //   padding: EdgeInsets.all(10),
+          //   child: info['languages'].length > 0
+          //       ? ListView.builder(
+          //           physics: NeverScrollableScrollPhysics(),
+          //           scrollDirection: Axis.vertical,
+          //           shrinkWrap: true,
+          //           itemCount: info['languages'].length,
+          //           itemBuilder: (context, index) {
+          //             return Text(
+          //               info['languages'][index]['name'],
+          //               style: TextStyle(
+          //                 color:
+          //                     settings.darkMode ? Colors.white : Colors.black,
+          //                 fontSize: 30,
+          //               ),
+          //             );
+          //           },
+          //         )
+          //       : Text(
+          //           'None',
+          //           style: TextStyle(
+          //             color: settings.darkMode ? Colors.white : Colors.black,
+          //             fontSize: 30,
+          //           ),
+          //         ),
+          // ),
+
+          // Posts
+          FittedBox(
+            alignment: Alignment.centerLeft,
+            fit: BoxFit.scaleDown,
+            child: Row(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    child: Icon(
+                      Icons.contact_mail,
+                      size: 20,
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    'Posts: ',
                     style: TextStyle(
                       color: settings.darkMode ? Colors.white : Colors.black,
                       fontSize: 30,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-          ),
-
-          // Posts
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Text(
-              'Posts: ',
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+                ),
+              ],
             ),
           ),
           Container(

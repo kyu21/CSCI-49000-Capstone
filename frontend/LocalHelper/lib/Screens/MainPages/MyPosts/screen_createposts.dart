@@ -156,7 +156,10 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
             SwitchListTile(
               title: Text(
                 'Request?',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold),
               ),
               value: request,
               onChanged: (value) {
