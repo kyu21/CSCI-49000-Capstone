@@ -3,6 +3,8 @@ const db = require("../models");
 const convoController = {
     createConvo: createConvo,
     getAllConvosForUser: getAllConvosForUser,
+    leaveConvo: leaveConvo,
+    deleteConvo: deleteConvo,
 };
 
 //takes a list of users and makes a new convo with them as participants
@@ -72,6 +74,61 @@ async function getAllConvosForUser(req, res, next) {
         );
 
         res.status(200).json(allConvos)
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function leaveConvo(req, res, next) {
+    try {
+        const {
+            userId,
+            convoId,
+        } = req.params;
+        let user = userId;
+        let convo = convoId;
+        
+        db.userConvos.destroy({ 
+            where: {userId: user, convoId: convo}
+        }).then((result) => {
+            res.sendStatus(200)
+        })
+        .catch((err) => {
+            console.log(err)
+            res.sendStatus(500)
+        })
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+//to be used when the last member of a convo leaves the group.
+//deletes all messages of a convo, its row in convo table, and the last member's userconvo row
+async function deleteConvo(req, res, next) {
+    try {
+        const {
+            convoId,
+        } = req.params;
+
+        let convo = convoId;
+
+        await db.messages.destroy({ 
+            where: {convoId: convo}
+        })
+        
+        await db.userConvos.destroy({ 
+            where: {convoId: convo}
+        })
+
+        await db.convos.destroy({ 
+            where: {id: convo}
+        })
+
+
+
+        res.sendStatus(200)
 
     } catch (err) {
         console.log(err);
