@@ -2,10 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/authSettings.dart';
-import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Additions/users.dart';
-import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Additions/Widgets/users.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
@@ -16,10 +15,17 @@ class ScreenUsers extends StatefulWidget {
 }
 
 class _ScreenUsersState extends State<ScreenUsers> {
+// VARIABLES ===================================================================
+
+  // Controllers
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
 
+  // Lists
   List userList = List();
+
+// =============================================================================
+// FUNCTIONS ===================================================================
 
   void _onRefresh(String token) async {
     setState(() {
@@ -90,6 +96,9 @@ class _ScreenUsersState extends State<ScreenUsers> {
       _refreshController.loadComplete();
     }
   }
+
+// =============================================================================
+// MAIN ========================================================================
 
   @override
   Widget build(BuildContext context) {

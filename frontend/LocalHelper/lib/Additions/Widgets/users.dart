@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Additions/Screens/screen_owner.dart';
 import 'package:provider/provider.dart';
 
 class Users extends StatelessWidget {

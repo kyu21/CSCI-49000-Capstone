@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/authSettings.dart';
-import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Screens/MainPages/Posts/screen_owner.dart';
-import 'package:localhelper/Screens/MainPages/Posts/screen_full.dart';
-import 'package:localhelper/Screens/MainPages/Settings/screen_userSettings.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Additions/Screens/screen_full.dart';
+import 'package:localhelper/Additions/Screens/screen_owner.dart';
+import 'package:localhelper/Screens/Settings/screen_userSettings.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart'; //for date format
 
 class Posts extends StatelessWidget {
   final double rad = 30;
   final info;
   Posts(this.info);
-
-  String convertDateTimeDisplay(String date) {
-    final DateFormat displayFormater = DateFormat('yyyy-MM-dd HH:mm:ss.SSS');
-    final DateFormat serverFormater = DateFormat('dd-MM-yyyy');
-    final DateTime displayDate = displayFormater.parse(date);
-    final String formatted = serverFormater.format(displayDate);
-    return formatted;
-  }
 
   @override
   Widget build(BuildContext context) {

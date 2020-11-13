@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/authSettings.dart';
-import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Screens/MainPages/Settings/screen_userSettings.dart';
-import 'package:localhelper/initialize.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Main/initialize.dart';
+import 'package:localhelper/Screens/Settings/screen_userSettings.dart';
 import 'package:provider/provider.dart';
 
 class ScreenSettings extends StatelessWidget {

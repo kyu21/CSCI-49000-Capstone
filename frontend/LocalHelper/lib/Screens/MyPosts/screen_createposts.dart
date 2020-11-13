@@ -1,45 +1,41 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/authSettings.dart';
-import 'package:localhelper/Additions/settings.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 
-class ScreenEditPosts extends StatefulWidget {
-  final int postId;
-  final String title;
-  final String description;
-  final bool req;
-  ScreenEditPosts(this.postId, this.title, this.description, this.req);
+class ScreenCreatePosts extends StatefulWidget {
   @override
-  _ScreenEditPostsState createState() =>
-      _ScreenEditPostsState(title, description, req);
+  _ScreenCreatePostsState createState() => _ScreenCreatePostsState();
 }
 
-class _ScreenEditPostsState extends State<ScreenEditPosts> {
+class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
+// VARIABLES ===================================================================
+
   // Text Controllers
   final titleController = TextEditingController();
+  final nameController = TextEditingController();
   final descriptionController = TextEditingController();
 
   // Prevent Multi sending
   bool enableSend = true;
-  bool request;
+  bool request = false;
 
-  _ScreenEditPostsState(String title, String description, this.request) {
-    titleController.text = title;
-    descriptionController.text = description;
-  }
+// =============================================================================
+// FUNCTIONS ===================================================================
 
   @override
   void dispose() {
     titleController.dispose();
+    nameController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> sendPost(
-      String token, String title, String desc, bool request) async {
+  Future<bool> sendPost(String token, String title, String desc, bool request,
+      AuthSettings authSettings) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
       'title': title,
@@ -56,26 +52,61 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
         'accept': 'application/json',
         'authorization': token,
       };
-      var response = await http.put(
-        'https://localhelper-backend.herokuapp.com/api/posts/' +
-            widget.postId.toString(),
+      var response = await http.post(
+        'https://localhelper-backend.herokuapp.com/api/posts',
         headers: headers,
         body: jsonString,
       );
-      print(response.statusCode);
-      if (response.statusCode == 200) {
-        Navigator.pop(context);
+
+      // Error
+      if (response.statusCode != 201) {
+        print(response.statusCode.toString());
+        return false;
+      } else {
+        // If the zip
+        if (authSettings.zipID != -1) {
+          var postId = await http.get(
+            'https://localhelper-backend.herokuapp.com/api/posts/me',
+            headers: headers,
+          );
+
+          var postIDJson = jsonDecode(postId.body).last;
+
+          // Post the new zip
+          Map<String, dynamic> jsonMap = {
+            'postId': postIDJson['post']['id'],
+            'zipId': authSettings.zipID,
+          };
+
+          // Encode
+          String jsonString = json.encode(jsonMap);
+
+          var result = await http.post(
+            'https://localhelper-backend.herokuapp.com/api/postZips',
+            headers: headers,
+            body: jsonString,
+          );
+
+          print(result.statusCode);
+        }
+
+        return true;
       }
     } catch (e) {
       print(e);
+      return false;
     }
   }
+
+// =============================================================================
+// MAIN ========================================================================
 
   @override
   Widget build(BuildContext context) {
     // Providers
     Settings settings = Provider.of<Settings>(context);
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
+
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
@@ -92,7 +123,7 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
           ),
           centerTitle: true,
           title: Text(
-            'Edit Post',
+            'Create New Post',
             style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
@@ -133,7 +164,10 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
             SwitchListTile(
               title: Text(
                 'Request?',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold),
               ),
               value: request,
               onChanged: (value) {
@@ -187,15 +221,27 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
                           setState(() {
                             enableSend = false;
                           });
-                          await sendPost(
-                              authSettings.token,
-                              titleController.text,
-                              descriptionController.text,
-                              request);
+                          if (titleController.text.isEmpty &&
+                              descriptionController.text.isEmpty) {
+                            Navigator.pop(context, null);
+                          } else {
+                            // Send post to internet.
+                            var result = await sendPost(
+                                authSettings.token,
+                                titleController.text,
+                                descriptionController.text,
+                                request,
+                                authSettings);
+                            if (result) {
+                              settings.refreshPage();
+                              Navigator.pop(context);
+                            } else {
+                              setState(() {
+                                enableSend = true;
+                              });
+                            }
+                          }
                         }
-                        setState(() {
-                          enableSend = true;
-                        });
                       },
                       splashColor:
                           settings.darkMode ? Colors.red : Colors.black,
@@ -204,7 +250,7 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
                       minWidth: double.infinity,
                       height: 60,
                       child: Text(
-                        'Save',
+                        'Submit',
                         style: TextStyle(
                           color:
                               settings.darkMode ? Colors.white : Colors.black,

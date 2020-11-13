@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/authSettings.dart';
-import 'package:localhelper/Additions/posts_widget.dart';
-import 'package:localhelper/Additions/settings.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Widgets/posts_widget.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +15,8 @@ class ScreenPosts extends StatefulWidget {
 }
 
 class _ScreenPostsState extends State<ScreenPosts> {
+// VARIABLES ===================================================================
+
   // Controllers
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
@@ -24,11 +26,130 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   bool loading = false;
 
+// =============================================================================
+// FUNCTIONS ===================================================================
+
   @override
   void dispose() {
     zipController.dispose();
     super.dispose();
   }
+
+  void _onRefresh(String token, String z) async {
+    setState(() {
+      // Reset start value
+      Provider.of<Settings>(context, listen: false).updateListNum(0);
+
+      // Clear the lists
+      postInfo.clear();
+
+      // Find Images
+      _onLoading(token, z);
+
+      // Trigger controller complete
+      _refreshController.refreshCompleted();
+    });
+  }
+
+  void _onLoading(String token, String z) async {
+    // Settings
+    int maxLoad = 5;
+    int timeout = 10;
+
+    setState(() {
+      loading = true;
+    });
+
+    // Starting index
+    int startI = Provider.of<Settings>(context, listen: false).listNum;
+
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+
+      http.Response response = await http
+          .get('https://localhelper-backend.herokuapp.com/api/posts',
+              headers: headers)
+          .timeout(Duration(seconds: timeout));
+
+      if (response.statusCode == 200) {
+        // Set state
+        setState(() {
+          // Save the variable in a json
+          List json = jsonDecode(response.body);
+
+          // If there's more to the posts...
+          if (startI <= json.length) {
+            for (int i = 0; (i < (json.length - startI)) && i < maxLoad; i++) {
+              // Add from the saved placement
+              int newIndex = startI + i;
+
+              // Loop through zips
+              if (z != "") {
+                bool _found = false;
+
+                for (int i = 0; i < json[newIndex]['zips'].length; i++) {
+                  if (json[newIndex]['zips'][i]['zip'] == z) {
+                    postInfo.add(json[newIndex]);
+                    _found = true;
+                    Provider.of<Settings>(context, listen: false)
+                        .updateListNum(newIndex + 1);
+                    break;
+                  }
+                }
+
+                // If couldn't find
+                if (!_found) {
+                  maxLoad++;
+                  Provider.of<Settings>(context, listen: false)
+                      .updateListNum(newIndex + 1);
+                }
+
+                // Scan normally
+              } else {
+                postInfo.add(json[newIndex]);
+                // Remember placement
+                Provider.of<Settings>(context, listen: false)
+                    .updateListNum(newIndex + 1);
+              }
+            }
+          }
+        });
+
+        // Stop the refresh animation
+        _refreshController.loadComplete();
+        setState(() {
+          loading = false;
+        });
+      } else {
+        // handle it
+        print("Can't get info.");
+
+        // Stop the refresh animation
+        _refreshController.loadComplete();
+        setState(() {
+          loading = false;
+        });
+      }
+    } on TimeoutException catch (e) {
+      print('Timeout Error: $e');
+      _refreshController.loadComplete();
+      setState(() {
+        loading = false;
+      });
+    } on SocketException {
+      _refreshController.loadComplete();
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
+// =============================================================================
+// MAIN ========================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -168,118 +289,5 @@ class _ScreenPostsState extends State<ScreenPosts> {
         ),
       ),
     );
-  }
-
-  void _onRefresh(String token, String z) async {
-    setState(() {
-      // Reset start value
-      Provider.of<Settings>(context, listen: false).updateListNum(0);
-
-      // Clear the lists
-      postInfo.clear();
-
-      // Find Images
-      _onLoading(token, z);
-
-      // Trigger controller complete
-      _refreshController.refreshCompleted();
-    });
-  }
-
-  void _onLoading(String token, String z) async {
-    // Settings
-    int maxLoad = 5;
-    int timeout = 10;
-
-    setState(() {
-      loading = true;
-    });
-
-    // Starting index
-    int startI = Provider.of<Settings>(context, listen: false).listNum;
-
-    try {
-      Map<String, String> headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'authorization': token,
-      };
-
-      http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/posts',
-              headers: headers)
-          .timeout(Duration(seconds: timeout));
-
-      if (response.statusCode == 200) {
-        // Set state
-        setState(() {
-          // Save the variable in a json
-          List json = jsonDecode(response.body);
-
-          // If there's more to the posts...
-          if (startI <= json.length) {
-            for (int i = 0; (i < (json.length - startI)) && i < maxLoad; i++) {
-              // Add from the saved placement
-              int newIndex = startI + i;
-
-              // Loop through zips
-              if (z != "") {
-                bool _found = false;
-
-                for (int i = 0; i < json[newIndex]['zips'].length; i++) {
-                  if (json[newIndex]['zips'][i]['zip'] == z) {
-                    postInfo.add(json[newIndex]);
-                    _found = true;
-                    Provider.of<Settings>(context, listen: false)
-                        .updateListNum(newIndex + 1);
-                    break;
-                  }
-                }
-
-                // If couldn't find
-                if (!_found) {
-                  maxLoad++;
-                  Provider.of<Settings>(context, listen: false)
-                      .updateListNum(newIndex + 1);
-                }
-
-                // Scan normally
-              } else {
-                postInfo.add(json[newIndex]);
-                // Remember placement
-                Provider.of<Settings>(context, listen: false)
-                    .updateListNum(newIndex + 1);
-              }
-            }
-          }
-        });
-
-        // Stop the refresh animation
-        _refreshController.loadComplete();
-        setState(() {
-          loading = false;
-        });
-      } else {
-        // handle it
-        print("Can't get info.");
-
-        // Stop the refresh animation
-        _refreshController.loadComplete();
-        setState(() {
-          loading = false;
-        });
-      }
-    } on TimeoutException catch (e) {
-      print('Timeout Error: $e');
-      _refreshController.loadComplete();
-      setState(() {
-        loading = false;
-      });
-    } on SocketException {
-      _refreshController.loadComplete();
-      setState(() {
-        loading = false;
-      });
-    }
   }
 }

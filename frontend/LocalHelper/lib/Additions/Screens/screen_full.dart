@@ -1,12 +1,12 @@
 // Screen for viewing the posts in full screen.
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:localhelper/Additions/authSettings.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'dart:convert';
 
-import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Additions/users.dart';
-import 'package:localhelper/Screens/MainPages/MyPosts/screen_editposts.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Additions/Widgets/users.dart';
+import 'package:localhelper/Screens/MyPosts/screen_editposts.dart';
 import 'package:provider/provider.dart';
 
 class ScreenPostsFull extends StatefulWidget {

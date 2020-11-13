@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:localhelper/Additions/authSettings.dart';
-import 'package:localhelper/Additions/settings.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
 
 class ScreenOwner extends StatefulWidget {
