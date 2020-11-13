@@ -26,6 +26,8 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   bool loading = false;
 
+  List<bool> isSelection = [false, false];
+
 // =============================================================================
 // FUNCTIONS ===================================================================
 
@@ -149,6 +151,109 @@ class _ScreenPostsState extends State<ScreenPosts> {
   }
 
 // =============================================================================
+// WIDGETS =====================================================================
+
+  TextFormField zipSearch(Settings settings, AuthSettings authSettings) {
+    return TextFormField(
+      cursorColor: settings.darkMode ? Colors.white : Colors.black,
+      keyboardType: TextInputType.number,
+      onEditingComplete: () =>
+          _onRefresh(authSettings.token, zipController.text),
+      controller: zipController,
+      style: TextStyle(color: settings.darkMode ? Colors.white : Colors.black),
+      decoration: InputDecoration(
+        hintText: 'Zip',
+        hintStyle:
+            TextStyle(color: settings.darkMode ? Colors.white : Colors.black),
+        icon: Icon(
+          Icons.search,
+          color: settings.darkMode ? Colors.white : Colors.black,
+        ),
+      ),
+    );
+  }
+
+  SingleChildScrollView sliverToggleButtons(
+      Settings settings, AuthSettings authSettings, String z) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: ToggleButtons(
+        splashColor: Colors.transparent,
+        borderColor: Colors.transparent,
+        selectedBorderColor: Colors.transparent,
+        selectedColor: Colors.transparent,
+        fillColor: Colors.transparent,
+        children: [
+          // Request
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 80,
+              height: 25,
+              decoration: BoxDecoration(
+                  color: isSelection[0]
+                      ? settings.darkMode
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                  child: Text(
+                'Request',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isSelection[0]
+                      ? settings.darkMode
+                          ? Colors.black
+                          : Colors.white
+                      : Colors.white70,
+                ),
+              )),
+            ),
+          ),
+
+          // Local
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 80,
+              height: 25,
+              decoration: BoxDecoration(
+                  color: isSelection[1]
+                      ? settings.darkMode
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                  child: Text(
+                'Local',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isSelection[1]
+                      ? settings.darkMode
+                          ? Colors.black
+                          : Colors.white
+                      : Colors.white70,
+                ),
+              )),
+            ),
+          ),
+        ],
+        onPressed: (index) {
+          setState(() async {
+            isSelection[index] = !isSelection[index];
+            await _onRefresh(authSettings.token, z);
+          });
+        },
+        isSelected: isSelection,
+      ),
+    );
+  }
+
+// =============================================================================
 // MAIN ========================================================================
 
   @override
@@ -170,123 +275,94 @@ class _ScreenPostsState extends State<ScreenPosts> {
       child: Scaffold(
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
         body: SmartRefresher(
-          physics: BouncingScrollPhysics(),
-          enablePullDown: true,
-          enablePullUp: true,
-          controller: _refreshController,
-          onLoading: () => _onLoading(authSettings.token, zipController.text),
-          onRefresh: () => _onRefresh(authSettings.token, zipController.text),
-          header: MaterialClassicHeader(),
-          child: postInfo.isNotEmpty
-              ? CustomScrollView(
-                  reverse: true,
-                  slivers: [
-                    SliverAppBar(
-                      backgroundColor:
-                          settings.darkMode ? Colors.black : Colors.white,
-                      floating: true,
-                      automaticallyImplyLeading: false,
-                      elevation: 0,
-                      flexibleSpace: Padding(
-                        padding: const EdgeInsets.all(10),
-                        child: TextFormField(
-                          cursorColor:
-                              settings.darkMode ? Colors.white : Colors.black,
-                          keyboardType: TextInputType.number,
-                          onEditingComplete: () => _onRefresh(
-                              authSettings.token, zipController.text),
-                          controller: zipController,
-                          style: TextStyle(
-                              color: settings.darkMode
-                                  ? Colors.white
-                                  : Colors.black),
-                          decoration: InputDecoration(
-                            hintText: 'Zip',
-                            hintStyle: TextStyle(
-                                color: settings.darkMode
-                                    ? Colors.white
-                                    : Colors.black),
-                            icon: Icon(
-                              Icons.search,
-                              color: settings.darkMode
-                                  ? Colors.white
-                                  : Colors.black,
+            physics: BouncingScrollPhysics(),
+            enablePullDown: true,
+            enablePullUp: true,
+            controller: _refreshController,
+            onLoading: () => _onLoading(authSettings.token, zipController.text),
+            onRefresh: () => _onRefresh(authSettings.token, zipController.text),
+            header: MaterialClassicHeader(),
+            child: postInfo.isNotEmpty
+                ? CustomScrollView(
+                    reverse: true,
+                    slivers: [
+                      SliverAppBar(
+                        backgroundColor:
+                            settings.darkMode ? Colors.black : Colors.white,
+                        floating: true,
+                        automaticallyImplyLeading: false,
+                        elevation: 0,
+                        expandedHeight: 105,
+                        flexibleSpace: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            children: [
+                              // Zip Search
+                              zipSearch(settings, authSettings),
+
+                              // Toggle Buttons
+                              SizedBox(height: 10),
+                              sliverToggleButtons(
+                                  settings, authSettings, zipController.text),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Posts
+                      SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            if (postInfo.isEmpty) {
+                              return Container(
+                                color: Colors.black,
+                              );
+                            } else {
+                              return Posts(postInfo[index]);
+                            }
+                          },
+                          childCount: postInfo.length,
+                        ),
+                      ),
+                    ],
+                  )
+                : CustomScrollView(
+                    reverse: true,
+                    slivers: [
+                      SliverAppBar(
+                        backgroundColor:
+                            settings.darkMode ? Colors.black : Colors.white,
+                        floating: true,
+                        automaticallyImplyLeading: false,
+                        elevation: 0,
+                        expandedHeight: 105,
+                        flexibleSpace: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            children: [
+                              // Zip Search
+                              zipSearch(settings, authSettings),
+
+                              // Toggle Buttons
+                              SizedBox(height: 10),
+                              sliverToggleButtons(
+                                  settings, authSettings, zipController.text),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SliverList(
+                        delegate: SliverChildListDelegate([
+                          Container(
+                            height: 500,
+                            color: Colors.transparent,
+                            child: Center(
+                              child: CircularProgressIndicator(),
                             ),
                           ),
-                        ),
+                        ]),
                       ),
-                    ),
-                    // Posts
-                    SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          if (postInfo.isEmpty) {
-                            return Container(
-                              color: Colors.black,
-                            );
-                          } else {
-                            return Posts(postInfo[index]);
-                          }
-                        },
-                        childCount: postInfo.length,
-                      ),
-                    ),
-                  ],
-                )
-              : Column(
-                  verticalDirection: VerticalDirection.up,
-                  children: [
-                    // Zip input
-                    Padding(
-                      padding: const EdgeInsets.all(15),
-                      child: TextFormField(
-                        cursorColor:
-                            settings.darkMode ? Colors.white : Colors.black,
-                        keyboardType: TextInputType.number,
-                        onEditingComplete: () =>
-                            _onRefresh(authSettings.token, zipController.text),
-                        controller: zipController,
-                        style: TextStyle(
-                            color: settings.darkMode
-                                ? Colors.white
-                                : Colors.black),
-                        decoration: InputDecoration(
-                          hintText: 'Zip',
-                          hintStyle: TextStyle(
-                              color: settings.darkMode
-                                  ? Colors.white
-                                  : Colors.black),
-                          icon: Icon(
-                            Icons.search,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // No Posts Found
-                    Expanded(
-                      child: Container(
-                        child: Center(
-                          child: loading
-                              ? CircularProgressIndicator()
-                              : Text(
-                                  'No Posts Found...',
-                                  style: TextStyle(
-                                      color: settings.darkMode
-                                          ? Colors.white
-                                          : Colors.black,
-                                      fontWeight: FontWeight.w900,
-                                      fontStyle: FontStyle.italic,
-                                      fontSize: 20),
-                                ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-        ),
+                    ],
+                  )),
       ),
     );
   }
