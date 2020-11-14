@@ -3,6 +3,8 @@ const db = require("../models");
 const convoController = {
     createConvo: createConvo,
     getAllConvosForUser: getAllConvosForUser,
+    getAllUsersinConvo: getAllUsersinConvo,
+    addUser: addUser,
     leaveConvo: leaveConvo,
     deleteConvo: deleteConvo,
 };
@@ -74,6 +76,49 @@ async function getAllConvosForUser(req, res, next) {
         );
 
         res.status(200).json(allConvos)
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function getAllUsersinConvo(req, res, next) {
+    try {
+        const {
+            convoId
+        } = req.params;
+        const allUserConvos = await db.userConvos.findAll({
+            where: {
+                convoId: convoId
+            }
+        });
+
+        res.status(200).json(allUserConvos.map(x => x.userId))
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function addUser(req, res, next) {
+    try {
+        const {
+            userId,
+            convoId,
+        } = req.params;
+        let user = userId;
+        let convo = convoId;
+        
+        db.userConvos.create({
+            userId: user,
+            convoId: convo
+        }).then((result) => {
+            res.sendStatus(200)
+        })
+        .catch((err) => {
+            console.log(err)
+            res.sendStatus(500)
+        })
 
     } catch (err) {
         console.log(err);
