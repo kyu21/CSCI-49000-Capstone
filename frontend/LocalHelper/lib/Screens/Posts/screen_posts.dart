@@ -344,8 +344,13 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                 }
                               } else {
                                 if (isSelection[bLocal]) {
-                                  if (postInfo[index]['zips'].last['zip'] ==
-                                      authSettings.zip) checkZip = true;
+                                  if (postInfo[index]['zips'].length > 0) {
+                                    if (postInfo[index]['zips'].last['zip'] ==
+                                        authSettings.zip) checkZip = true;
+
+                                    if (authSettings.zip == "None")
+                                      checkZip = false;
+                                  }
                                 } else {
                                   checkZip = true;
                                 }
