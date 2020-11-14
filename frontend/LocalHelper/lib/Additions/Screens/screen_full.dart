@@ -19,10 +19,15 @@ class ScreenPostsFull extends StatefulWidget {
 }
 
 class _ScreenPostsFullState extends State<ScreenPostsFull> {
+// VARIABLES ===================================================================
+
   // Json info
   var info;
   bool interested = false;
   var interestJson;
+
+// =============================================================================
+// FUNCTIONS ===================================================================
 
   // Get details
   Future getOwnerDetails(AuthSettings authSettings) async {
@@ -58,6 +63,9 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
       Navigator.pop(context);
     }
   }
+
+// =============================================================================
+// MAIN ========================================================================
 
   @override
   Widget build(BuildContext context) {

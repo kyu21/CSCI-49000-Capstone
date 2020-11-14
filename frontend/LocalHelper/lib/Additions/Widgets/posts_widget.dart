@@ -1,20 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:localhelper/Additions/Screens/screen_full.dart';
-import 'package:localhelper/Additions/Screens/screen_owner.dart';
-import 'package:localhelper/Screens/Settings/screen_userSettings.dart';
 import 'package:provider/provider.dart';
 
 class Posts extends StatelessWidget {
+// VARIABLES ===================================================================
+
   final double rad = 30;
   final info;
+
+// =============================================================================
+// FUNCTIONS ===================================================================
+
   Posts(this.info);
+
+// =============================================================================
 
   @override
   Widget build(BuildContext context) {
+    // Info
+    final String first = info['owner']['first'];
+    final String last = info['owner']['last'];
+    final String title = info['post']['title'];
+    final String description = info['post']['description'];
+    final int postId = info['post']['id'];
+
+    // Providers
     Settings settings = Provider.of<Settings>(context);
-    AuthSettings authSettings = Provider.of<AuthSettings>(context);
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Container(
@@ -34,118 +47,25 @@ class Posts extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  // Name / Date
-                  GestureDetector(
-                    onTap: () async {
-                      if (info['owner'] != null) {
-                        await Navigator.push(context,
-                            MaterialPageRoute(builder: (context) {
-                          final ownerId = info['owner']['id'];
-                          if (ownerId != authSettings.ownerId)
-                            return ScreenOwner(ownerId);
-                          else
-                            return ScreenUserSettings();
-                        }));
-                        settings.refreshPage();
-                      }
-                    },
-                    child: Container(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          info['owner'] != null
-                              ? Text(
-                                  info['owner']['first'] +
-                                      ' ' +
-                                      info['owner']['last'],
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.left,
-                                )
-                              : Text(
-                                  'Unknown',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  textAlign: TextAlign.left,
-                                ),
-                          Text(
-                            info['post']['createdAt'],
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-
-                          // Zip
-                          if (info['zips'] != null && info['zips'].length > 0)
-                            Text(
-                              "Zip: " + info['zips'][0]['zip'],
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-
-                          // Requests
-                          SizedBox(height: 5),
-                          info['post']['is_request']
-                              ? Text(
-                                  'Request: Yes',
-                                  style: TextStyle(
-                                    color: Colors.lightGreen,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                )
-                              : Text(
-                                  'Request: No',
-                                  style: TextStyle(
-                                    color: Colors.redAccent,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Title
-                  SizedBox(width: 30),
-                  Expanded(
-                    child: Container(
+              // Title
+              Center(
+                  child: Container(
                       child: Text(
-                        info['post']['title'],
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 23,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                    ),
-                  )
-                ],
-              ),
+                title,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold),
+              ))),
 
               // Description
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               Expanded(
                 child: GestureDetector(
                   onTap: () async {
                     await Navigator.push(context,
                         MaterialPageRoute(builder: (context) {
-                      return ScreenPostsFull(info['post']['id']);
+                      return ScreenPostsFull(postId);
                     }));
                     settings.refreshPage();
                   },
@@ -154,8 +74,10 @@ class Posts extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(
-                        info['post']['description'],
+                        description,
                         style: TextStyle(
+                          height: 1.5,
+                          fontSize: 20,
                           color:
                               settings.darkMode ? Colors.white : Colors.black,
                         ),

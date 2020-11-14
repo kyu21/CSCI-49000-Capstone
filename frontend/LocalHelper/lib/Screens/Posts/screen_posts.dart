@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Widgets/posts_widget.dart';
@@ -8,6 +6,7 @@ import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:http/http.dart' as http;
+import 'dart:math';
 
 class ScreenPosts extends StatefulWidget {
   @override
@@ -24,9 +23,18 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   List postInfo = List(); // Holds a json of people
 
+  // Booleans
   bool loading = false;
 
-  List<bool> isSelection = [false, false];
+  // Toggle booleans
+  final int bAll = 0;
+  final int bRequest = 1;
+  final int bLocal = 2;
+  List<bool> isSelection = [
+    true, // All
+    false, // Request
+    false, // Local
+  ];
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -37,117 +45,67 @@ class _ScreenPostsState extends State<ScreenPosts> {
     super.dispose();
   }
 
-  void _onRefresh(String token, String z) async {
+  void _onRefresh() async {
     setState(() {
       // Reset start value
-      Provider.of<Settings>(context, listen: false).updateListNum(0);
+      Provider.of<Settings>(context, listen: false).listNum = 0;
 
       // Clear the lists
       postInfo.clear();
 
       // Find Images
-      _onLoading(token, z);
+      _onLoading();
 
       // Trigger controller complete
       _refreshController.refreshCompleted();
     });
   }
 
-  void _onLoading(String token, String z) async {
-    // Settings
-    int maxLoad = 5;
-    int timeout = 10;
+  void _onLoading() async {
+    // VARIABLES ---------------------------------------------------------------
 
     setState(() {
       loading = true;
     });
 
-    // Starting index
-    int startI = Provider.of<Settings>(context, listen: false).listNum;
+    // Settings
+    final int timeout = 10;
+    final int newAmount = 5;
+
+    // Providers
+    Provider.of<Settings>(context, listen: false).updateListNum(newAmount);
+    final String token =
+        Provider.of<AuthSettings>(context, listen: false).token;
+
+    // Header
+    Map<String, String> headers = {
+      'content-type': 'application/json',
+      'accept': 'application/json',
+      'authorization': token,
+    };
+
+    // -------------------------------------------------------------------------
+    // MAIN --------------------------------------------------------------------
 
     try {
-      Map<String, String> headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'authorization': token,
-      };
-
+      // HTTP Get
       http.Response response = await http
           .get('https://localhelper-backend.herokuapp.com/api/posts',
               headers: headers)
           .timeout(Duration(seconds: timeout));
 
+      // If it worked
       if (response.statusCode == 200) {
-        // Set state
-        setState(() {
-          // Save the variable in a json
-          List json = jsonDecode(response.body);
-
-          // If there's more to the posts...
-          if (startI <= json.length) {
-            for (int i = 0; (i < (json.length - startI)) && i < maxLoad; i++) {
-              // Add from the saved placement
-              int newIndex = startI + i;
-
-              // Loop through zips
-              if (z != "") {
-                bool _found = false;
-
-                for (int i = 0; i < json[newIndex]['zips'].length; i++) {
-                  if (json[newIndex]['zips'][i]['zip'] == z) {
-                    postInfo.add(json[newIndex]);
-                    _found = true;
-                    Provider.of<Settings>(context, listen: false)
-                        .updateListNum(newIndex + 1);
-                    break;
-                  }
-                }
-
-                // If couldn't find
-                if (!_found) {
-                  maxLoad++;
-                  Provider.of<Settings>(context, listen: false)
-                      .updateListNum(newIndex + 1);
-                }
-
-                // Scan normally
-              } else {
-                postInfo.add(json[newIndex]);
-                // Remember placement
-                Provider.of<Settings>(context, listen: false)
-                    .updateListNum(newIndex + 1);
-              }
-            }
-          }
-        });
-
-        // Stop the refresh animation
-        _refreshController.loadComplete();
-        setState(() {
-          loading = false;
-        });
-      } else {
-        // handle it
-        print("Can't get info.");
-
-        // Stop the refresh animation
-        _refreshController.loadComplete();
-        setState(() {
-          loading = false;
-        });
+        List json = jsonDecode(response.body);
+        postInfo = json;
       }
-    } on TimeoutException catch (e) {
-      print('Timeout Error: $e');
-      _refreshController.loadComplete();
-      setState(() {
-        loading = false;
-      });
-    } on SocketException {
-      _refreshController.loadComplete();
-      setState(() {
-        loading = false;
-      });
+    } catch (e) {
+      print(e);
     }
+    setState(() {
+      loading = false;
+      _refreshController.loadComplete();
+    });
   }
 
 // =============================================================================
@@ -155,10 +113,10 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   TextFormField zipSearch(Settings settings, AuthSettings authSettings) {
     return TextFormField(
+      enabled: !isSelection[bLocal],
       cursorColor: settings.darkMode ? Colors.white : Colors.black,
       keyboardType: TextInputType.number,
-      onEditingComplete: () =>
-          _onRefresh(authSettings.token, zipController.text),
+      onEditingComplete: () => _onRefresh(),
       controller: zipController,
       style: TextStyle(color: settings.darkMode ? Colors.white : Colors.black),
       decoration: InputDecoration(
@@ -174,7 +132,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
   }
 
   SingleChildScrollView sliverToggleButtons(
-      Settings settings, AuthSettings authSettings, String z) {
+      Settings settings, AuthSettings authSettings) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: ToggleButtons(
@@ -184,6 +142,35 @@ class _ScreenPostsState extends State<ScreenPosts> {
         selectedColor: Colors.transparent,
         fillColor: Colors.transparent,
         children: [
+          // All
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 80,
+              height: 25,
+              decoration: BoxDecoration(
+                  color: isSelection[bAll]
+                      ? settings.darkMode
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                  child: Text(
+                'All',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isSelection[bAll]
+                      ? settings.darkMode
+                          ? Colors.black
+                          : Colors.white
+                      : Colors.white70,
+                ),
+              )),
+            ),
+          ),
+
           // Request
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -191,7 +178,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
               width: 80,
               height: 25,
               decoration: BoxDecoration(
-                  color: isSelection[0]
+                  color: isSelection[bRequest]
                       ? settings.darkMode
                           ? Colors.white
                           : Colors.black
@@ -203,7 +190,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: isSelection[0]
+                  color: isSelection[bRequest]
                       ? settings.darkMode
                           ? Colors.black
                           : Colors.white
@@ -220,7 +207,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
               width: 80,
               height: 25,
               decoration: BoxDecoration(
-                  color: isSelection[1]
+                  color: isSelection[bLocal]
                       ? settings.darkMode
                           ? Colors.white
                           : Colors.black
@@ -232,7 +219,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
-                  color: isSelection[1]
+                  color: isSelection[bLocal]
                       ? settings.darkMode
                           ? Colors.black
                           : Colors.white
@@ -243,9 +230,29 @@ class _ScreenPostsState extends State<ScreenPosts> {
           ),
         ],
         onPressed: (index) {
-          setState(() async {
-            isSelection[index] = !isSelection[index];
-            await _onRefresh(authSettings.token, z);
+          setState(() {
+            // ALL
+            if (index == bAll) {
+              if (!isSelection[bAll]) {
+                for (int i = 0; i < isSelection.length; i++) {
+                  isSelection[i] = false;
+                }
+                isSelection[bAll] = true;
+              } else {
+                isSelection[bAll] = false;
+              }
+
+              // Others
+            } else {
+              isSelection[bAll] = false;
+              isSelection[index] = !isSelection[index];
+
+              if (isSelection[bLocal]) {
+                zipController.clear();
+              }
+            }
+
+            _onRefresh();
           });
         },
         isSelected: isSelection,
@@ -265,7 +272,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
     // Refresh on Command
     if (settings.refreshPosts) {
       settings.refreshPosts = false;
-      _onRefresh(authSettings.token, zipController.text);
+      _onRefresh();
     }
 
     return GestureDetector(
@@ -279,8 +286,8 @@ class _ScreenPostsState extends State<ScreenPosts> {
             enablePullDown: true,
             enablePullUp: true,
             controller: _refreshController,
-            onLoading: () => _onLoading(authSettings.token, zipController.text),
-            onRefresh: () => _onRefresh(authSettings.token, zipController.text),
+            onLoading: () => _onLoading(),
+            onRefresh: () => _onRefresh(),
             header: MaterialClassicHeader(),
             child: postInfo.isNotEmpty
                 ? CustomScrollView(
@@ -302,8 +309,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
                               // Toggle Buttons
                               SizedBox(height: 10),
-                              sliverToggleButtons(
-                                  settings, authSettings, zipController.text),
+                              sliverToggleButtons(settings, authSettings),
                             ],
                           ),
                         ),
@@ -317,10 +323,55 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                 color: Colors.black,
                               );
                             } else {
-                              return Posts(postInfo[index]);
+                              // CHECKS----------------------------------------
+                              bool checkRequest = false;
+                              bool checkZip = false;
+
+                              // Check if request
+                              if (postInfo[index]['post']['is_request'] ==
+                                  isSelection[bRequest]) checkRequest = true;
+
+                              // Check Zips
+                              if (zipController.text.isNotEmpty) {
+                                for (int i = 0;
+                                    i < postInfo[index]['zips'].length;
+                                    i++) {
+                                  if (postInfo[index]['zips'][i]['zip'] ==
+                                      zipController.text) {
+                                    checkZip = true;
+                                    break;
+                                  }
+                                }
+                              } else {
+                                if (isSelection[bLocal]) {
+                                  if (postInfo[index]['zips'].last['zip'] ==
+                                      authSettings.zip) checkZip = true;
+                                } else {
+                                  checkZip = true;
+                                }
+                              }
+
+                              // -----------------------------------------------
+
+                              // ALL
+                              if (isSelection[bAll]) {
+                                if (checkZip) {
+                                  return Posts(postInfo[index]);
+                                } else {
+                                  return Container();
+                                }
+
+                                // NOT ALL
+                              } else {
+                                if (checkRequest && checkZip) {
+                                  return Posts(postInfo[index]);
+                                } else {
+                                  return Container();
+                                }
+                              }
                             }
                           },
-                          childCount: postInfo.length,
+                          childCount: min(postInfo.length, settings.listNum),
                         ),
                       ),
                     ],
@@ -344,8 +395,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
                               // Toggle Buttons
                               SizedBox(height: 10),
-                              sliverToggleButtons(
-                                  settings, authSettings, zipController.text),
+                              sliverToggleButtons(settings, authSettings),
                             ],
                           ),
                         ),
@@ -356,7 +406,18 @@ class _ScreenPostsState extends State<ScreenPosts> {
                             height: 500,
                             color: Colors.transparent,
                             child: Center(
-                              child: CircularProgressIndicator(),
+                              child: loading
+                                  ? CircularProgressIndicator()
+                                  : Text(
+                                      'No Posts...',
+                                      style: TextStyle(
+                                          color: settings.darkMode
+                                              ? Colors.white
+                                              : Colors.black,
+                                          fontWeight: FontWeight.w900,
+                                          fontStyle: FontStyle.italic,
+                                          fontSize: 20),
+                                    ),
                             ),
                           ),
                         ]),
