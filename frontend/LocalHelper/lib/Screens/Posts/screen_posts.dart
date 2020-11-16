@@ -25,15 +25,18 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   // Booleans
   bool loading = false;
+  bool postsFound = false;
 
   // Toggle booleans
   final int bAll = 0;
   final int bRequest = 1;
   final int bLocal = 2;
+  final int bSelf = 3;
   List<bool> isSelection = [
     true, // All
     false, // Request
     false, // Local
+    false, // Self
   ];
 
 // =============================================================================
@@ -66,6 +69,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
     setState(() {
       loading = true;
+      postsFound = false;
     });
 
     // Settings
@@ -228,6 +232,35 @@ class _ScreenPostsState extends State<ScreenPosts> {
               )),
             ),
           ),
+
+          // Self
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 80,
+              height: 25,
+              decoration: BoxDecoration(
+                  color: isSelection[bSelf]
+                      ? settings.darkMode
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                  child: Text(
+                'Self',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isSelection[bSelf]
+                      ? settings.darkMode
+                          ? Colors.black
+                          : Colors.white
+                      : Colors.white70,
+                ),
+              )),
+            ),
+          ),
         ],
         onPressed: (index) {
           setState(() {
@@ -326,6 +359,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                               // CHECKS----------------------------------------
                               bool checkRequest = false;
                               bool checkZip = false;
+                              bool checkSelf = false;
 
                               // Check if request
                               if (postInfo[index]['post']['is_request'] ==
@@ -356,11 +390,25 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                 }
                               }
 
+                              // Self Check
+                              if (isSelection[bSelf]) {
+                                if (postInfo[index]['owner']['id'] ==
+                                    authSettings.ownerId) {
+                                  checkSelf = true;
+                                }
+                              } else {
+                                if (postInfo[index]['owner']['id'] !=
+                                    authSettings.ownerId) {
+                                  checkSelf = true;
+                                }
+                              }
+
                               // -----------------------------------------------
 
                               // ALL
                               if (isSelection[bAll]) {
                                 if (checkZip) {
+                                  postsFound = true;
                                   return Posts(postInfo[index]);
                                 } else {
                                   return Container();
@@ -368,10 +416,34 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
                                 // NOT ALL
                               } else {
-                                if (checkRequest && checkZip) {
+                                if (checkRequest && checkZip && checkSelf) {
+                                  postsFound = true;
                                   return Posts(postInfo[index]);
                                 } else {
-                                  return Container();
+                                  if (index == postInfo.length - 1) {
+                                    if (!postsFound) {
+                                      return Container(
+                                        height: 550,
+                                        color: Colors.transparent,
+                                        child: Center(
+                                          child: Text(
+                                            'No Posts Found...',
+                                            style: TextStyle(
+                                                color: settings.darkMode
+                                                    ? Colors.white
+                                                    : Colors.black,
+                                                fontWeight: FontWeight.w900,
+                                                fontStyle: FontStyle.italic,
+                                                fontSize: 20),
+                                          ),
+                                        ),
+                                      );
+                                    } else {
+                                      return Container();
+                                    }
+                                  } else {
+                                    return Container();
+                                  }
                                 }
                               }
                             }

@@ -28,72 +28,70 @@ class Posts extends StatelessWidget {
     // Providers
     Settings settings = Provider.of<Settings>(context);
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Container(
-        decoration: BoxDecoration(
-          color: settings.darkMode ? Colors.grey[900] : Colors.blue[600],
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(rad),
-            topRight: Radius.circular(rad),
-            bottomLeft: Radius.circular(rad),
-            bottomRight: Radius.circular(rad),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        border: Border(
+          top: BorderSide(
+              color: settings.darkMode ? Colors.white : Colors.black, width: 5),
+          bottom: BorderSide(
+              color: settings.darkMode ? Colors.white : Colors.black, width: 5),
         ),
-        width: double.infinity,
-        height: 300,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              Center(
-                  child: Container(
-                      child: Text(
-                title,
-                style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold),
-              ))),
+      ),
+      width: double.infinity,
+      height: 300,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            Center(
+              child: Container(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                      color: settings.darkMode ? Colors.white : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
 
-              // Description
-              SizedBox(height: 20),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () async {
-                    await Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return ScreenPostsFull(postId);
-                    }));
-                    settings.refreshPage();
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        description,
-                        style: TextStyle(
-                          height: 1.5,
-                          fontSize: 20,
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
-                        ),
+            // Description
+            SizedBox(height: 20),
+            Expanded(
+              child: GestureDetector(
+                onTap: () async {
+                  await Navigator.push(context,
+                      MaterialPageRoute(builder: (context) {
+                    return ScreenPostsFull(postId);
+                  }));
+                  settings.refreshPage();
+                },
+                child: Container(
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      description,
+                      style: TextStyle(
+                        height: 1.5,
+                        fontSize: 20,
+                        color: settings.darkMode ? Colors.white : Colors.black,
                       ),
                     ),
-                    decoration: BoxDecoration(
-                      color: settings.darkMode ? Colors.black : Colors.white,
-                      borderRadius: BorderRadius.circular(
-                        10,
-                      ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: settings.darkMode ? Colors.black : Colors.white,
+                    borderRadius: BorderRadius.circular(
+                      10,
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
