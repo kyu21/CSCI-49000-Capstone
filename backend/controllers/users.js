@@ -61,14 +61,37 @@ async function getDetailedUserInfo(userId, user) {
 
 		// posts
 		const allUserPosts = await db.posts.findAll({
+			raw: true,
 			where: {
 				ownerId: userId,
 			},
 		});
 
+		// post interests
+		const interests = await db.postInterests.findAll({
+			raw: true,
+			where: {
+				userId: userId
+			}
+		})
+		const allInterestInfo = await Promise.all(
+			interests.map(
+				async (p) => (
+					await db.posts.findOne({
+						raw: true,
+						where: {
+							id: p.postId
+						}
+					})
+				)
+			)
+		)
+
+
 		user["zips"] = allZipsInfo;
 		user["languages"] = allLangInfo;
 		user["posts"] = allUserPosts;
+		user["interests"] = allInterestInfo;
 
 		return user;
 	} catch (err) {
@@ -81,7 +104,9 @@ async function getLoggedInUser(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
 
 		user = await getDetailedUserInfo(currentUser.id, currentUser);
@@ -93,7 +118,9 @@ async function getLoggedInUser(req, res) {
 
 async function getUserById(req, res, next) {
 	try {
-		const { userId } = req.params;
+		const {
+			userId
+		} = req.params;
 
 		var user = await db.users.findOne({
 			raw: true,
@@ -115,7 +142,9 @@ async function editUser(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
 
 		const validKeys = [
@@ -141,7 +170,9 @@ async function editUser(req, res) {
 		}
 
 		let [_, users] = await db.users.update(newInfo, {
-			where: { id: currentUser.id },
+			where: {
+				id: currentUser.id
+			},
 			returning: true,
 			raw: true,
 		});
@@ -157,11 +188,15 @@ async function deleteUser(req, res) {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
 			raw: true,
-			where: { email: decodedJwt.email },
+			where: {
+				email: decodedJwt.email
+			},
 		});
 
 		await db.users.destroy({
-			where: { id: currentUser.id },
+			where: {
+				id: currentUser.id
+			},
 		});
 		await cascadeDelete(currentUser.id);
 
@@ -176,19 +211,44 @@ async function deleteUser(req, res) {
 async function cascadeDelete(userId) {
 	try {
 		await db.userZips.destroy({
-			where: {userId: userId}
+			where: {
+				userId: userId
+			}
 		})
 		await db.userLanguages.destroy({
-			where: {userId: userId}
+			where: {
+				userId: userId
+			}
 		})
 		let posts = await db.posts.findAll({
-			where: {ownerId: userId}
+			where: {
+				ownerId: userId
+			}
 		})
 		let postIds = posts.map((p) => (p.id))
 		await posts.forEach((p) => p.destroy())
 		await db.postZips.destroy({
-			where: {postId: postIds}
+			where: {
+				postId: postIds
+			}
 		})
+	} catch (err) {
+		console.log(err);
+	}
+}
+
+async function getLoggedInUserInterested(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+
+
 	} catch (err) {
 		console.log(err);
 	}
