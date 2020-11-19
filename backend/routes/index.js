@@ -13,6 +13,8 @@ const zipRouter = require("./zips");
 const authRouter = require("./auth");
 const postZipsRouter = require("./postZips");
 const postInterestsController = require("./postInterests")
+const keywordsController = require("./keywords");
+const postKeywordsController = require("./postKeywords")
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/users", userRouter);
@@ -26,6 +28,8 @@ router.use("/zips", zipRouter);
 router.use("/auth", authRouter);
 router.use("/postZips", postZipsRouter);
 router.use("/postInterests", postInterestsController)
+router.use("/keywords", keywordsController)
+router.use("/postKeywords", postKeywordsController)
 
 // const cleanup = require("./cleanup")
 // router.use("/cleanup", cleanup)

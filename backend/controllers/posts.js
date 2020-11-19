@@ -40,10 +40,26 @@ async function appendOwnerInfo(posts) {
 				})
 			)));
 
+			let postKeywords = await db.postKeywords.findAll({
+				raw: true,
+				where: {
+					postId: post.id
+				}
+			});
+			let keywords = await Promise.all(postKeywords.map(async (k) => (
+				await db.keywords.findOne({
+					raw: true,
+					where: {
+						id: k.keywordId
+					}
+				})
+			)));
+
 			postObj.push({
 				owner: user,
 				post: post,
-				zips: zips
+				zips: zips,
+				keywords: keywords
 			});
 		}
 
