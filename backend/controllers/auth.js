@@ -8,6 +8,7 @@ const saltRounds = 10;
 const authController = {
 	loginUser: loginUser,
 	registerUser: registerUser,
+	test: test
 };
 
 async function loginUser(req, res, next) {
@@ -69,12 +70,32 @@ async function registerUser(req, res) {
 				saltRounds
 			);
 			newUser.password = hashedPassword;
-
-			// zips stuff
-			const zips = newUser.zips;
-
-
 			let user = await db.users.create(newUser);
+
+			const zips = newUser.zips;
+			if (zips !== undefined) {
+				for (const zip of zips) {
+					let dbZip = await db.zips.findOne({
+						raw: true,
+						where: {
+							zip: zip
+						}
+					});
+
+					if (dbZip === null) {
+						// create zip
+						dbZip = await db.zips.create({
+							zip: zip
+						})
+
+					}
+
+					await db.userZips.create({
+						userId: user.id,
+						zipId: dbZip.id
+					})
+				}
+			}
 
 			res.status(201).json(user);
 		} else {
@@ -89,6 +110,28 @@ async function registerUser(req, res) {
 			code: "error",
 			message: "Error with creating account. Please retry.",
 		});
+	}
+}
+
+async function test(req, res) {
+	try {
+		const {
+			zip
+		} = req.params
+
+		const z = await db.zips.findOne({
+			raw: true,
+			where: {
+				zip: zip
+			}
+		})
+
+		console.log(z);
+		console.log(z === null)
+
+		res.send("ok")
+	} catch (err) {
+		console.log(err);
 	}
 }
 
