@@ -146,6 +146,31 @@ async function createPost(req, res) {
 
 		let post = await db.posts.create(newPost);
 
+		const zips = req.body.zips;
+		if (zips !== undefined) {
+			for (const zip of zips) {
+				let dbZip = await db.zips.findOne({
+					raw: true,
+					where: {
+						zip: zip
+					}
+				});
+
+				if (dbZip === null) {
+					// create zip
+					dbZip = await db.zips.create({
+						zip: zip
+					})
+
+				}
+
+				await db.postZips.create({
+					postId: post.id,
+					zipId: dbZip.id
+				})
+			}
+		}
+
 		res.status(201).json(post);
 	} catch (err) {
 		console.log(err);
