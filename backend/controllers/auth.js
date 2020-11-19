@@ -8,7 +8,6 @@ const saltRounds = 10;
 const authController = {
 	loginUser: loginUser,
 	registerUser: registerUser,
-	test: test
 };
 
 async function loginUser(req, res, next) {
@@ -110,28 +109,6 @@ async function registerUser(req, res) {
 			code: "error",
 			message: "Error with creating account. Please retry.",
 		});
-	}
-}
-
-async function test(req, res) {
-	try {
-		const {
-			zip
-		} = req.params
-
-		const z = await db.zips.findOne({
-			raw: true,
-			where: {
-				zip: zip
-			}
-		})
-
-		console.log(z);
-		console.log(z === null)
-
-		res.send("ok")
-	} catch (err) {
-		console.log(err);
 	}
 }
 
