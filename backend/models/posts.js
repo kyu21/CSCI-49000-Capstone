@@ -1,7 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
 	return sequelize.define(
-		"posts",
-		{
+		"posts", {
 			id: {
 				type: DataTypes.BIGINT,
 				allowNull: false,
@@ -24,9 +23,17 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.TEXT,
 				allowNull: false,
 			},
+			address: {
+				type: DataTypes.TEXT,
+				allowNull: true
+			},
 			is_request: {
 				type: DataTypes.BOOLEAN,
 				allowNull: false,
+			},
+			free: {
+				type: DataTypes.BOOLEAN,
+				allowNull: false
 			},
 			createdAt: {
 				type: DataTypes.DATE,
@@ -36,8 +43,7 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.DATE,
 				allowNull: false,
 			},
-		},
-		{
+		}, {
 			tableName: "posts",
 		}
 	);

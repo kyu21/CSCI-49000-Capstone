@@ -1,7 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
 	return sequelize.define(
-		"zips",
-		{
+		"zips", {
 			id: {
 				type: DataTypes.BIGINT,
 				allowNull: false,
@@ -13,10 +12,6 @@ module.exports = function (sequelize, DataTypes) {
 				allowNull: false,
 				unique: true,
 			},
-			name: {
-				type: DataTypes.TEXT,
-				allowNull: false,
-			},
 			createdAt: {
 				type: DataTypes.DATE,
 				allowNull: false,
@@ -25,8 +20,7 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.DATE,
 				allowNull: false,
 			},
-		},
-		{
+		}, {
 			tableName: "zips",
 		}
 	);

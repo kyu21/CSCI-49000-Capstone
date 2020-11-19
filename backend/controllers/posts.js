@@ -126,12 +126,21 @@ async function createPost(req, res) {
 		const {
 			title,
 			description,
-			is_request
+			is_request,
+			free
 		} = req.body;
+
+		let address = null
+		if (req.body.address) {
+			address = req.body.address
+		}
+
 		const newPost = {
 			title: title,
 			description: description,
+			address: address,
 			is_request: is_request,
+			free: free,
 			ownerId: currentUser.id,
 		};
 
@@ -172,7 +181,7 @@ async function editPost(req, res) {
 			},
 		});
 
-		const validKeys = ["title", "description", "is_request"];
+		const validKeys = ["title", "description", "address", "is_request", "free"];
 		let newInfo = {};
 		for (let key in req.body) {
 			if (validKeys.indexOf(key) >= 0) {

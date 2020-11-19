@@ -12,19 +12,27 @@ const authController = {
 
 async function loginUser(req, res, next) {
 	try {
-		const { email, password } = req.body;
+		const {
+			email,
+			password
+		} = req.body;
 		const user = await db.users.findOne({
 			raw: true,
-			where: { email: email },
+			where: {
+				email: email
+			},
 		});
 		if (user) {
 			const match = await bcrypt.compare(password, user.password);
 			if (match) {
-				const accessToken = jwt.sign(
-					{ email: user.email },
+				const accessToken = jwt.sign({
+						email: user.email
+					},
 					accessTokenSecret
 				);
-				res.status(200).json({ accessToken });
+				res.status(200).json({
+					accessToken
+				});
 			} else {
 				res.status(401).json({
 					code: "Error",
@@ -50,7 +58,9 @@ async function registerUser(req, res) {
 	try {
 		let newUser = req.body;
 		const userExists = await db.users.findOne({
-			where: { email: newUser.email },
+			where: {
+				email: newUser.email
+			},
 		});
 
 		if (!userExists) {
@@ -59,11 +69,19 @@ async function registerUser(req, res) {
 				saltRounds
 			);
 			newUser.password = hashedPassword;
+
+			// zips stuff
+			const zips = newUser.zips;
+
+
 			let user = await db.users.create(newUser);
 
 			res.status(201).json(user);
 		} else {
-			res.status(401).json({ code: "Error", message: "Email exists." });
+			res.status(401).json({
+				code: "Error",
+				message: "Email exists."
+			});
 		}
 	} catch (err) {
 		console.log(err);
