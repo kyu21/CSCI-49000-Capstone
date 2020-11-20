@@ -312,7 +312,8 @@ class _FullDoneState extends State<FullDone> {
               final title = info['post']['title'];
               final des = info['post']['description'];
               final req = info['post']['is_request'];
-              return ScreenEditPosts(pId, title, des, req);
+              final free = info['post']['free'];
+              return ScreenEditPosts(pId, title, des, req, free);
             }));
             Navigator.pop(context, true);
           },

@@ -279,7 +279,7 @@ class _ScreenInterests extends State<ScreenInterests> {
                 } else {
                   if (checkRequest && checkFree) {
                     postsFound = true;
-                    return Posts(interestList[index]);
+                    return Posts(interestList[index], type: 1);
                   } else {
                     if (index == interestList.length - 1) {
                       if (!postsFound) {

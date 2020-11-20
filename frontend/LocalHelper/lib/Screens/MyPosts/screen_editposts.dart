@@ -11,10 +11,12 @@ class ScreenEditPosts extends StatefulWidget {
   final String title;
   final String description;
   final bool req;
-  ScreenEditPosts(this.postId, this.title, this.description, this.req);
+  final bool free;
+  ScreenEditPosts(
+      this.postId, this.title, this.description, this.req, this.free);
   @override
   _ScreenEditPostsState createState() =>
-      _ScreenEditPostsState(title, description, req);
+      _ScreenEditPostsState(title, description, req, free);
 }
 
 class _ScreenEditPostsState extends State<ScreenEditPosts> {
@@ -27,12 +29,14 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
   // Prevent Multi sending
   bool enableSend = true;
   bool request;
+  bool free;
 
 // =============================================================================
 // FUNCTIONS ===================================================================
 
   // Constructor
-  _ScreenEditPostsState(String title, String description, this.request) {
+  _ScreenEditPostsState(
+      String title, String description, this.request, this.free) {
     titleController.text = title;
     descriptionController.text = description;
   }
@@ -45,12 +49,13 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
   }
 
   Future<void> sendPost(
-      String token, String title, String desc, bool request) async {
+      String token, String title, String desc, bool request, bool free) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
       'title': title,
       'description': desc,
       'is_request': request,
+      'free': free,
     };
 
     // Encode
@@ -137,11 +142,11 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
               ),
             ),
 
+            // Request
             SizedBox(height: 20),
-
             SwitchListTile(
               title: Text(
-                'Request?',
+                'Request',
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
               value: request,
@@ -152,9 +157,26 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
               },
             ),
 
-            SizedBox(height: 40),
+            // Free?
+            SizedBox(height: 20),
+            SwitchListTile(
+              title: Text(
+                'Free',
+                style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold),
+              ),
+              value: free,
+              onChanged: (value) {
+                setState(() {
+                  free = !free;
+                });
+              },
+            ),
 
             // Description
+            SizedBox(height: 40),
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20),
               child: TextField(
@@ -200,7 +222,8 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
                               authSettings.token,
                               titleController.text,
                               descriptionController.text,
-                              request);
+                              request,
+                              free);
                         }
                         setState(() {
                           enableSend = true;
