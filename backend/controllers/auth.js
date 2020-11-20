@@ -72,37 +72,29 @@ async function registerUser(req, res) {
 			let user = await db.users.create(newUser);
 
 			const zips = newUser.zips;
-			console.log(zips);
-			console.log(typeof zips);
 			if (zips !== undefined) {
 				for (const zip of zips) {
-					console.log(zip);
-					console.log(typeof zip)
+					let dbZip = await db.zips.findOne({
+						raw: true,
+						where: {
+							zip: zip
+						}
+					});
+
+					if (dbZip === null) {
+						// create zip
+						dbZip = await db.zips.create({
+							zip: zip
+						})
+
+					}
+
+					await db.userZips.create({
+						userId: user.id,
+						zipId: dbZip.id
+					})
 				}
 			}
-			// if (zips !== undefined) {
-			// 	for (const zip of zips) {
-			// 		let dbZip = await db.zips.findOne({
-			// 			raw: true,
-			// 			where: {
-			// 				zip: zip
-			// 			}
-			// 		});
-
-			// 		if (dbZip === null) {
-			// 			// create zip
-			// 			dbZip = await db.zips.create({
-			// 				zip: zip
-			// 			})
-
-			// 		}
-
-			// 		await db.userZips.create({
-			// 			userId: user.id,
-			// 			zipId: dbZip.id
-			// 		})
-			// 	}
-			// }
 
 			res.status(201).json(user);
 		} else {
