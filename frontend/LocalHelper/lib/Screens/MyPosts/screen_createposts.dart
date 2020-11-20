@@ -22,6 +22,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   // Prevent Multi sending
   bool enableSend = true;
   bool request = false;
+  bool free = false;
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -35,12 +36,13 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   }
 
   Future<bool> sendPost(String token, String title, String desc, bool request,
-      AuthSettings authSettings) async {
+      bool free, AuthSettings authSettings) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
       'title': title,
       'description': desc,
       'is_request': request,
+      'free': free,
     };
 
     // Encode
@@ -159,11 +161,11 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               ),
             ),
 
+            // Request
             SizedBox(height: 20),
-
             SwitchListTile(
               title: Text(
-                'Request?',
+                'Request',
                 style: TextStyle(
                     color: settings.darkMode ? Colors.white : Colors.black,
                     fontSize: 30,
@@ -173,6 +175,24 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               onChanged: (value) {
                 setState(() {
                   request = !request;
+                });
+              },
+            ),
+
+            // Free?
+            SizedBox(height: 20),
+            SwitchListTile(
+              title: Text(
+                'Free',
+                style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold),
+              ),
+              value: free,
+              onChanged: (value) {
+                setState(() {
+                  free = !free;
                 });
               },
             ),
@@ -231,6 +251,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                                 titleController.text,
                                 descriptionController.text,
                                 request,
+                                free,
                                 authSettings);
                             if (result) {
                               settings.refreshPage();

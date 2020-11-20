@@ -6,24 +6,34 @@ import 'package:provider/provider.dart';
 class Posts extends StatelessWidget {
 // VARIABLES ===================================================================
 
-  final double rad = 30;
   final info;
+  final int type;
 
 // =============================================================================
 // FUNCTIONS ===================================================================
 
-  Posts(this.info);
+  Posts(this.info, {this.type = 0});
 
 // =============================================================================
 
   @override
   Widget build(BuildContext context) {
+    String title;
+    String description;
+    int postId;
     // Info
-    final String first = info['owner']['first'];
-    final String last = info['owner']['last'];
-    final String title = info['post']['title'];
-    final String description = info['post']['description'];
-    final int postId = info['post']['id'];
+    switch (type) {
+      case 0:
+        title = info['post']['title'];
+        description = info['post']['description'];
+        postId = info['post']['id'];
+        break;
+      case 1:
+        title = info['title'];
+        description = info['description'];
+        postId = info['id'];
+        break;
+    }
 
     // Providers
     Settings settings = Provider.of<Settings>(context);

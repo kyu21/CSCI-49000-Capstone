@@ -42,9 +42,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
   //     };
 
   //     http.Response response = await http
-  //         .get('https://localhelper-backend.herokuapp.com/api/posts/me',
+  //         .get('https://localhelper-backend.herokuapp.com/api/users/me',
   //             headers: headers)
   //         .timeout(Duration(seconds: 5));
+
   //   } catch (e) {
   //     print(e);
   //   }
@@ -263,7 +264,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             await userInfo(result, authSettings);
 
                             // // DEBUG
-                            // await debugger(result, authSettings);
+                            //await debugger(result, authSettings);
 
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {

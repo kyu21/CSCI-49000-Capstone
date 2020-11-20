@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Widgets/posts_widget.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
-import 'package:localhelper/Screens/MyPosts/screen_createposts.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:math';
 
-class ScreenMyPosts extends StatefulWidget {
+class ScreenInterests extends StatefulWidget {
   @override
-  _ScreenMyPosts createState() => _ScreenMyPosts();
+  _ScreenInterests createState() => _ScreenInterests();
 }
 
-class _ScreenMyPosts extends State<ScreenMyPosts> {
+class _ScreenInterests extends State<ScreenInterests> {
 // VARIABLES ===================================================================
 
   // Controllers
@@ -22,7 +21,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
       RefreshController(initialRefresh: true);
 
   // Lists
-  List _testList = List();
+  List interestList = List();
 
   // Booleans
   bool loading = false;
@@ -44,10 +43,10 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
   void _onRefresh() async {
     setState(() {
       // Reset start value
-      Provider.of<Settings>(context, listen: false).personalNum = 0;
+      Provider.of<Settings>(context, listen: false).interestNum = 0;
 
       // Clear the lists
-      _testList.clear();
+      interestList.clear();
 
       // Find Personal Posts again
       _onLoading();
@@ -70,7 +69,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
     final newAmount = 10;
 
     // Providers
-    Provider.of<Settings>(context, listen: false).updatePersonalNum(newAmount);
+    Provider.of<Settings>(context, listen: false).updateInterestNum(newAmount);
     final String token =
         Provider.of<AuthSettings>(context, listen: false).token;
 
@@ -87,7 +86,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
     try {
       // HTTP Get
       http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/posts/me',
+          .get('https://localhelper-backend.herokuapp.com/api/users/me',
               headers: headers)
           .timeout(Duration(seconds: timeout));
 
@@ -95,7 +94,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
 
       // If got a response
       if (response.statusCode == 200) {
-        _testList = json;
+        interestList = json['interests'];
       }
     } catch (e) {
       print(e);
@@ -249,38 +248,11 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
           flexibleSpace: sliverToggleButtons(settings, authSettings),
         ),
 
-        // Create a Post
-        SliverAppBar(
-          automaticallyImplyLeading: false,
-          floating: true,
-          backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-          elevation: 0,
-          flexibleSpace: FlatButton(
-            splashColor: settings.darkMode ? Colors.red : Colors.black,
-            highlightColor: settings.darkMode ? Colors.red : Colors.grey,
-            minWidth: double.infinity,
-            height: 75,
-            child: Text(
-              'Create New Post',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
-              ),
-            ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return ScreenCreatePosts();
-              }));
-            },
-          ),
-        ),
-
         // Posts
         SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              if (_testList.isEmpty) {
+              if (interestList.isEmpty) {
                 return Container(
                   color: Colors.black,
                 );
@@ -290,11 +262,11 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 bool checkFree = false;
 
                 // Check if request
-                if (_testList[index]['post']['is_request'] ==
-                    isSelection[bRequest]) checkRequest = true;
+                if (interestList[index]['is_request'] == isSelection[bRequest])
+                  checkRequest = true;
 
                 // Check Free
-                if (_testList[index]['post']['free'] == isSelection[bFree])
+                if (interestList[index]['free'] == isSelection[bFree])
                   checkFree = true;
 
                 // -----------------------------------------------
@@ -302,14 +274,14 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 // ALL
                 if (isSelection[bAll]) {
                   postsFound = true;
-                  return Posts(_testList[index]);
+                  return Posts(interestList[index], type: 1);
                   // NOT ALL
                 } else {
                   if (checkRequest && checkFree) {
                     postsFound = true;
-                    return Posts(_testList[index]);
+                    return Posts(interestList[index]);
                   } else {
-                    if (index == _testList.length - 1) {
+                    if (index == interestList.length - 1) {
                       if (!postsFound) {
                         return Container(
                           height: 550,
@@ -337,7 +309,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 }
               }
             },
-            childCount: min(_testList.length, settings.personalNum),
+            childCount: min(interestList.length, settings.personalNum),
           ),
         ),
       ],
@@ -358,32 +330,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
           flexibleSpace: sliverToggleButtons(settings, authSettings),
         ),
 
-        // Create a Post
-        SliverAppBar(
-          automaticallyImplyLeading: false,
-          floating: true,
-          backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-          elevation: 0,
-          flexibleSpace: FlatButton(
-            splashColor: settings.darkMode ? Colors.red : Colors.black,
-            highlightColor: settings.darkMode ? Colors.red : Colors.grey,
-            minWidth: double.infinity,
-            height: 75,
-            child: Text(
-              'Create New Post',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
-              ),
-            ),
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return ScreenCreatePosts();
-              }));
-            },
-          ),
-        ),
+        // No Posts Found
         SliverList(
           delegate: SliverChildListDelegate([
             Container(
@@ -393,7 +340,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 child: loading
                     ? CircularProgressIndicator()
                     : Text(
-                        'No Posts Created...',
+                        'No Interests Made...',
                         style: TextStyle(
                             color:
                                 settings.darkMode ? Colors.white : Colors.black,
@@ -438,7 +385,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
           onLoading: () => _onLoading(),
           onRefresh: () => _onRefresh(),
           header: MaterialClassicHeader(),
-          child: _testList.isNotEmpty
+          child: interestList.isNotEmpty
               ? foundPosts(settings, authSettings)
               : noPosts(settings, authSettings),
         ),

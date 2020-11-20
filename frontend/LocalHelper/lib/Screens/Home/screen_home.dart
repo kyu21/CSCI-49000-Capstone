@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Screens/Interests/screen_interests.dart';
 import 'package:localhelper/Screens/MyPosts/screen_myposts.dart';
 import 'package:localhelper/Screens/Posts/screen_posts.dart';
 import 'package:localhelper/Screens/Settings/screen_settings.dart';
-import 'package:localhelper/Screens/Users/screen_users.dart';
 import 'package:provider/provider.dart';
 
 class ScreenHome extends StatefulWidget {
@@ -22,7 +22,7 @@ class _ScreenHomeState extends State<ScreenHome> {
     // Clear the list and add the pages
     pageList.clear();
     pageList.add(ScreenPosts());
-    pageList.add(ScreenUsers());
+    pageList.add(ScreenInterests());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSettings());
     super.initState();
@@ -64,8 +64,8 @@ class _ScreenHomeState extends State<ScreenHome> {
             icon: Icon(Icons.local_activity),
           ),
           BottomNavigationBarItem(
-            label: 'Users',
-            icon: Icon(Icons.supervised_user_circle),
+            label: 'Your Interests',
+            icon: Icon(Icons.file_copy),
           ),
           BottomNavigationBarItem(
             label: 'My Posts',

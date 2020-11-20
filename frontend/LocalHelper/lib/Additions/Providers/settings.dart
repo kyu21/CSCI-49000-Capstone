@@ -5,7 +5,7 @@ class Settings extends ChangeNotifier {
   bool darkMode = false;
 
   int listNum = 0; // Posts
-  int userNum = 0; // UserNames
+  int interestNum = 0; // UserNames
   int personalNum = 0; // Personal Posts
 
   // Refreshers
@@ -26,8 +26,8 @@ class Settings extends ChangeNotifier {
     personalNum += i;
   }
 
-  void updateUserNum(int i) {
-    userNum += i;
+  void updateInterestNum(int i) {
+    interestNum += i;
   }
 
   void refreshPage() {

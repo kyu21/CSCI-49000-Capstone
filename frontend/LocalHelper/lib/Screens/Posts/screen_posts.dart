@@ -31,11 +31,13 @@ class _ScreenPostsState extends State<ScreenPosts> {
   final int bAll = 0;
   final int bRequest = 1;
   final int bLocal = 2;
-  final int bSelf = 3;
+  final int bFree = 3;
+  final int bSelf = 4;
   List<bool> isSelection = [
     true, // All
     false, // Request
     false, // Local
+    false, // Free
     false, // Self
   ];
 
@@ -233,6 +235,35 @@ class _ScreenPostsState extends State<ScreenPosts> {
             ),
           ),
 
+          // Free
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 80,
+              height: 25,
+              decoration: BoxDecoration(
+                  color: isSelection[bFree]
+                      ? settings.darkMode
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                  child: Text(
+                'Free',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isSelection[bFree]
+                      ? settings.darkMode
+                          ? Colors.black
+                          : Colors.white
+                      : Colors.white70,
+                ),
+              )),
+            ),
+          ),
+
           // Self
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -284,7 +315,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
                 zipController.clear();
               }
             }
-
             _onRefresh();
           });
         },
@@ -347,6 +377,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                           ),
                         ),
                       ),
+
                       // Posts
                       SliverList(
                         delegate: SliverChildBuilderDelegate(
@@ -360,6 +391,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                               bool checkRequest = false;
                               bool checkZip = false;
                               bool checkSelf = false;
+                              bool checkFree = false;
 
                               // Check if request
                               if (postInfo[index]['post']['is_request'] ==
@@ -403,6 +435,10 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                 }
                               }
 
+                              // Check Free
+                              if (postInfo[index]['post']['free'] ==
+                                  isSelection[bFree]) checkFree = true;
+
                               // -----------------------------------------------
 
                               // ALL
@@ -416,7 +452,10 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
                                 // NOT ALL
                               } else {
-                                if (checkRequest && checkZip && checkSelf) {
+                                if (checkRequest &&
+                                    checkZip &&
+                                    checkSelf &&
+                                    checkFree) {
                                   postsFound = true;
                                   return Posts(postInfo[index]);
                                 } else {
@@ -486,7 +525,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                               child: loading
                                   ? CircularProgressIndicator()
                                   : Text(
-                                      'No Posts...',
+                                      'No Posts Found...',
                                       style: TextStyle(
                                           color: settings.darkMode
                                               ? Colors.white
