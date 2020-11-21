@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Screens/Conversations/screen_convo.dart';
 import 'package:localhelper/Screens/Interests/screen_interests.dart';
 import 'package:localhelper/Screens/MyPosts/screen_myposts.dart';
 import 'package:localhelper/Screens/Posts/screen_posts.dart';
@@ -24,6 +25,7 @@ class _ScreenHomeState extends State<ScreenHome> {
     pageList.add(ScreenPosts());
     pageList.add(ScreenInterests());
     pageList.add(ScreenMyPosts());
+    pageList.add(ScreenConvo());
     pageList.add(ScreenSettings());
     super.initState();
   }
@@ -64,12 +66,16 @@ class _ScreenHomeState extends State<ScreenHome> {
             icon: Icon(Icons.local_activity),
           ),
           BottomNavigationBarItem(
-            label: 'Your Interests',
+            label: 'Interests',
             icon: Icon(Icons.file_copy),
           ),
           BottomNavigationBarItem(
             label: 'My Posts',
             icon: Icon(Icons.post_add),
+          ),
+          BottomNavigationBarItem(
+            label: 'Messages',
+            icon: Icon(Icons.message),
           ),
           BottomNavigationBarItem(
             label: 'Settings',
