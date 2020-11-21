@@ -6,8 +6,6 @@ const authRouter = require("./auth");
 const userRouter = require("./users");
 
 
-
-const userZipsRouter = require("./userZips");
 const userLanguagesRouter = require("./userLanguages");
 const messagesRouter = require("./messages");
 const convosRouter = require("./convos");
@@ -24,8 +22,6 @@ router.use("/auth", authRouter);
 router.use("/users", userRouter);
 
 
-
-router.use("/userZips", userZipsRouter);
 router.use("/userLanguages", userLanguagesRouter);
 router.use("/messages", messagesRouter);
 router.use("/convos", convosRouter);
