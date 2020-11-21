@@ -5,6 +5,7 @@ import 'package:localhelper/Screens/Login/screen_register.dart';
 import 'package:provider/provider.dart';
 import '../../Additions/Providers/authSettings.dart';
 import '../Home/screen_home.dart';
+import 'dart:developer';
 
 class ScreenStart extends StatelessWidget {
   @override
@@ -42,9 +43,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
   //     };
 
   //     http.Response response = await http
-  //         .get('https://localhelper-backend.herokuapp.com/api/posts/me',
+  //         .get('https://localhelper-backend.herokuapp.com/api/users/me',
   //             headers: headers)
   //         .timeout(Duration(seconds: 5));
+  //     log(jsonDecode(response.body).toString());
   //   } catch (e) {
   //     print(e);
   //   }

@@ -9,14 +9,15 @@ import 'package:http/http.dart' as http;
 class ScreenEditPosts extends StatefulWidget {
   final int postId;
   final String title;
+  final String address;
   final String description;
   final bool req;
   final bool free;
-  ScreenEditPosts(
-      this.postId, this.title, this.description, this.req, this.free);
+  ScreenEditPosts(this.postId, this.title, this.address, this.description,
+      this.req, this.free);
   @override
   _ScreenEditPostsState createState() =>
-      _ScreenEditPostsState(title, description, req, free);
+      _ScreenEditPostsState(title, address, description, req, free);
 }
 
 class _ScreenEditPostsState extends State<ScreenEditPosts> {
@@ -24,6 +25,7 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
 
   // Text Controllers
   final titleController = TextEditingController();
+  final addressController = TextEditingController();
   final descriptionController = TextEditingController();
 
   // Prevent Multi sending
@@ -35,24 +37,27 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
 // FUNCTIONS ===================================================================
 
   // Constructor
-  _ScreenEditPostsState(
-      String title, String description, this.request, this.free) {
+  _ScreenEditPostsState(String title, String address, String description,
+      this.request, this.free) {
     titleController.text = title;
+    addressController.text = address;
     descriptionController.text = description;
   }
 
   @override
   void dispose() {
     titleController.dispose();
+    addressController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
 
-  Future<void> sendPost(
-      String token, String title, String desc, bool request, bool free) async {
+  Future<void> sendPost(String token, String title, String address, String desc,
+      bool request, bool free) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
       'title': title,
+      'address': address,
       'description': desc,
       'is_request': request,
       'free': free,
@@ -142,6 +147,32 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
               ),
             ),
 
+            // Address
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: TextField(
+                controller: addressController,
+                cursorColor: settings.darkMode ? Colors.white : Colors.black,
+                keyboardType: TextInputType.name,
+                style: TextStyle(
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Address',
+                  labelStyle: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  hintText: 'Ex: 3123 Main Street ...',
+                  hintStyle: TextStyle(fontSize: 20),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
+
             // Request
             SizedBox(height: 20),
             SwitchListTile(
@@ -221,6 +252,7 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
                           await sendPost(
                               authSettings.token,
                               titleController.text,
+                              addressController.text,
                               descriptionController.text,
                               request,
                               free);

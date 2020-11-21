@@ -51,6 +51,7 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
 
       var interestResult = await http.get(interLink, headers: headers);
       interestJson = jsonDecode(interestResult.body);
+      print(interestJson);
 
       for (int i = 0; i < interestJson.length; i++) {
         if (interestJson[i]['id'] == authSettings.ownerId) {
@@ -138,6 +139,7 @@ class _FullDoneState extends State<FullDone> {
 
     // Names
     final title = widget.info['post']['title'];
+    final address = widget.info['post']['address'];
     final ownerName =
         widget.info['owner']['first'] + ' ' + widget.info['owner']['last'];
     final description = widget.info['post']['description'];
@@ -193,14 +195,17 @@ class _FullDoneState extends State<FullDone> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // Text(
-                    //   'Date: ' + date,
-                    //   style: TextStyle(
-                    //     color: settings.darkMode ? Colors.white : Colors.black,
-                    //     fontSize: 15,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
+                    if (address != null) SizedBox(height: 30),
+                    if (address != null)
+                      Text(
+                        'Address: ' + address,
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -310,10 +315,11 @@ class _FullDoneState extends State<FullDone> {
             await Navigator.push(context, MaterialPageRoute(builder: (context) {
               final int pId = info['post']['id'];
               final title = info['post']['title'];
+              final address = info['post']['address'];
               final des = info['post']['description'];
               final req = info['post']['is_request'];
               final free = info['post']['free'];
-              return ScreenEditPosts(pId, title, des, req, free);
+              return ScreenEditPosts(pId, title, address, des, req, free);
             }));
             Navigator.pop(context, true);
           },

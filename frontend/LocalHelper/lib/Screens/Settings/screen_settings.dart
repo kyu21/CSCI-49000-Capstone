@@ -23,252 +23,270 @@ class ScreenSettings extends StatelessWidget {
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
       body: SafeArea(
-        child: Column(
-          verticalDirection: VerticalDirection.up,
-          children: [
-            // Sign Out
-            FlatButton(
-              height: 60,
-              minWidth: double.infinity,
-              onPressed: () {
-                authSettings.updateToken("");
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => ScreenStart()),
-                    (Route<dynamic> route) => false);
-              },
-              child: Text(
-                'Sign Out',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-              ),
-            ),
-
-            // User Settings
-            FlatButton(
-              height: 60,
-              minWidth: double.infinity,
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return ScreenUserSettings();
-                }));
-              },
-              child: Text(
-                'Edit User Info',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-              ),
-            ),
-
-            // Dark Mode
-            SwitchListTile(
-              value: settings.darkMode,
-              onChanged: (value) => settings.changeDark(),
-              title: Text(
-                'Dark Mode',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-              ),
-            ),
-
-            // User Name
-            Expanded(
-              child: Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            verticalDirection: VerticalDirection.up,
+            children: [
+              // Sign Out
+              FlatButton(
+                height: 60,
+                minWidth: double.infinity,
+                onPressed: () {
+                  authSettings.updateToken("");
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => ScreenStart()),
+                      (Route<dynamic> route) => false);
+                },
+                child: Row(
                   children: [
-                    FittedBox(
-                      alignment: Alignment.center,
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        children: [
-                          SizedBox(width: 4),
-                          Icon(
-                            Icons.person,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            "Name: " + _first + ' ' + _last,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: settings.darkMode
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                        ],
+                    Text(
+                      'Sign Out',
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
                       ),
                     ),
-
-                    // Gender
-                    SizedBox(height: 20),
-                    FittedBox(
-                      alignment: Alignment.centerLeft,
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        children: [
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.family_restroom,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Gender: ' + _gender,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: settings.darkMode
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Phone
-                    SizedBox(height: 20),
-                    FittedBox(
-                      alignment: Alignment.centerLeft,
-                      fit: BoxFit.scaleDown,
-                      child: Row(children: [
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.phone,
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
-                        ),
-                        SizedBox(width: 8),
-                        Text(
-                          'Phone: ' + _phone,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ]),
-                    ),
-
-                    // Email
-                    SizedBox(height: 20),
-                    FittedBox(
-                      alignment: Alignment.centerLeft,
-                      fit: BoxFit.scaleDown,
-                      child: Row(
-                        children: [
-                          SizedBox(width: 8),
-                          Icon(
-                            Icons.email,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Email: ' + _email,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                              color: settings.darkMode
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Zip
-                    SizedBox(height: 20),
-                    _zip == ""
-                        ? FittedBox(
-                            alignment: Alignment.centerLeft,
-                            fit: BoxFit.scaleDown,
-                            child: Row(
-                              children: [
-                                SizedBox(width: 8),
-                                Icon(Icons.contact_mail,
-                                    color: settings.darkMode
-                                        ? Colors.white
-                                        : Colors.black),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Zip: None',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                    color: settings.darkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          )
-                        : FittedBox(
-                            alignment: Alignment.centerLeft,
-                            fit: BoxFit.scaleDown,
-                            child: Row(
-                              children: [
-                                SizedBox(width: 8),
-                                Icon(Icons.contact_mail,
-                                    color: settings.darkMode
-                                        ? Colors.white
-                                        : Colors.black),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Zip: ' + _zip,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 30,
-                                    fontWeight: FontWeight.bold,
-                                    color: settings.darkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                    // Zip ID
-                    // SizedBox(height: 20),
-                    // Text(
-                    //   'ZipID: ' + _zipID.toString(),
-                    //   textAlign: TextAlign.center,
-                    //   style: TextStyle(
-                    //     fontSize: 30,
-                    //     fontWeight: FontWeight.bold,
-                    //     color: settings.darkMode ? Colors.white : Colors.black,
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
-            ),
-            SizedBox(height: 30),
-          ],
+
+              // User Settings
+              FlatButton(
+                height: 60,
+                minWidth: double.infinity,
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return ScreenUserSettings();
+                  }));
+                },
+                child: Row(
+                  children: [
+                    Text(
+                      'Edit User Info',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: settings.darkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Dark Mode
+              SwitchListTile(
+                value: settings.darkMode,
+                onChanged: (value) => settings.changeDark(),
+                title: Text(
+                  'Dark Mode',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+
+              // User Name
+              Expanded(
+                child: Container(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      FittedBox(
+                        alignment: Alignment.center,
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 4),
+                            Icon(
+                              Icons.person,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              "Name: " + _first + ' ' + _last,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: settings.darkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Gender
+                      SizedBox(height: 20),
+                      FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 8),
+                            Icon(
+                              Icons.family_restroom,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Gender: ' + _gender,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: settings.darkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Phone
+                      SizedBox(height: 20),
+                      FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Row(children: [
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.phone,
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            'Phone: ' + _phone,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                          ),
+                        ]),
+                      ),
+
+                      // Email
+                      SizedBox(height: 20),
+                      FittedBox(
+                        alignment: Alignment.centerLeft,
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          children: [
+                            SizedBox(width: 8),
+                            Icon(
+                              Icons.email,
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Email: ' + _email,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.bold,
+                                color: settings.darkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Zip
+                      SizedBox(height: 20),
+                      _zip == ""
+                          ? FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                children: [
+                                  SizedBox(width: 8),
+                                  Icon(Icons.contact_mail,
+                                      color: settings.darkMode
+                                          ? Colors.white
+                                          : Colors.black),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Zip: None',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.bold,
+                                      color: settings.darkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                children: [
+                                  SizedBox(width: 8),
+                                  Icon(Icons.contact_mail,
+                                      color: settings.darkMode
+                                          ? Colors.white
+                                          : Colors.black),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Zip: ' + _zip,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      fontSize: 30,
+                                      fontWeight: FontWeight.bold,
+                                      color: settings.darkMode
+                                          ? Colors.white
+                                          : Colors.black,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                      // Zip ID
+                      // SizedBox(height: 20),
+                      // Text(
+                      //   'ZipID: ' + _zipID.toString(),
+                      //   textAlign: TextAlign.center,
+                      //   style: TextStyle(
+                      //     fontSize: 30,
+                      //     fontWeight: FontWeight.bold,
+                      //     color: settings.darkMode ? Colors.white : Colors.black,
+                      //   ),
+                      // ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
+            ],
+          ),
         ),
       ),
     );

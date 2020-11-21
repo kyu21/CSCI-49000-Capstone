@@ -16,6 +16,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   TextEditingController genderController = TextEditingController();
   TextEditingController phoneController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController zipController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController conPasswordController = TextEditingController();
 
@@ -24,6 +25,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   bool _hidePass = true;
   bool _hideConPass = true;
   bool _notSame = false;
+  bool _zipWrong = false;
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -36,6 +38,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     genderController.dispose();
     phoneController.dispose();
     emailController.dispose();
+    zipController.dispose();
     passwordController.dispose();
     conPasswordController.dispose();
     super.dispose();
@@ -43,33 +46,36 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
   // Submit Button
   void submitInfo(String first, String last, String gender, String phone,
-      String email, String password) async {
+      String email, String zip, String password) async {
     if ((firstController.text.isEmpty ||
             lastController.text.isEmpty ||
             genderController.text.isEmpty ||
             phoneController.text.isEmpty ||
             emailController.text.isEmpty ||
             passwordController.text.isEmpty) ||
+        zipController.text.isEmpty ||
         (passwordController.text != conPasswordController.text)) {
       setState(() {
         _isLoading = false;
         if (passwordController.text != conPasswordController.text)
           _notSame = true;
+        if (zipController.text.length < 5) _zipWrong = true;
       });
       print('Empty Strings');
     } else {
+      List<String> _zipArray = [zip];
+
       // Flutter Json
-      Map<String, String> jsonMap = {
+      // Encode
+      String jsonString = json.encode({
         'first': first,
         'last': last,
         'gender': gender,
         'phone': phone,
+        'zips': _zipArray,
         'email': email,
         'password': password,
-      };
-
-      // Encode
-      String jsonString = json.encode(jsonMap);
+      });
 
       // Try sending the info
       try {
@@ -123,6 +129,8 @@ class _ScreenRegisterState extends State<ScreenRegister> {
           txtSection("Email", Icons.email, emailController,
               TextInputType.emailAddress),
           SizedBox(height: 30.0),
+          zipSection("Zip", Icons.house, zipController, TextInputType.number),
+          SizedBox(height: 30.0),
           passSection("Password", Icons.lock, passwordController),
           SizedBox(height: 30.0),
           passConSection("Confirm Password", Icons.lock, conPasswordController),
@@ -138,6 +146,21 @@ class _ScreenRegisterState extends State<ScreenRegister> {
       controller: control,
       keyboardType: type,
       style: TextStyle(color: Colors.white70),
+      decoration: InputDecoration(
+        hintText: title,
+        hintStyle: TextStyle(color: Colors.white70),
+        icon: Icon(icons),
+      ),
+    );
+  }
+
+  // Zip
+  TextFormField zipSection(String title, IconData icons,
+      TextEditingController control, TextInputType type) {
+    return TextFormField(
+      controller: control,
+      keyboardType: type,
+      style: TextStyle(color: _zipWrong ? Colors.red : Colors.white70),
       decoration: InputDecoration(
         hintText: title,
         hintStyle: TextStyle(color: Colors.white70),
@@ -259,6 +282,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                               genderController.text,
                               phoneController.text,
                               emailController.text,
+                              zipController.text,
                               passwordController.text);
                         },
                         color: Colors.blue,
@@ -268,6 +292,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                             style: TextStyle(color: Colors.white70)),
                       ),
                     ),
+                    SizedBox(height: 30.0),
                   ],
                 ),
         ),

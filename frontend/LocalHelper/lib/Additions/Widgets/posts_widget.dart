@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:localhelper/Additions/Screens/screen_full.dart';
@@ -21,17 +22,24 @@ class Posts extends StatelessWidget {
     String title;
     String description;
     int postId;
+    bool request;
+    bool free;
+
     // Info
     switch (type) {
       case 0:
         title = info['post']['title'];
         description = info['post']['description'];
         postId = info['post']['id'];
+        request = info['post']['is_request'];
+        free = info['post']['free'];
         break;
       case 1:
         title = info['title'];
         description = info['description'];
         postId = info['id'];
+        request = info['is_request'];
+        free = info['free'];
         break;
     }
 
@@ -58,12 +66,22 @@ class Posts extends StatelessWidget {
             // Title
             Center(
               child: Container(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold),
+                child: FittedBox(
+                  child: Row(
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (request) Icon(Icons.star),
+                      if (!free) Icon(Icons.monetization_on),
+                    ],
+                  ),
                 ),
               ),
             ),

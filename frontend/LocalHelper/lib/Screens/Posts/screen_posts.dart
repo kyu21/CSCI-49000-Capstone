@@ -29,14 +29,14 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   // Toggle booleans
   final int bAll = 0;
-  final int bRequest = 1;
-  final int bLocal = 2;
+  final int bLocal = 1;
+  final int bRequest = 2;
   final int bFree = 3;
   final int bSelf = 4;
   List<bool> isSelection = [
     true, // All
-    false, // Request
     false, // Local
+    false, // Request
     false, // Free
     false, // Self
   ];
@@ -177,35 +177,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
             ),
           ),
 
-          // Request
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: 80,
-              height: 25,
-              decoration: BoxDecoration(
-                  color: isSelection[bRequest]
-                      ? settings.darkMode
-                          ? Colors.white
-                          : Colors.black
-                      : Colors.grey,
-                  borderRadius: BorderRadius.circular(10)),
-              child: Center(
-                  child: Text(
-                'Request',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: isSelection[bRequest]
-                      ? settings.darkMode
-                          ? Colors.black
-                          : Colors.white
-                      : Colors.white70,
-                ),
-              )),
-            ),
-          ),
-
           // Local
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -226,6 +197,35 @@ class _ScreenPostsState extends State<ScreenPosts> {
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: isSelection[bLocal]
+                      ? settings.darkMode
+                          ? Colors.black
+                          : Colors.white
+                      : Colors.white70,
+                ),
+              )),
+            ),
+          ),
+
+          // Request
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: 80,
+              height: 25,
+              decoration: BoxDecoration(
+                  color: isSelection[bRequest]
+                      ? settings.darkMode
+                          ? Colors.white
+                          : Colors.black
+                      : Colors.grey,
+                  borderRadius: BorderRadius.circular(10)),
+              child: Center(
+                  child: Text(
+                'Request',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: isSelection[bRequest]
                       ? settings.darkMode
                           ? Colors.black
                           : Colors.white
@@ -459,7 +459,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                   postsFound = true;
                                   return Posts(postInfo[index]);
                                 } else {
-                                  if (index == postInfo.length - 1) {
+                                  if (index == postInfo.length - 2) {
                                     if (!postsFound) {
                                       return Container(
                                         height: 550,

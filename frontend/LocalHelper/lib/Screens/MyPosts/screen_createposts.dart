@@ -17,6 +17,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   // Text Controllers
   final titleController = TextEditingController();
   final nameController = TextEditingController();
+  final addressController = TextEditingController();
   final descriptionController = TextEditingController();
 
   // Prevent Multi sending
@@ -31,15 +32,17 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   void dispose() {
     titleController.dispose();
     nameController.dispose();
+    addressController.dispose();
     descriptionController.dispose();
     super.dispose();
   }
 
-  Future<bool> sendPost(String token, String title, String desc, bool request,
-      bool free, AuthSettings authSettings) async {
+  Future<bool> sendPost(String token, String title, String address, String desc,
+      bool request, bool free, AuthSettings authSettings) async {
     // Flutter Json
     Map<String, dynamic> jsonMap = {
       'title': title,
+      'address': address,
       'description': desc,
       'is_request': request,
       'free': free,
@@ -161,6 +164,32 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
               ),
             ),
 
+            // Address
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: TextField(
+                controller: addressController,
+                cursorColor: settings.darkMode ? Colors.white : Colors.black,
+                keyboardType: TextInputType.name,
+                style: TextStyle(
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Address',
+                  labelStyle: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  hintText: 'Ex: 3123 Main Street ...',
+                  hintStyle: TextStyle(fontSize: 20),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
+
             // Request
             SizedBox(height: 20),
             SwitchListTile(
@@ -249,6 +278,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                             var result = await sendPost(
                                 authSettings.token,
                                 titleController.text,
+                                addressController.text,
                                 descriptionController.text,
                                 request,
                                 free,
