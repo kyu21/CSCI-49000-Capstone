@@ -19,13 +19,26 @@ async function getPostInterestByPostId(req, res) {
                 postId: postId
             }
         })
-        let users = await Promise.all(postInterests.map((e) => e.userId).map(async (u) => await db.users.findOne({
-            raw: true,
-            where: {
-                id: u
+        if (postInterests !== undefined && postInterests.length !== 0) {
+            let users = await Promise.all(postInterests.map((e) => e.userId).map(async (u) => await db.users.findOne({
+                raw: true,
+                where: {
+                    id: u
+                }
+            })))
+            if (users !== undefined && users.length !== 0) {
+                res.status(401).json({
+                    "message": "Error. User not found."
+                })
+            } else {
+                res.status(200).json(users)
             }
-        })))
-        res.status(200).json(users)
+        } else {
+            res.status(401).json({
+                "message": "Error. Post not found."
+            })
+        }
+
     } catch (err) {
         console.log(err)
     }
