@@ -75,8 +75,9 @@ class Posts extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (request) Icon(Icons.star),
-                      if (!free) Icon(Icons.monetization_on),
+                      if (request) Icon(Icons.star, color: Colors.purple[800]),
+                      if (!free)
+                        Icon(Icons.monetization_on, color: Colors.yellow[800]),
                     ],
                   ),
                 ),

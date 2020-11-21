@@ -105,6 +105,11 @@ class _ScreenPostsState extends State<ScreenPosts> {
         List json = jsonDecode(response.body);
         postInfo = json;
       }
+
+      // Null Checker
+      for (int i = 0; i < postInfo.length; i++) {
+        if (postInfo[i]['owner'] == null) postInfo.removeAt(i);
+      }
     } catch (e) {
       print(e);
     }
