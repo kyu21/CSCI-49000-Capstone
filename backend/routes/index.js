@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
+router.get("/", (req, res, next) => res.send("LocalHelper Backend API"));
+
 // Subrouters;
 const authRouter = require("./auth");
 const userRouter = require("./users");
