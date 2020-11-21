@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Screens/Interests/screen_interests.dart';
+import 'package:localhelper/Screens/MyPosts/screen_myposts.dart';
+import 'package:localhelper/Screens/Posts/screen_posts.dart';
+import 'package:localhelper/Screens/Settings/screen_settings.dart';
 import 'package:provider/provider.dart';
-
-import 'Additions/settings.dart';
-import 'Screens/MainPages/Conversations/screen_convo.dart';
-import 'Screens/MainPages/MyPosts/screen_myposts.dart';
-import 'Screens/MainPages/Posts/screen_posts.dart';
-import 'Screens/MainPages/Settings/screen_settings.dart';
-import 'Screens/MainPages/Users/screen_users.dart';
-
-/*
-  This is the main module that holds all the screens in a list.
-
-*/
 
 class ScreenHome extends StatefulWidget {
   @override
@@ -19,6 +12,8 @@ class ScreenHome extends StatefulWidget {
 }
 
 class _ScreenHomeState extends State<ScreenHome> {
+// VARIABLES ===================================================================
+
   List<Widget> pageList = List<Widget>();
   int _currentIndex = 0;
 
@@ -27,18 +22,23 @@ class _ScreenHomeState extends State<ScreenHome> {
     // Clear the list and add the pages
     pageList.clear();
     pageList.add(ScreenPosts());
-    pageList.add(ScreenUsers());
-    // pageList.add(ScreenConvo());
+    pageList.add(ScreenInterests());
     pageList.add(ScreenMyPosts());
     pageList.add(ScreenSettings());
     super.initState();
   }
+
+// =============================================================================
+// FUNCTIONS ===================================================================
 
   void setIndex(int index) {
     setState(() {
       _currentIndex = index;
     });
   }
+
+// =============================================================================
+// MAIN ========================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -60,17 +60,13 @@ class _ScreenHomeState extends State<ScreenHome> {
         currentIndex: _currentIndex,
         items: [
           BottomNavigationBarItem(
-            label: 'Local Posts',
+            label: 'Posts',
             icon: Icon(Icons.local_activity),
           ),
           BottomNavigationBarItem(
-            label: 'Users',
-            icon: Icon(Icons.supervised_user_circle),
+            label: 'Your Interests',
+            icon: Icon(Icons.file_copy),
           ),
-          // BottomNavigationBarItem(
-          //   label: 'Messages',
-          //   icon: Icon(Icons.message),
-          // ),
           BottomNavigationBarItem(
             label: 'My Posts',
             icon: Icon(Icons.post_add),

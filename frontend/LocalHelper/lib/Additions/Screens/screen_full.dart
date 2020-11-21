@@ -1,12 +1,12 @@
 // Screen for viewing the posts in full screen.
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:localhelper/Additions/authSettings.dart';
+import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'dart:convert';
 
-import 'package:localhelper/Additions/settings.dart';
-import 'package:localhelper/Additions/users.dart';
-import 'package:localhelper/Screens/MainPages/MyPosts/screen_editposts.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:localhelper/Additions/Widgets/users.dart';
+import 'package:localhelper/Screens/MyPosts/screen_editposts.dart';
 import 'package:provider/provider.dart';
 
 class ScreenPostsFull extends StatefulWidget {
@@ -19,10 +19,15 @@ class ScreenPostsFull extends StatefulWidget {
 }
 
 class _ScreenPostsFullState extends State<ScreenPostsFull> {
+// VARIABLES ===================================================================
+
   // Json info
   var info;
   bool interested = false;
   var interestJson;
+
+// =============================================================================
+// FUNCTIONS ===================================================================
 
   // Get details
   Future getOwnerDetails(AuthSettings authSettings) async {
@@ -45,8 +50,8 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
               widget.ownerId.toString();
 
       var interestResult = await http.get(interLink, headers: headers);
-      interestJson = jsonDecode(interestResult.body);
 
+      interestJson = jsonDecode(interestResult.body);
       for (int i = 0; i < interestJson.length; i++) {
         if (interestJson[i]['id'] == authSettings.ownerId) {
           interested = true;
@@ -58,6 +63,9 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
       Navigator.pop(context);
     }
   }
+
+// =============================================================================
+// MAIN ========================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +138,7 @@ class _FullDoneState extends State<FullDone> {
 
     // Names
     final title = widget.info['post']['title'];
+    final address = widget.info['post']['address'];
     final ownerName =
         widget.info['owner']['first'] + ' ' + widget.info['owner']['last'];
     final description = widget.info['post']['description'];
@@ -185,14 +194,17 @@ class _FullDoneState extends State<FullDone> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // Text(
-                    //   'Date: ' + date,
-                    //   style: TextStyle(
-                    //     color: settings.darkMode ? Colors.white : Colors.black,
-                    //     fontSize: 15,
-                    //     fontWeight: FontWeight.bold,
-                    //   ),
-                    // ),
+                    if (address != null) SizedBox(height: 30),
+                    if (address != null)
+                      Text(
+                        'Address: ' + address,
+                        style: TextStyle(
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -302,9 +314,11 @@ class _FullDoneState extends State<FullDone> {
             await Navigator.push(context, MaterialPageRoute(builder: (context) {
               final int pId = info['post']['id'];
               final title = info['post']['title'];
+              final address = info['post']['address'];
               final des = info['post']['description'];
               final req = info['post']['is_request'];
-              return ScreenEditPosts(pId, title, des, req);
+              final free = info['post']['free'];
+              return ScreenEditPosts(pId, title, address, des, req, free);
             }));
             Navigator.pop(context, true);
           },
