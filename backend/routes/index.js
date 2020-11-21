@@ -3,9 +3,10 @@ const router = express.Router();
 
 // Subrouters;
 const authRouter = require("./auth");
-
-
 const userRouter = require("./users");
+
+
+
 const userZipsRouter = require("./userZips");
 const userLanguagesRouter = require("./userLanguages");
 const messagesRouter = require("./messages");
@@ -20,9 +21,10 @@ const postKeywordsController = require("./postKeywords")
 
 // Mount our subrouters to assemble our apiRouter;
 router.use("/auth", authRouter);
-
-
 router.use("/users", userRouter);
+
+
+
 router.use("/userZips", userZipsRouter);
 router.use("/userLanguages", userLanguagesRouter);
 router.use("/messages", messagesRouter);
@@ -34,9 +36,6 @@ router.use("/postZips", postZipsRouter);
 router.use("/postInterests", postInterestsController)
 router.use("/keywords", keywordsController)
 router.use("/postKeywords", postKeywordsController)
-
-// const cleanup = require("./cleanup")
-// router.use("/cleanup", cleanup)
 
 // Error handling middleware;
 router.use((req, res, next) => {

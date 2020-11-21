@@ -16,7 +16,7 @@ const authController = {
 	register: register,
 };
 
-// POST auth/login
+// POST /auth/login
 async function login(req, res) {
 	try {
 		// find if user exists
@@ -56,14 +56,14 @@ async function login(req, res) {
 		}
 	} catch (err) {
 		console.log(err);
-		res.status(401).json({
+		res.status(500).json({
 			code: "Error",
 			message: "Error logging in, please try again.",
 		});
 	}
 }
 
-// POST auth/register
+// POST /auth/register
 async function register(req, res) {
 	try {
 		// check if email is duplicate
@@ -142,7 +142,7 @@ async function register(req, res) {
 				}
 			}
 
-			await standardizeUserObject(user.id, user);
+			user = await standardizeUserObject(user);
 
 			res.status(201).json(user);
 		} else {
@@ -153,7 +153,7 @@ async function register(req, res) {
 		}
 	} catch (err) {
 		console.log(err);
-		res.status(401).json({
+		res.status(500).json({
 			code: "Error",
 			message: "Error with creating account. Please retry.",
 		});

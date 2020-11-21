@@ -4,101 +4,44 @@ const decodeJwt = require("../utils/decodeJwt");
 var bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+const {
+	standardizeUserObject,
+	cascadeDeleteUser
+} = require("../utils/standardize")
+
 const userController = {
 	getAllUsers: getAllUsers,
-	getUserById: getUserById,
 	getLoggedInUser: getLoggedInUser,
-	editUser: editUser,
-	deleteUser: deleteUser
+	getUserById: getUserById,
+	editLoggedInUser: editLoggedInUser,
+	deleteLoggedInUser: deleteLoggedInUser
 };
 
-async function getAllUsers(req, res, next) {
+// GET /users AUTH
+async function getAllUsers(req, res) {
 	try {
-		const users = await db.users.findAll();
+		let users = await db.users.findAll({
+			raw: true
+		})
+
+		users = await Promise.all(
+			users.map(
+				async (e) =>
+					await standardizeUserObject(e)
+			)
+		);
+
 		res.status(200).json(users);
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error getting all users, please try again.",
+		});
 	}
 }
 
-async function getDetailedUserInfo(userId, user) {
-	try {
-		// zips
-		const allUserZips = await db.userZips.findAll({
-			where: {
-				userId: userId,
-			},
-		});
-		const allZipsInfo = await Promise.all(
-			allUserZips.map(
-				async (zipEle) =>
-					await db.zips.findOne({
-						raw: true,
-						where: {
-							id: zipEle.zipId,
-						},
-					})
-			)
-		);
-
-		// languages
-		const allUserLang = await db.userLanguages.findAll({
-			where: {
-				userId: userId,
-			},
-		});
-		const allLangInfo = await Promise.all(
-			allUserLang.map(
-				async (langEle) =>
-					await db.languages.findOne({
-						raw: true,
-						where: {
-							id: langEle.languageId,
-						},
-					})
-			)
-		);
-
-		// posts
-		const allUserPosts = await db.posts.findAll({
-			raw: true,
-			where: {
-				ownerId: userId,
-			},
-		});
-
-		// post interests
-		const interests = await db.postInterests.findAll({
-			raw: true,
-			where: {
-				userId: userId
-			}
-		})
-		const allInterestInfo = await Promise.all(
-			interests.map(
-				async (p) => (
-					await db.posts.findOne({
-						raw: true,
-						where: {
-							id: p.postId
-						}
-					})
-				)
-			)
-		)
-
-
-		user["zips"] = allZipsInfo;
-		user["languages"] = allLangInfo;
-		user["posts"] = allUserPosts;
-		user["interests"] = allInterestInfo;
-
-		return user;
-	} catch (err) {
-		console.log(err);
-	}
-}
-
+// GET /users/me AUTH
 async function getLoggedInUser(req, res) {
 	try {
 		let decodedJwt = await decodeJwt(req.headers);
@@ -109,14 +52,19 @@ async function getLoggedInUser(req, res) {
 			},
 		});
 
-		user = await getDetailedUserInfo(currentUser.id, currentUser);
+		user = await standardizeUserObject(currentUser);
 		res.status(200).json(user);
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error getting logged in user, please try again.",
+		});
 	}
 }
 
-async function getUserById(req, res, next) {
+// GET /users/:userId AUTH
+async function getUserById(req, res) {
 	try {
 		const {
 			userId
@@ -129,15 +77,20 @@ async function getUserById(req, res, next) {
 			},
 		});
 
-		user = await getDetailedUserInfo(userId, user);
+		user = await standardizeUserObject(user);
 
 		res.status(200).json(user);
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting user ${userId}, please try again.`,
+		});
 	}
 }
 
-async function editUser(req, res) {
+// PUT /users AUTH
+async function editLoggedInUser(req, res) {
 	try {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
@@ -155,35 +108,79 @@ async function editUser(req, res) {
 			"email",
 			"password",
 		];
+		let invalidNewEmail = false;
+		let invalidInput = false;
 		let newInfo = {};
 		for (let key in req.body) {
-			if (validKeys.indexOf(key) >= 0) {
-				newInfo[key] = req.body[key];
-				if (key === "password") {
-					let hashedPassword = await bcrypt.hash(
-						req.body[key],
-						saltRounds
-					);
-					newInfo[key] = hashedPassword;
+			let val = req.body[key]
+			if (typeof val === "string" && val.length > 0) {
+				if (validKeys.indexOf(key) >= 0) {
+					newInfo[key] = val;
+
+					// no duplicate emails
+					if (key === "email" && newInfo["email"] !== currentUser.email) {
+						let newEmail = newInfo["email"];
+						let user = await db.users.findOne({
+							raw: true,
+							where: {
+								email: newEmail
+							}
+						});
+
+						if (user !== null) {
+							invalidNewEmail = true;
+							break
+						}
+					}
+
+					// need to rehash password
+					if (key === "password") {
+						let hashedPassword = await bcrypt.hash(
+							req.body[key],
+							saltRounds
+						);
+						newInfo[key] = hashedPassword;
+					}
 				}
+			} else {
+				invalidInput = true;
 			}
+
 		}
 
-		let [_, users] = await db.users.update(newInfo, {
-			where: {
-				id: currentUser.id
-			},
-			returning: true,
-			raw: true,
-		});
+		if (invalidNewEmail) {
+			res.status(403).json({
+				code: "Error",
+				message: `An account is already registered with ${newInfo["email"]}, please try again.`,
+			});
+		} else if (invalidInput) {
+			res.status(400).json({
+				code: "Error",
+				message: `Input must consist of non-empty strings, please try again.`,
+			});
+		} else {
+			let [_, users] = await db.users.update(newInfo, {
+				where: {
+					id: currentUser.id
+				},
+				returning: true,
+				raw: true,
+			});
 
-		res.status(200).json(users[0]);
+			let editedUser = await standardizeUserObject(users[0]);
+
+			res.status(200).json(editedUser);
+		}
 	} catch (err) {
 		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error editing user ${userId}, please try again.`,
+		});
 	}
 }
 
-async function deleteUser(req, res) {
+async function deleteLoggedInUser(req, res) {
 	try {
 		let decodedJwt = await decodeJwt(req.headers);
 		let currentUser = await db.users.findOne({
@@ -198,59 +195,15 @@ async function deleteUser(req, res) {
 				id: currentUser.id
 			},
 		});
-		await cascadeDelete(currentUser.id);
+		await cascadeDeleteUser(currentUser.id);
 
-		res.status(200).json({
-			code: "Success",
+		res.sendStatus(204);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error deleting user ${currentUser.id}, please try again.`,
 		});
-	} catch (err) {
-		console.log(err);
-	}
-}
-
-async function cascadeDelete(userId) {
-	try {
-		await db.userZips.destroy({
-			where: {
-				userId: userId
-			}
-		})
-		await db.userLanguages.destroy({
-			where: {
-				userId: userId
-			}
-		})
-		let posts = await db.posts.findAll({
-			where: {
-				ownerId: userId
-			}
-		})
-		let postIds = posts.map((p) => (p.id))
-		await posts.forEach((p) => p.destroy())
-		await db.postZips.destroy({
-			where: {
-				postId: postIds
-			}
-		})
-	} catch (err) {
-		console.log(err);
-	}
-}
-
-async function getLoggedInUserInterested(req, res) {
-	try {
-		let decodedJwt = await decodeJwt(req.headers);
-		let currentUser = await db.users.findOne({
-			raw: true,
-			where: {
-				email: decodedJwt.email
-			},
-		});
-
-
-
-	} catch (err) {
-		console.log(err);
 	}
 }
 
