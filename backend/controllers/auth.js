@@ -11,11 +11,6 @@ const {
 	standardizeUserObject
 } = require("../utils/standardize")
 
-const authController = {
-	login: login,
-	register: register,
-};
-
 // POST /auth/login
 async function login(req, res) {
 	try {
@@ -88,7 +83,7 @@ async function register(req, res) {
 
 			// parse additonal information - zips and languages
 			const zips = newUser.zips;
-			if (zips !== undefined) {
+			if (typeof zips === "object" && zips.length !== 0) {
 				for (const zip of zips) {
 					// check db if zip exists
 					let dbZip = await db.zips.findOne({
@@ -115,7 +110,7 @@ async function register(req, res) {
 
 			// languages
 			const languages = newUser.languages;
-			if (languages !== undefined) {
+			if (typeof languages === "object" && languages.length !== 0) {
 				for (let lang of languages) {
 					lang = lang.toTitleCase()
 
@@ -160,4 +155,7 @@ async function register(req, res) {
 	}
 }
 
-module.exports = authController;
+module.exports = {
+	login: login,
+	register: register,
+};

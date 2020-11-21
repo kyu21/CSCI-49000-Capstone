@@ -9,14 +9,6 @@ const {
 	cascadeDeleteUser
 } = require("../utils/standardize")
 
-const userController = {
-	getAllUsers: getAllUsers,
-	getLoggedInUser: getLoggedInUser,
-	getUserById: getUserById,
-	editLoggedInUser: editLoggedInUser,
-	deleteLoggedInUser: deleteLoggedInUser
-};
-
 // GET /users AUTH
 async function getAllUsers(req, res) {
 	try {
@@ -84,7 +76,7 @@ async function getUserById(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: `Error getting user ${userId}, please try again.`,
+			message: `Error getting user, please try again.`,
 		});
 	}
 }
@@ -175,11 +167,12 @@ async function editLoggedInUser(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: `Error editing user ${userId}, please try again.`,
+			message: `Error editing user, please try again.`,
 		});
 	}
 }
 
+// DELETE /users AUTH
 async function deleteLoggedInUser(req, res) {
 	try {
 		let decodedJwt = await decodeJwt(req.headers);
@@ -202,9 +195,184 @@ async function deleteLoggedInUser(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: `Error deleting user ${currentUser.id}, please try again.`,
+			message: `Error deleting user, please try again.`,
 		});
 	}
 }
 
-module.exports = userController;
+// GET /users/:userId/zips AUTH
+async function getUserZips(req, res) {
+	try {
+		const {
+			userId
+		} = req.params;
+
+		let zips = await db.userZips.findAll({
+			raw: true,
+			where: {
+				userId: userId
+			}
+		});
+		if (zips.length !== 0) {
+			zips = await db.zips.findAll({
+				raw: true,
+				where: {
+					id: zips.map(z => z.zipId)
+				}
+			});
+		}
+		res.status(200).json(zips);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting zips for user, please try again.`,
+		});
+	}
+}
+
+// POST /users/:userId/zips AUTH
+async function addUserZips(req, res) {
+	try {
+		const {
+			userId
+		} = req.params;
+		const {
+			zips
+		} = req.body;
+
+		// ensure non-empty input
+		if (typeof zips === "object" && zips.length !== 0) {
+			for (const z of zips) {
+				// check db if zip exists
+				let dbZip = await db.zips.findOne({
+					raw: true,
+					where: {
+						zip: z
+					}
+				});
+
+				// create entry for zip if not in table already
+				if (dbZip === null) {
+					dbZip = await db.zips.create({
+						zip: z
+					});
+
+					// create association between user and zip
+					await db.userZips.create({
+						userId: userId,
+						zipId: dbZip.id
+					});
+				} else {
+					// zip exist - check if association between user and zip exists
+					let userZip = await db.userZips.findOne({
+						raw: true,
+						where: {
+							userId: userId,
+							zipId: dbZip.id
+						}
+					});
+					if (userZip === null) {
+						// create association between user and zip
+						await db.userZips.create({
+							userId: userId,
+							zipId: dbZip.id
+						});
+					} else {
+						res.status(400).json({
+							code: "Error",
+							message: `User ${userId} alrady has zip ${z}, please try again.`,
+						});
+					}
+				}
+			}
+
+			let allZips = await db.userZips.findAll({
+				raw: true,
+				where: {
+					userId: userId
+				}
+			});
+			if (allZips.length !== 0) {
+				allZips = await db.zips.findAll({
+					raw: true,
+					where: {
+						id: allZips.map(z => z.zipId)
+					}
+				});
+			}
+
+			res.status(201).json(allZips)
+		} else {
+			res.status(400).json({
+				code: "Error",
+				message: `Input must consist of non-empty array, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error adding zips for user, please try again.`,
+		});
+	}
+}
+
+// DELETE /users/:userId/zips/:zip AUTH
+async function removeZipFromUser(req, res) {
+	try {
+		const {
+			userId,
+			zip
+		} = req.params;
+
+		// check if valid zip
+		let zipObj = await db.zips.findOne({
+			raw: true,
+			where: {
+				zip: zip
+			}
+		});
+		if (zipObj !== null) {
+			// check if association exists between user and zip
+			let userZip = await db.userZips.findOne({
+				where: {
+					userId: userId,
+					zipId: zipObj.id
+				}
+			});
+
+			if (userZip !== null) {
+				await userZip.destroy();
+				res.sendStatus(204);
+			} else {
+				res.status(404).json({
+					code: "Error",
+					message: `Zip ${zip} not found for user ${userId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Zip ${zip} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error removing zips for user, please try again.`,
+		});
+	}
+}
+
+module.exports = {
+	getAllUsers: getAllUsers,
+	getLoggedInUser: getLoggedInUser,
+	getUserById: getUserById,
+	editLoggedInUser: editLoggedInUser,
+	deleteLoggedInUser: deleteLoggedInUser,
+	getUserZips: getUserZips,
+	addUserZips: addUserZips,
+	removeZipFromUser: removeZipFromUser
+};
