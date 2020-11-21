@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 
 // Subrouters;
+const authRouter = require("./auth");
+
+
 const userRouter = require("./users");
 const userZipsRouter = require("./userZips");
 const userLanguagesRouter = require("./userLanguages");
@@ -10,13 +13,15 @@ const convosRouter = require("./convos");
 const postsRouter = require("./posts");
 const languagesRouter = require("./languages");
 const zipRouter = require("./zips");
-const authRouter = require("./auth");
 const postZipsRouter = require("./postZips");
 const postInterestsController = require("./postInterests")
 const keywordsController = require("./keywords");
 const postKeywordsController = require("./postKeywords")
 
 // Mount our subrouters to assemble our apiRouter;
+router.use("/auth", authRouter);
+
+
 router.use("/users", userRouter);
 router.use("/userZips", userZipsRouter);
 router.use("/userLanguages", userLanguagesRouter);
@@ -25,7 +30,6 @@ router.use("/convos", convosRouter);
 router.use("/posts", postsRouter);
 router.use("/languages", languagesRouter);
 router.use("/zips", zipRouter);
-router.use("/auth", authRouter);
 router.use("/postZips", postZipsRouter);
 router.use("/postInterests", postInterestsController)
 router.use("/keywords", keywordsController)

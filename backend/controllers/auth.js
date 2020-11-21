@@ -12,12 +12,14 @@ const {
 } = require("../utils/standardize")
 
 const authController = {
-	loginUser: loginUser,
-	register: register
+	login: login,
+	register: register,
 };
 
-async function loginUser(req, res, next) {
+// POST auth/login
+async function login(req, res) {
 	try {
+		// find if user exists
 		const {
 			email,
 			password
@@ -28,6 +30,7 @@ async function loginUser(req, res, next) {
 				email: email
 			},
 		});
+
 		if (user) {
 			const match = await bcrypt.compare(password, user.password);
 			if (match) {
@@ -60,6 +63,7 @@ async function loginUser(req, res, next) {
 	}
 }
 
+// POST auth/register
 async function register(req, res) {
 	try {
 		// check if email is duplicate
