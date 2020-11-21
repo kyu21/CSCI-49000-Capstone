@@ -45,7 +45,6 @@ class Posts extends StatelessWidget {
 
     // Providers
     Settings settings = Provider.of<Settings>(context);
-
     return Container(
       decoration: BoxDecoration(
         color: Colors.transparent,
@@ -56,8 +55,6 @@ class Posts extends StatelessWidget {
               color: settings.darkMode ? Colors.white : Colors.black, width: 5),
         ),
       ),
-      width: double.infinity,
-      height: 300,
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -88,37 +85,39 @@ class Posts extends StatelessWidget {
 
             // Description
             SizedBox(height: 20),
-            Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  await Navigator.push(context,
-                      MaterialPageRoute(builder: (context) {
-                    return ScreenPostsFull(postId);
-                  }));
-                  settings.refreshPage();
-                },
-                child: Container(
-                  width: double.infinity,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      description,
-                      style: TextStyle(
-                        height: 1.5,
-                        fontSize: 20,
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                      ),
+            GestureDetector(
+              onTap: () async {
+                await Navigator.push(context,
+                    MaterialPageRoute(builder: (context) {
+                  return ScreenPostsFull(postId);
+                }));
+                settings.refreshPage();
+              },
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: 300,
+                ),
+                width: double.infinity,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    description,
+                    style: TextStyle(
+                      height: 1.5,
+                      fontSize: 20,
+                      color: settings.darkMode ? Colors.white : Colors.black,
                     ),
                   ),
-                  decoration: BoxDecoration(
-                    color: settings.darkMode ? Colors.black : Colors.white,
-                    borderRadius: BorderRadius.circular(
-                      10,
-                    ),
+                ),
+                decoration: BoxDecoration(
+                  color: settings.darkMode ? Colors.black : Colors.white,
+                  borderRadius: BorderRadius.circular(
+                    10,
                   ),
                 ),
               ),
             ),
+            SizedBox(height: 10),
           ],
         ),
       ),

@@ -50,9 +50,8 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
               widget.ownerId.toString();
 
       var interestResult = await http.get(interLink, headers: headers);
-      interestJson = jsonDecode(interestResult.body);
-      print(interestJson);
 
+      interestJson = jsonDecode(interestResult.body);
       for (int i = 0; i < interestJson.length; i++) {
         if (interestJson[i]['id'] == authSettings.ownerId) {
           interested = true;
