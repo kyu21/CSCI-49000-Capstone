@@ -6,7 +6,6 @@ const authRouter = require("./auth");
 const userRouter = require("./users");
 
 
-const userLanguagesRouter = require("./userLanguages");
 const messagesRouter = require("./messages");
 const convosRouter = require("./convos");
 const postsRouter = require("./posts");
@@ -22,7 +21,6 @@ router.use("/auth", authRouter);
 router.use("/users", userRouter);
 
 
-router.use("/userLanguages", userLanguagesRouter);
 router.use("/messages", messagesRouter);
 router.use("/convos", convosRouter);
 router.use("/posts", postsRouter);

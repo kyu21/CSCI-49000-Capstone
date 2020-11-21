@@ -16,4 +16,9 @@ router.route("/:userId/zips").get(auth, controller.getUserZips);
 router.route("/:userId/zips").post(auth, controller.addUserZips);
 router.route("/:userId/zips/:zip").delete(auth, controller.removeZipFromUser);
 
+// languages
+router.route("/:userId/languages").get(auth, controller.getUserLanguages);
+router.route("/:userId/languages").post(auth, controller.addUserLanguages);
+router.route("/:userId/languages/:language").delete(auth, controller.removeLanguageFromUser);
+
 module.exports = router;

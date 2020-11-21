@@ -4,6 +4,8 @@ const decodeJwt = require("../utils/decodeJwt");
 var bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+require('@gouch/to-title-case');
+
 const {
 	standardizeUserObject,
 	cascadeDeleteUser
@@ -278,15 +280,11 @@ async function addUserZips(req, res) {
 							userId: userId,
 							zipId: dbZip.id
 						});
-					} else {
-						res.status(400).json({
-							code: "Error",
-							message: `User ${userId} alrady has zip ${z}, please try again.`,
-						});
 					}
 				}
 			}
 
+			// get newly updated list of user zips
 			let allZips = await db.userZips.findAll({
 				raw: true,
 				where: {
@@ -361,7 +359,173 @@ async function removeZipFromUser(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: `Error removing zips for user, please try again.`,
+			message: `Error removing zip for user, please try again.`,
+		});
+	}
+}
+
+// GET /users/:userId/languages AUTH
+async function getUserLanguages(req, res) {
+	try {
+		const {
+			userId
+		} = req.params;
+
+		let languages = await db.userLanguages.findAll({
+			raw: true,
+			where: {
+				userId: userId
+			}
+		});
+		if (languages.length !== 0) {
+			languages = await db.languages.findAll({
+				raw: true,
+				where: {
+					id: languages.map(l => l.languageId)
+				}
+			});
+		}
+		res.status(200).json(languages);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting languages for user, please try again.`,
+		});
+	}
+}
+
+// POST /users/:userId/languages AUTH
+async function addUserLanguages(req, res) {
+	try {
+		const {
+			userId
+		} = req.params;
+		const {
+			languages
+		} = req.body;
+
+		// ensure non-empty input
+		if (typeof languages === "object" && languages.length !== 0) {
+			for (let l of languages) {
+				l = l.toTitleCase()
+
+				// check db if language exists
+				let dbLang = await db.languages.findOne({
+					raw: true,
+					where: {
+						name: l
+					}
+				});
+
+				// create entry for language if not in table already
+				if (dbLang === null) {
+					dbLang = await db.languages.create({
+						name: l
+					});
+
+					// create association between user and language
+					await db.userLanguages.create({
+						userId: userId,
+						languageId: dbLang.id
+					});
+				} else {
+					// language exist - check if association between user and language exists
+					let userLanguage = await db.userLanguages.findOne({
+						raw: true,
+						where: {
+							userId: userId,
+							languageId: dbLang.id
+						}
+					});
+					if (userLanguage === null) {
+						// create association between user and language
+						await db.userLanguages.create({
+							userId: userId,
+							languageId: dbLang.id
+						});
+					}
+				}
+			}
+
+			// get newly updated list of user languages
+			let allLanguages = await db.userLanguages.findAll({
+				raw: true,
+				where: {
+					userId: userId
+				}
+			});
+			if (allLanguages.length !== 0) {
+				allLanguages = await db.languages.findAll({
+					raw: true,
+					where: {
+						id: allLanguages.map(l => l.languageId)
+					}
+				});
+			}
+
+			res.status(201).json(allLanguages)
+		} else {
+			res.status(400).json({
+				code: "Error",
+				message: `Input must consist of non-empty array, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error adding languages for user, please try again.`,
+		});
+	}
+}
+
+// DELETE /users/:userId/languages/:language AUTH
+async function removeLanguageFromUser(req, res) {
+	try {
+		const {
+			userId,
+			language
+		} = req.params;
+
+		const lang = language.toTitleCase();
+
+		// check if valid language
+		let languageObj = await db.languages.findOne({
+			raw: true,
+			where: {
+				name: lang
+			}
+		});
+		if (languageObj !== null) {
+			// check if association exists between user and language
+			let userLang = await db.userLanguages.findOne({
+				where: {
+					userId: userId,
+					languageId: languageObj.id
+				}
+			});
+
+			if (userLang !== null) {
+				await userLang.destroy();
+				res.sendStatus(204);
+			} else {
+				res.status(404).json({
+					code: "Error",
+					message: `${lang} not found for user ${userId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `${lang} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error removing language for user, please try again.`,
 		});
 	}
 }
@@ -374,5 +538,8 @@ module.exports = {
 	deleteLoggedInUser: deleteLoggedInUser,
 	getUserZips: getUserZips,
 	addUserZips: addUserZips,
-	removeZipFromUser: removeZipFromUser
+	removeZipFromUser: removeZipFromUser,
+	getUserLanguages: getUserLanguages,
+	addUserLanguages: addUserLanguages,
+	removeLanguageFromUser: removeLanguageFromUser
 };
