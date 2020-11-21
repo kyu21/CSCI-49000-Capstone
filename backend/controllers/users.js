@@ -102,8 +102,10 @@ async function editLoggedInUser(req, res) {
 			"email",
 			"password",
 		];
+
 		let invalidNewEmail = false;
 		let invalidInput = false;
+
 		let newInfo = {};
 		for (let key in req.body) {
 			let val = req.body[key]
@@ -244,7 +246,7 @@ async function addUserZips(req, res) {
 		} = req.body;
 
 		// ensure non-empty input
-		if (typeof zips === "object" && zips.length !== 0) {
+		if (Array.isArray(zips) && zips.length !== 0) {
 			for (const z of zips) {
 				// check db if zip exists
 				let dbZip = await db.zips.findOne({
@@ -406,7 +408,7 @@ async function addUserLanguages(req, res) {
 		} = req.body;
 
 		// ensure non-empty input
-		if (typeof languages === "object" && languages.length !== 0) {
+		if (Array.isArray(languages) && languages.length !== 0) {
 			for (let l of languages) {
 				l = l.toTitleCase()
 

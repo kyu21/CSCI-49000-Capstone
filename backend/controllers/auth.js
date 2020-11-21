@@ -83,7 +83,7 @@ async function register(req, res) {
 
 			// parse additonal information - zips and languages
 			const zips = newUser.zips;
-			if (typeof zips === "object" && zips.length !== 0) {
+			if (Array.isArray(zips) && zips.length !== 0) {
 				for (const zip of zips) {
 					// check db if zip exists
 					let dbZip = await db.zips.findOne({
@@ -110,7 +110,7 @@ async function register(req, res) {
 
 			// languages
 			const languages = newUser.languages;
-			if (typeof languages === "object" && languages.length !== 0) {
+			if (Array.isArray(languages) && languages.length !== 0) {
 				for (let lang of languages) {
 					lang = lang.toTitleCase()
 
@@ -122,14 +122,14 @@ async function register(req, res) {
 						}
 					});
 
-					// create entry for zip if not in table already
+					// create entry for languaage if not in table already
 					if (dbLang === null) {
 						dbLang = await db.languages.create({
 							name: lang
 						});
 					}
 
-					// create association between user and zip
+					// create association between user and languaage
 					await db.userLanguages.create({
 						userId: user.id,
 						languageId: dbLang.id

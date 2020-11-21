@@ -3,8 +3,9 @@ const db = require("../models");
 async function standardizeUserObject(user) {
     try {
         const userId = user.id;
+
         // zips
-        const allUserZips = await db.userZips.findAll({
+        const allZips = await db.userZips.findAll({
             raw: true,
             where: {
                 userId: userId
@@ -13,12 +14,12 @@ async function standardizeUserObject(user) {
         const allZipsInfo = await db.zips.findAll({
             raw: true,
             where: {
-                id: allUserZips.map(z => z.zipId)
+                id: allZips.map(z => z.zipId)
             }
         })
 
         // languages
-        const allUserLanguages = await db.userLanguages.findAll({
+        const allLanguages = await db.userLanguages.findAll({
             raw: true,
             where: {
                 userId: userId
@@ -27,7 +28,7 @@ async function standardizeUserObject(user) {
         const allLanguagesInfo = await db.languages.findAll({
             raw: true,
             where: {
-                id: allUserLanguages.map(l => l.languageId)
+                id: allLanguages.map(l => l.languageId)
             }
         });
 
@@ -40,7 +41,7 @@ async function standardizeUserObject(user) {
         });
 
         // post interests
-        const allUserInterests = await db.postInterests.findAll({
+        const allInterests = await db.postInterests.findAll({
             raw: true,
             where: {
                 userId: userId
@@ -49,16 +50,97 @@ async function standardizeUserObject(user) {
         const allInterestsInfo = await db.posts.findAll({
             raw: true,
             where: {
-                id: allUserInterests.map(p => p.postId)
+                id: allInterests.map(p => p.postId)
             }
         });
 
-        user["zips"] = allZipsInfo
-        user["languages"] = allLanguagesInfo
-        user["posts"] = allPostsInfo
-        user["interests"] = allInterestsInfo
+        user["zips"] = allZipsInfo;
+        user["languages"] = allLanguagesInfo;
+        user["posts"] = allPostsInfo;
+        user["interests"] = allInterestsInfo;
 
-        return user
+        return user;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function standardizePostObject(post) {
+    try {
+        const postId = post.id;
+        const ownerId = post.ownerId;
+
+        // owner
+        const owner = await db.users.findOne({
+            raw: true,
+            where: {
+                id: ownerId
+            }
+        });
+
+        // zips
+        const allZips = await db.postZips.findAll({
+            raw: true,
+            where: {
+                postId: postId
+            }
+        });
+        const allZipsInfo = await db.zips.findAll({
+            raw: true,
+            where: {
+                id: allZips.map(z => z.zipId)
+            }
+        });
+
+        // languages
+        const allLanguages = await db.postLanguages.findAll({
+            raw: true,
+            where: {
+                postId: postId
+            }
+        });
+        const allLanguagesInfo = await db.languages.findAll({
+            raw: true,
+            where: {
+                id: allLanguages.map(l => l.languageId)
+            }
+        });
+
+        // interests
+        const allInterests = await db.postInterests.findAll({
+            raw: true,
+            where: {
+                postId: postId
+            }
+        });
+        const allInterestsInfo = await db.users.findAll({
+            raw: true,
+            where: {
+                id: allInterests.map(u => u.userId)
+            }
+        });
+
+        // categories
+        const allCategories = await db.postCategories.findAll({
+            raw: true,
+            where: {
+                postId: postId
+            }
+        });
+        const allCategoriesInfo = await db.categories.findAll({
+            raw: true,
+            where: {
+                id: allCategories.map(c => c.categoryId)
+            }
+        });
+
+        post["owner"] = owner;
+        post["zips"] = allZipsInfo;
+        post["languages"] = allLanguagesInfo;
+        post["interests"] = allInterestsInfo;
+        post["categories"] = allCategoriesInfo;
+
+        return post;
     } catch (err) {
         console.log(err);
     }
@@ -143,6 +225,7 @@ async function cascadeDeletePost(postId) {
 
 module.exports = {
     standardizeUserObject: standardizeUserObject,
+    standardizePostObject: standardizePostObject,
     cascadeDeleteUser: cascadeDeleteUser,
     cascadeDeletePost: cascadeDeletePost
 };
