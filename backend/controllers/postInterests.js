@@ -26,18 +26,13 @@ async function getPostInterestByPostId(req, res) {
                     id: u
                 }
             })))
-            console.log(users)
             if (users !== undefined && users.length !== 0) {
                 res.status(200).json(users)
             } else {
-                res.status(401).json({
-                    "message": "Error. User not found."
-                })
+                res.status(404).json([])
             }
         } else {
-            res.status(401).json({
-                "message": "Error. Post not found."
-            })
+            res.status(404).json([])
         }
 
     } catch (err) {
