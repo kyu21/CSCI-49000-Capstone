@@ -64,16 +64,23 @@ async function getUserById(req, res) {
 			userId
 		} = req.params;
 
-		var user = await db.users.findOne({
+		let user = await db.users.findOne({
 			raw: true,
 			where: {
 				id: userId,
 			},
 		});
 
-		user = await standardizeUserObject(user);
+		if (user !== null) {
+			user = await standardizeUserObject(user);
 
-		res.status(200).json(user);
+			res.status(200).json(user);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `User ${userId} not found, please try again.`,
+			});
+		}
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
@@ -211,21 +218,35 @@ async function getUserZips(req, res) {
 			userId
 		} = req.params;
 
-		let zips = await db.userZips.findAll({
+		let user = await db.users.findOne({
 			raw: true,
 			where: {
-				userId: userId
-			}
+				id: userId,
+			},
 		});
-		if (zips.length !== 0) {
-			zips = await db.zips.findAll({
+
+		if (user !== null) {
+			let zips = await db.userZips.findAll({
 				raw: true,
 				where: {
-					id: zips.map(z => z.zipId)
+					userId: userId
 				}
 			});
+			if (zips.length !== 0) {
+				zips = await db.zips.findAll({
+					raw: true,
+					where: {
+						id: zips.map(z => z.zipId)
+					}
+				});
+			}
+			res.status(200).json(zips);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `User ${userId} not found, please try again.`,
+			});
 		}
-		res.status(200).json(zips);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
@@ -245,68 +266,82 @@ async function addUserZips(req, res) {
 			zips
 		} = req.body;
 
-		// ensure non-empty input
-		if (Array.isArray(zips) && zips.length !== 0) {
-			for (const z of zips) {
-				// check db if zip exists
-				let dbZip = await db.zips.findOne({
-					raw: true,
-					where: {
-						zip: z
-					}
-				});
+		let user = await db.users.findOne({
+			raw: true,
+			where: {
+				id: userId,
+			},
+		});
 
-				// create entry for zip if not in table already
-				if (dbZip === null) {
-					dbZip = await db.zips.create({
-						zip: z
-					});
-
-					// create association between user and zip
-					await db.userZips.create({
-						userId: userId,
-						zipId: dbZip.id
-					});
-				} else {
-					// zip exist - check if association between user and zip exists
-					let userZip = await db.userZips.findOne({
+		if (user !== null) {
+			// ensure non-empty input
+			if (Array.isArray(zips) && zips.length !== 0) {
+				for (const z of zips) {
+					// check db if zip exists
+					let dbZip = await db.zips.findOne({
 						raw: true,
 						where: {
-							userId: userId,
-							zipId: dbZip.id
+							zip: z
 						}
 					});
-					if (userZip === null) {
+
+					// create entry for zip if not in table already
+					if (dbZip === null) {
+						dbZip = await db.zips.create({
+							zip: z
+						});
+
 						// create association between user and zip
 						await db.userZips.create({
 							userId: userId,
 							zipId: dbZip.id
 						});
+					} else {
+						// zip exist - check if association between user and zip exists
+						let userZip = await db.userZips.findOne({
+							raw: true,
+							where: {
+								userId: userId,
+								zipId: dbZip.id
+							}
+						});
+						if (userZip === null) {
+							// create association between user and zip
+							await db.userZips.create({
+								userId: userId,
+								zipId: dbZip.id
+							});
+						}
 					}
 				}
-			}
 
-			// get newly updated list of user zips
-			let allZips = await db.userZips.findAll({
-				raw: true,
-				where: {
-					userId: userId
-				}
-			});
-			if (allZips.length !== 0) {
-				allZips = await db.zips.findAll({
+				// get newly updated list of user zips
+				let allZips = await db.userZips.findAll({
 					raw: true,
 					where: {
-						id: allZips.map(z => z.zipId)
+						userId: userId
 					}
 				});
-			}
+				if (allZips.length !== 0) {
+					allZips = await db.zips.findAll({
+						raw: true,
+						where: {
+							id: allZips.map(z => z.zipId)
+						}
+					});
+				}
 
-			res.status(201).json(allZips)
+				res.status(201).json(allZips)
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Input must consist of non-empty array, please try again.`,
+				});
+			}
 		} else {
-			res.status(400).json({
+			res.status(404).json({
 				code: "Error",
-				message: `Input must consist of non-empty array, please try again.`,
+				message: `User ${userId} not found, please try again.`,
 			});
 		}
 	} catch (err) {
@@ -326,35 +361,49 @@ async function removeZipFromUser(req, res) {
 			zip
 		} = req.params;
 
-		// check if valid zip
-		let zipObj = await db.zips.findOne({
+		let user = await db.users.findOne({
 			raw: true,
 			where: {
-				zip: zip
-			}
+				id: userId,
+			},
 		});
-		if (zipObj !== null) {
-			// check if association exists between user and zip
-			let userZip = await db.userZips.findOne({
+
+		if (user !== null) {
+			// check if valid zip
+			let zipObj = await db.zips.findOne({
+				raw: true,
 				where: {
-					userId: userId,
-					zipId: zipObj.id
+					zip: zip
 				}
 			});
+			if (zipObj !== null) {
+				// check if association exists between user and zip
+				let userZip = await db.userZips.findOne({
+					where: {
+						userId: userId,
+						zipId: zipObj.id
+					}
+				});
 
-			if (userZip !== null) {
-				await userZip.destroy();
-				res.sendStatus(204);
+				if (userZip !== null) {
+					await userZip.destroy();
+					res.sendStatus(204);
+				} else {
+					res.status(404).json({
+						code: "Error",
+						message: `Zip ${zip} not found for user ${userId}, please try again.`,
+					});
+				}
 			} else {
 				res.status(404).json({
 					code: "Error",
-					message: `Zip ${zip} not found for user ${userId}, please try again.`,
+					message: `Zip ${zip} not found, please try again.`,
 				});
 			}
 		} else {
 			res.status(404).json({
 				code: "Error",
-				message: `Zip ${zip} not found, please try again.`,
+				message: `User ${userId} not found, please try again.`,
 			});
 		}
 	} catch (err) {
@@ -373,21 +422,35 @@ async function getUserLanguages(req, res) {
 			userId
 		} = req.params;
 
-		let languages = await db.userLanguages.findAll({
+		let user = await db.users.findOne({
 			raw: true,
 			where: {
-				userId: userId
-			}
+				id: userId,
+			},
 		});
-		if (languages.length !== 0) {
-			languages = await db.languages.findAll({
+
+		if (user !== null) {
+			let languages = await db.userLanguages.findAll({
 				raw: true,
 				where: {
-					id: languages.map(l => l.languageId)
+					userId: userId
 				}
 			});
+			if (languages.length !== 0) {
+				languages = await db.languages.findAll({
+					raw: true,
+					where: {
+						id: languages.map(l => l.languageId)
+					}
+				});
+			}
+			res.status(200).json(languages);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `User ${userId} not found, please try again.`,
+			});
 		}
-		res.status(200).json(languages);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
@@ -407,70 +470,84 @@ async function addUserLanguages(req, res) {
 			languages
 		} = req.body;
 
-		// ensure non-empty input
-		if (Array.isArray(languages) && languages.length !== 0) {
-			for (let l of languages) {
-				l = l.toTitleCase()
+		let user = await db.users.findOne({
+			raw: true,
+			where: {
+				id: userId,
+			},
+		});
 
-				// check db if language exists
-				let dbLang = await db.languages.findOne({
-					raw: true,
-					where: {
-						name: l
-					}
-				});
+		if (user !== null) {
+			// ensure non-empty input
+			if (Array.isArray(languages) && languages.length !== 0) {
+				for (let l of languages) {
+					l = l.toTitleCase()
 
-				// create entry for language if not in table already
-				if (dbLang === null) {
-					dbLang = await db.languages.create({
-						name: l
-					});
-
-					// create association between user and language
-					await db.userLanguages.create({
-						userId: userId,
-						languageId: dbLang.id
-					});
-				} else {
-					// language exist - check if association between user and language exists
-					let userLanguage = await db.userLanguages.findOne({
+					// check db if language exists
+					let dbLang = await db.languages.findOne({
 						raw: true,
 						where: {
-							userId: userId,
-							languageId: dbLang.id
+							name: l
 						}
 					});
-					if (userLanguage === null) {
+
+					// create entry for language if not in table already
+					if (dbLang === null) {
+						dbLang = await db.languages.create({
+							name: l
+						});
+
 						// create association between user and language
 						await db.userLanguages.create({
 							userId: userId,
 							languageId: dbLang.id
 						});
+					} else {
+						// language exist - check if association between user and language exists
+						let userLanguage = await db.userLanguages.findOne({
+							raw: true,
+							where: {
+								userId: userId,
+								languageId: dbLang.id
+							}
+						});
+						if (userLanguage === null) {
+							// create association between user and language
+							await db.userLanguages.create({
+								userId: userId,
+								languageId: dbLang.id
+							});
+						}
 					}
 				}
-			}
 
-			// get newly updated list of user languages
-			let allLanguages = await db.userLanguages.findAll({
-				raw: true,
-				where: {
-					userId: userId
-				}
-			});
-			if (allLanguages.length !== 0) {
-				allLanguages = await db.languages.findAll({
+				// get newly updated list of user languages
+				let allLanguages = await db.userLanguages.findAll({
 					raw: true,
 					where: {
-						id: allLanguages.map(l => l.languageId)
+						userId: userId
 					}
 				});
-			}
+				if (allLanguages.length !== 0) {
+					allLanguages = await db.languages.findAll({
+						raw: true,
+						where: {
+							id: allLanguages.map(l => l.languageId)
+						}
+					});
+				}
 
-			res.status(201).json(allLanguages)
+				res.status(201).json(allLanguages)
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Input must consist of non-empty array, please try again.`,
+				});
+			}
 		} else {
-			res.status(400).json({
+			res.status(404).json({
 				code: "Error",
-				message: `Input must consist of non-empty array, please try again.`,
+				message: `User ${userId} not found, please try again.`,
 			});
 		}
 	} catch (err) {
@@ -490,37 +567,51 @@ async function removeLanguageFromUser(req, res) {
 			language
 		} = req.params;
 
-		const lang = language.toTitleCase();
-
-		// check if valid language
-		let languageObj = await db.languages.findOne({
+		let user = await db.users.findOne({
 			raw: true,
 			where: {
-				name: lang
-			}
+				id: userId,
+			},
 		});
-		if (languageObj !== null) {
-			// check if association exists between user and language
-			let userLang = await db.userLanguages.findOne({
+
+		if (user !== null) {
+			const lang = language.toTitleCase();
+
+			// check if valid language
+			let languageObj = await db.languages.findOne({
+				raw: true,
 				where: {
-					userId: userId,
-					languageId: languageObj.id
+					name: lang
 				}
 			});
+			if (languageObj !== null) {
+				// check if association exists between user and language
+				let userLang = await db.userLanguages.findOne({
+					where: {
+						userId: userId,
+						languageId: languageObj.id
+					}
+				});
 
-			if (userLang !== null) {
-				await userLang.destroy();
-				res.sendStatus(204);
+				if (userLang !== null) {
+					await userLang.destroy();
+					res.sendStatus(204);
+				} else {
+					res.status(404).json({
+						code: "Error",
+						message: `${lang} not found for user ${userId}, please try again.`,
+					});
+				}
 			} else {
 				res.status(404).json({
 					code: "Error",
-					message: `${lang} not found for user ${userId}, please try again.`,
+					message: `${lang} not found, please try again.`,
 				});
 			}
 		} else {
 			res.status(404).json({
 				code: "Error",
-				message: `${lang} not found, please try again.`,
+				message: `User ${userId} not found, please try again.`,
 			});
 		}
 	} catch (err) {

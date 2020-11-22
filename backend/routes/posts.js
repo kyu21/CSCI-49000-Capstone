@@ -2,13 +2,23 @@ const express = require("express");
 const router = express.Router();
 const auth = require("../utils/auth");
 
-const postController = require("../controllers/posts");
+const controller = require("../controllers/posts");
 
-router.route("/").get(auth, postController.getAllPosts);
-router.route("/me").get(auth, postController.getLoggedInUserPosts);
-router.route("/:postId").get(auth, postController.getPostById);
-router.route("/").post(auth, postController.createPost);
-router.route("/:postId").put(auth, postController.editPost);
-router.route("/:postId").delete(auth, postController.deletePost);
+router.route("/").get(auth, controller.getAllPosts);
+router.route("/me").get(auth, controller.getLoggedInUserPosts);
+router.route("/:postId").get(auth, controller.getPostById);
+router.route("/").post(auth, controller.createPost);
+router.route("/:postId").put(auth, controller.editPost);
+router.route("/:postId").delete(auth, controller.deletePost);
+
+// zips
+
+// languages
+
+// interests
+
+// categories
+
+// filter
 
 module.exports = router;

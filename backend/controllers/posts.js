@@ -1,4 +1,3 @@
-const e = require("express");
 const db = require("../models");
 
 const decodeJwt = require("../utils/decodeJwt");
@@ -82,9 +81,17 @@ async function getPostById(req, res) {
 				id: postId,
 			},
 		});
-		post = await standardizePostObject(post);
 
-		res.status(200).json(post);
+		if (post !== null) {
+			post = await standardizePostObject(post);
+
+			res.status(200).json(post);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
@@ -305,7 +312,7 @@ async function editPost(req, res) {
 		} else {
 			res.status(404).json({
 				code: "Error",
-				message: `Post ${postId} does not exist, please try again.`,
+				message: `Post ${postId} not found, please try again.`,
 			});
 		}
 
@@ -355,7 +362,7 @@ async function deletePost(req, res) {
 		} else {
 			res.status(404).json({
 				code: "Error",
-				message: `Post ${postId} does not exist, please try again.`,
+				message: `Post ${postId} not found, please try again.`,
 			});
 		}
 
