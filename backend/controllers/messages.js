@@ -5,6 +5,7 @@ const messageController = {
     editMessage: editMessage,
     deleteMessage: deleteMessage,
     getAllMessagesOfConvo: getAllMessagesOfConvo,
+    getXMessagesOfConvo: getXMessagesOfConvo,
 };
 
 
@@ -54,6 +55,28 @@ async function getAllMessagesOfConvo(req, res, next) {
     }
 }
 
+async function getXMessagesOfConvo(req, res, next) {
+    try {
+        const {
+            convoId,
+            nummsgs,
+        } = req.params;
+
+        const xConvoMessages = await db.messages.findAll({
+            limit: nummsgs,
+            where: {
+                convoId: convoId
+            },
+            order: [['createdAt','DESC']]
+        });
+
+        res.status(200).json(xConvoMessages)
+
+    } catch (err) {
+        console.log(err);
+        res.sendStatus(500);
+    }
+}
 
 async function editMessage(req, res) {
     try {
