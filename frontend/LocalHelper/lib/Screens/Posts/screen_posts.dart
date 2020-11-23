@@ -399,7 +399,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                               bool checkFree = false;
 
                               // Check if request
-                              if (postInfo[index]['post']['is_request'] ==
+                              if (postInfo[index]['is_request'] ==
                                   isSelection[bRequest]) checkRequest = true;
 
                               // Check Zips
@@ -441,8 +441,8 @@ class _ScreenPostsState extends State<ScreenPosts> {
                               }
 
                               // Check Free
-                              if (postInfo[index]['post']['free'] ==
-                                  isSelection[bFree]) checkFree = true;
+                              if (postInfo[index]['free'] == isSelection[bFree])
+                                checkFree = true;
 
                               // -----------------------------------------------
 

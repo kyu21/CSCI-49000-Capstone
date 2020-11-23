@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
@@ -26,6 +27,9 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   bool _hideConPass = true;
   bool _notSame = false;
   bool _zipWrong = false;
+
+  // Drop Down
+  String language = "English";
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -63,7 +67,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
       });
       print('Empty Strings');
     } else {
-      List<String> _zipArray = [zip];
+      List<String> _zipArray = zip.split(" ");
 
       // Flutter Json
       // Encode
@@ -114,22 +118,23 @@ class _ScreenRegisterState extends State<ScreenRegister> {
       margin: EdgeInsets.only(top: 30.0),
       child: Column(
         children: [
-          txtSection(
-              "First Name", Icons.person, firstController, TextInputType.name),
+          txtSection("First Name", "", Icons.person, firstController,
+              TextInputType.name),
+          SizedBox(height: 30.0),
+          txtSection("Last Name", "", Icons.person, lastController,
+              TextInputType.name),
           SizedBox(height: 30.0),
           txtSection(
-              "Last Name", Icons.person, lastController, TextInputType.name),
+              "Gender", "", Icons.person, genderController, TextInputType.name),
           SizedBox(height: 30.0),
-          txtSection(
-              "Gender", Icons.person, genderController, TextInputType.name),
+          txtSection("Phone", "ex: 123-321-1123", Icons.phone, phoneController,
+              TextInputType.phone),
           SizedBox(height: 30.0),
-          txtSection(
-              "Phone", Icons.phone, phoneController, TextInputType.phone),
+          txtSection("Email", "ex: test@gmail.com", Icons.email,
+              emailController, TextInputType.emailAddress),
           SizedBox(height: 30.0),
-          txtSection("Email", Icons.email, emailController,
-              TextInputType.emailAddress),
-          SizedBox(height: 30.0),
-          zipSection("Zip", Icons.house, zipController, TextInputType.number),
+          zipSection("Zips (Optional)", Icons.house, zipController,
+              TextInputType.number),
           SizedBox(height: 30.0),
           passSection("Password", Icons.lock, passwordController),
           SizedBox(height: 30.0),
@@ -140,15 +145,19 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   }
 
   // Normal Text input
-  TextFormField txtSection(String title, IconData icons,
+  TextFormField txtSection(String title, String hintT, IconData icons,
       TextEditingController control, TextInputType type) {
     return TextFormField(
       controller: control,
       keyboardType: type,
       style: TextStyle(color: Colors.white70),
       decoration: InputDecoration(
-        hintText: title,
-        hintStyle: TextStyle(color: Colors.white70),
+        labelText: title,
+        labelStyle:
+            TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+        alignLabelWithHint: true,
+        hintText: hintT,
+        hintStyle: TextStyle(color: Colors.grey),
         icon: Icon(icons),
       ),
     );
@@ -160,10 +169,17 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     return TextFormField(
       controller: control,
       keyboardType: type,
+      inputFormatters: <TextInputFormatter>[
+        FilteringTextInputFormatter.allow(RegExp(r'[0-9 ]')),
+      ],
       style: TextStyle(color: _zipWrong ? Colors.red : Colors.white70),
       decoration: InputDecoration(
-        hintText: title,
-        hintStyle: TextStyle(color: Colors.white70),
+        labelText: title,
+        labelStyle:
+            TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+        alignLabelWithHint: true,
+        hintText: 'ex: 11323 11232 ...',
+        hintStyle: TextStyle(color: Colors.grey),
         icon: Icon(icons),
       ),
     );
@@ -177,8 +193,9 @@ class _ScreenRegisterState extends State<ScreenRegister> {
       controller: control,
       style: TextStyle(color: _notSame ? Colors.red : Colors.white70),
       decoration: InputDecoration(
-        hintText: title,
-        hintStyle: TextStyle(color: Colors.white70),
+        labelText: title,
+        labelStyle:
+            TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
         icon: Icon(icons),
         suffixIcon: IconButton(
           icon: Icon(Icons.remove_red_eye),
@@ -201,8 +218,9 @@ class _ScreenRegisterState extends State<ScreenRegister> {
       controller: control,
       style: TextStyle(color: _notSame ? Colors.red : Colors.white70),
       decoration: InputDecoration(
-        hintText: title,
-        hintStyle: TextStyle(color: Colors.white70),
+        labelText: title,
+        labelStyle:
+            TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
         icon: Icon(icons),
         suffixIcon: IconButton(
           icon: Icon(Icons.remove_red_eye),

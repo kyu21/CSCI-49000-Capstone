@@ -103,11 +103,9 @@ class _OwnerDoneState extends State<OwnerDone> {
   final genderController = TextEditingController();
   final phoneController = TextEditingController();
   final emailController = TextEditingController();
-  final zipController = TextEditingController();
 
   // Loading
   bool _loading = false;
-  bool _invalidZip = false;
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -119,7 +117,6 @@ class _OwnerDoneState extends State<OwnerDone> {
     genderController.dispose();
     phoneController.dispose();
     emailController.dispose();
-    zipController.dispose();
     super.dispose();
   }
 
@@ -130,7 +127,6 @@ class _OwnerDoneState extends State<OwnerDone> {
     genderController.text = info['gender'];
     phoneController.text = info['phone'];
     emailController.text = info['email'];
-    zipController.text = authSettings.zip;
   }
 
   Future<bool> _showMyDialog() async {
@@ -175,13 +171,6 @@ class _OwnerDoneState extends State<OwnerDone> {
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
-        if (zipController.text.length < 5) {
-          setState(() {
-            _invalidZip = true;
-          });
-          return false;
-        }
-
         try {
           // Put body
           Map<String, dynamic> jsonMap = {
@@ -202,93 +191,6 @@ class _OwnerDoneState extends State<OwnerDone> {
           };
           String link = 'https://localhelper-backend.herokuapp.com/api/users';
           var result = await http.put(link, headers: headers, body: jsonString);
-
-          // ZIP CHECK
-          http.Response zipResponse = await http
-              .get('https://localhelper-backend.herokuapp.com/api/zips',
-                  headers: headers)
-              .timeout(Duration(seconds: 5));
-
-          var zipJson = jsonDecode(zipResponse.body);
-
-          int _zipID = -1;
-          String _zip = "";
-          bool _found = false;
-          for (int i = 0; i < zipJson.length; i++) {
-            if (zipJson[i]['zip'] == zipController.text.toString()) {
-              _zipID = zipJson[i]['id'];
-              _zip = zipJson[i]['zip'];
-              _found = true;
-              break;
-            }
-          }
-
-          // If the zip was in the database
-          if (_found) {
-            authSettings.zipID = _zipID;
-            authSettings.zip = _zip;
-
-            // Check if the Zip was already added before
-            http.Response zipCheck = await http
-                .get('https://localhelper-backend.herokuapp.com/api/users/me',
-                    headers: headers)
-                .timeout(Duration(seconds: 5));
-
-            var zipCheckJson = jsonDecode(zipCheck.body);
-
-            bool _found = false;
-            for (int i = 0; i < zipCheckJson['zips'].length; i++) {
-              if (zipCheckJson['zips'][i]['zip'] == _zip) {
-                _found = true;
-                break;
-              }
-            }
-
-            // If it wasn't added before add it
-            if (!_found) {
-              Map<String, dynamic> jsonMap = {
-                'userId': authSettings.ownerId,
-                'zipId': _zipID,
-              };
-
-              // Encode
-              String jsonString = json.encode(jsonMap);
-
-              http.Response zipPut = await http
-                  .post(
-                      'https://localhelper-backend.herokuapp.com/api/userZips',
-                      headers: headers,
-                      body: jsonString)
-                  .timeout(Duration(seconds: 5));
-              print(zipPut.statusCode);
-            }
-          }
-
-          // If it wasn't in the database add a new one
-          else {
-            // Put body
-            Map<String, dynamic> jsonMap = {
-              'zip': zipController.text,
-              'name': "NEW",
-            };
-
-            // Encode
-            String jsonString = json.encode(jsonMap);
-
-            // Header
-            Map<String, String> headers = {
-              'authorization': authSettings.token,
-              "Content-Type": "application/json",
-            };
-            String link = 'https://localhelper-backend.herokuapp.com/api/zips';
-            var newZip =
-                await http.post(link, headers: headers, body: jsonString);
-
-            var newJson = jsonDecode(newZip.body);
-
-            authSettings.zipID = newJson['id'];
-            authSettings.zip = newJson['zip'];
-          }
 
           if (result.statusCode == 200) {
             // Update info
@@ -342,8 +244,7 @@ class _OwnerDoneState extends State<OwnerDone> {
             };
             String link = 'https://localhelper-backend.herokuapp.com/api/users';
             var result = await http.delete(link, headers: headers);
-            print(result.statusCode);
-            if (result.statusCode == 200) {
+            if (result.statusCode == 204) {
               setState(() {
                 _loading = false;
               });
@@ -514,35 +415,6 @@ class _OwnerDoneState extends State<OwnerDone> {
                   labelText: 'Email',
                   labelStyle: TextStyle(
                     color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Zip
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: zipController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Zip',
-                  labelStyle: TextStyle(
-                    color: _invalidZip
-                        ? Colors.red
-                        : settings.darkMode
-                            ? Colors.white
-                            : Colors.black,
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
                   ),

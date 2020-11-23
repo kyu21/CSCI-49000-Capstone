@@ -11,8 +11,8 @@ import 'package:provider/provider.dart';
 
 class ScreenPostsFull extends StatefulWidget {
   // Variables
-  final int ownerId;
-  ScreenPostsFull(this.ownerId);
+  final int postID;
+  ScreenPostsFull(this.postID);
 
   @override
   _ScreenPostsFullState createState() => _ScreenPostsFullState();
@@ -30,28 +30,25 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
 // FUNCTIONS ===================================================================
 
   // Get details
-  Future getOwnerDetails(AuthSettings authSettings) async {
+  Future getFullDetails(AuthSettings authSettings) async {
+    // Header
+    Map<String, String> headers = {
+      'content-type': 'application/json',
+      'accept': 'application/json',
+      'authorization': authSettings.token,
+    };
+
+    // URL
+    String link = 'https://localhelper-backend.herokuapp.com/api/posts/' +
+        widget.postID.toString();
+
+    // API
     try {
-      Map<String, String> headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'authorization': authSettings.token,
-      };
-      String link = 'https://localhelper-backend.herokuapp.com/api/posts' +
-          '/' +
-          widget.ownerId.toString();
       var result = await http.get(link, headers: headers);
-      info = jsonDecode(result.body)[0];
+      info = jsonDecode(result.body);
+      interestJson = info['interests'];
 
-      // GET A LIST OF INTERESTED PEOPLE
-      String interLink =
-          'https://localhelper-backend.herokuapp.com/api/postInterests/' +
-              '/' +
-              widget.ownerId.toString();
-
-      var interestResult = await http.get(interLink, headers: headers);
-
-      interestJson = jsonDecode(interestResult.body);
+      // Check if already interested
       for (int i = 0; i < interestJson.length; i++) {
         if (interestJson[i]['id'] == authSettings.ownerId) {
           interested = true;
@@ -72,7 +69,7 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     return FutureBuilder(
-      future: getOwnerDetails(authSettings),
+      future: getFullDetails(authSettings),
       builder: (context, mywidget) {
         // When  not connected
         if (mywidget.connectionState == ConnectionState.none) {
@@ -127,9 +124,149 @@ class FullDone extends StatefulWidget {
 }
 
 class _FullDoneState extends State<FullDone> {
+// VARIABLES ===================================================================
+
   bool interested;
   var interestJson;
+
+// =============================================================================
+// FUNCTIONS ===================================================================
+
+  // Constructor
   _FullDoneState(this.interested, this.interestJson);
+
+  // Delete
+  void deletePost(AuthSettings authSettings) async {
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': authSettings.token,
+      };
+      String link = 'https://localhelper-backend.herokuapp.com/api/posts/' +
+          widget.info['id'].toString();
+      await http.delete(link, headers: headers);
+      Navigator.pop(context, true);
+    } catch (e) {
+      print(e);
+      Navigator.pop(context);
+    }
+  }
+
+  // Edit
+  void editPosts(AuthSettings authSettings) async {
+    await Navigator.push(context, MaterialPageRoute(builder: (context) {
+      final int pId = widget.info['id'];
+      final title = widget.info['title'];
+      final address = widget.info['address'];
+      final des = widget.info['description'];
+      final req = widget.info['is_request'];
+      final free = widget.info['free'];
+      return ScreenEditPosts(pId, title, address, des, req, free);
+    }));
+    Navigator.pop(context, true);
+  }
+
+  // Interests
+  Future<bool> toggleInterests(
+      AuthSettings authSettings, var postId, bool interested) async {
+    // Header
+    Map<String, String> headers = {
+      'content-type': 'application/json',
+      'accept': 'application/json',
+      'authorization': authSettings.token,
+    };
+
+    // URL
+    String url = 'https://localhelper-backend.herokuapp.com/api/posts/' +
+        postId.toString() +
+        '/interests';
+
+    try {
+      // Remove user from interested list
+      if (interested) {
+        await http.delete(url, headers: headers);
+        return false;
+      }
+
+      // Add user to interested list
+      else {
+        await http.post(url, headers: headers);
+        return true;
+      }
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+// =============================================================================
+// WIDGETS =====================================================================
+
+  Widget ownerWidgets(
+      BuildContext context, AuthSettings authSettings, var info) {
+    return Column(
+      children: [
+        // EditPosts
+        FlatButton(
+          color: Colors.green[300],
+          height: 50,
+          minWidth: double.infinity,
+          onPressed: () => editPosts(authSettings),
+          child: Text(
+            'Edit',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+
+        // Delete Posts
+        FlatButton(
+          color: Colors.red[300],
+          height: 50,
+          minWidth: double.infinity,
+          onPressed: () => deletePost(authSettings),
+          child: Text(
+            'Delete',
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget interestedWidget(
+      AuthSettings authSettings, Settings settings, var postId) {
+    return Container(
+      height: 100,
+      child: Center(
+        heightFactor: double.infinity,
+        widthFactor: double.infinity,
+        child: SwitchListTile(
+          value: interested,
+          onChanged: (value) async {
+            interested =
+                await toggleInterests(authSettings, postId, interested);
+            setState(() {});
+          },
+          title: Text('Interested',
+              style: TextStyle(
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold)),
+        ),
+      ),
+    );
+  }
+
+// =============================================================================
+// MAIN ========================================================================
+
   @override
   Widget build(BuildContext context) {
     //
@@ -137,13 +274,13 @@ class _FullDoneState extends State<FullDone> {
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
 
     // Names
-    final title = widget.info['post']['title'];
-    final address = widget.info['post']['address'];
+    final title = widget.info['title'];
+    final address = widget.info['address'];
     final ownerName =
         widget.info['owner']['first'] + ' ' + widget.info['owner']['last'];
-    final description = widget.info['post']['description'];
+    final description = widget.info['description'];
     final ownerId = widget.info['owner']['id'];
-    final postId = widget.info['post']['id'];
+    final postId = widget.info['id'];
 
     // Owner checker
     final bool isOwners = ownerId == authSettings.ownerId ? true : false;
@@ -299,134 +436,5 @@ class _FullDoneState extends State<FullDone> {
         ],
       ),
     );
-  }
-
-  Widget ownerWidgets(
-      BuildContext context, AuthSettings authSettings, var info) {
-    return Column(
-      children: [
-        // EditPosts
-        FlatButton(
-          color: Colors.green[300],
-          height: 50,
-          minWidth: double.infinity,
-          onPressed: () async {
-            await Navigator.push(context, MaterialPageRoute(builder: (context) {
-              final int pId = info['post']['id'];
-              final title = info['post']['title'];
-              final address = info['post']['address'];
-              final des = info['post']['description'];
-              final req = info['post']['is_request'];
-              final free = info['post']['free'];
-              return ScreenEditPosts(pId, title, address, des, req, free);
-            }));
-            Navigator.pop(context, true);
-          },
-          child: Text(
-            'Edit',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-
-        // Delete Posts
-        FlatButton(
-          color: Colors.red[300],
-          height: 50,
-          minWidth: double.infinity,
-          onPressed: () async {
-            try {
-              Map<String, String> headers = {
-                'content-type': 'application/json',
-                'accept': 'application/json',
-                'authorization': authSettings.token,
-              };
-              String link =
-                  'https://localhelper-backend.herokuapp.com/api/posts' +
-                      '/' +
-                      info['post']['id'].toString();
-              var result = await http.delete(link, headers: headers);
-              if (result.statusCode == 200) {
-                Navigator.pop(context, true);
-              }
-            } catch (e) {
-              print(e);
-              Navigator.pop(context);
-            }
-          },
-          child: Text(
-            'Delete',
-            style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget interestedWidget(
-      AuthSettings authSettings, Settings settings, var postId) {
-    return Container(
-      height: 100,
-      child: Center(
-        heightFactor: double.infinity,
-        widthFactor: double.infinity,
-        child: SwitchListTile(
-          value: interested,
-          onChanged: (value) async {
-            interested =
-                await toggleInterests(authSettings, postId, interested);
-            setState(() {});
-          },
-          title: Text('Interested',
-              style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold)),
-        ),
-      ),
-    );
-  }
-
-  // FUNCTIONS
-  Future<bool> toggleInterests(
-      AuthSettings authSettings, var postId, bool interested) async {
-    try {
-      // Header
-      Map<String, String> headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'authorization': authSettings.token,
-      };
-
-      // Remove user from interested list
-      if (interested) {
-        // Link
-        String interLink =
-            'https://localhelper-backend.herokuapp.com/api/postInterests/' +
-                '/' +
-                postId.toString();
-        await http.delete(interLink, headers: headers);
-        return false;
-      }
-
-      // Add user to interested list
-      else {
-        // Link
-        String interLink =
-            'https://localhelper-backend.herokuapp.com/api/postInterests/' +
-                '/' +
-                postId.toString();
-        await http.post(interLink, headers: headers);
-        return true;
-      }
-    } catch (e) {
-      print(e);
-      return false;
-    }
   }
 }

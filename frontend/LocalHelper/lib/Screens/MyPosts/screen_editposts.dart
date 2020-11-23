@@ -78,7 +78,6 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
         headers: headers,
         body: jsonString,
       );
-      print(response.statusCode);
       if (response.statusCode == 200) {
         Navigator.pop(context);
       }

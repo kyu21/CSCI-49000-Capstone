@@ -274,12 +274,12 @@ class _ScreenInterests extends State<ScreenInterests> {
                 // ALL
                 if (isSelection[bAll]) {
                   postsFound = true;
-                  return Posts(interestList[index], type: 1);
+                  return Posts(interestList[index]);
                   // NOT ALL
                 } else {
                   if (checkRequest && checkFree) {
                     postsFound = true;
-                    return Posts(interestList[index], type: 1);
+                    return Posts(interestList[index]);
                   } else {
                     if (index == interestList.length - 1) {
                       if (!postsFound) {

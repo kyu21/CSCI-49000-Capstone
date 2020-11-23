@@ -290,11 +290,11 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 bool checkFree = false;
 
                 // Check if request
-                if (_testList[index]['post']['is_request'] ==
-                    isSelection[bRequest]) checkRequest = true;
+                if (_testList[index]['is_request'] == isSelection[bRequest])
+                  checkRequest = true;
 
                 // Check Free
-                if (_testList[index]['post']['free'] == isSelection[bFree])
+                if (_testList[index]['free'] == isSelection[bFree])
                   checkFree = true;
 
                 // -----------------------------------------------

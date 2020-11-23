@@ -63,39 +63,10 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         body: jsonString,
       );
 
-      // Error
-      if (response.statusCode != 201) {
-        print(response.statusCode.toString());
-        return false;
-      } else {
-        // If the zip
-        if (authSettings.zipID != -1) {
-          var postId = await http.get(
-            'https://localhelper-backend.herokuapp.com/api/posts/me',
-            headers: headers,
-          );
-
-          var postIDJson = jsonDecode(postId.body).last;
-
-          // Post the new zip
-          Map<String, dynamic> jsonMap = {
-            'postId': postIDJson['post']['id'],
-            'zipId': authSettings.zipID,
-          };
-
-          // Encode
-          String jsonString = json.encode(jsonMap);
-
-          var result = await http.post(
-            'https://localhelper-backend.herokuapp.com/api/postZips',
-            headers: headers,
-            body: jsonString,
-          );
-
-          print(result.statusCode);
-        }
-
+      if (response.statusCode == 201) {
         return true;
+      } else {
+        return false;
       }
     } catch (e) {
       print(e);
