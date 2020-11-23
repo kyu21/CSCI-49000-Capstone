@@ -29,4 +29,9 @@ router.route("/postCategories").get(dev, controller.getAllAssociationsPostCatego
 router.route("/postCategories").post(dev, controller.createAssociationPostCategory);
 router.route("/postCategories").delete(dev, controller.deleteAssociationPostCategory);
 
+// postInterests
+router.route("/postInterests").get(dev, controller.getAllAssociationsPostInterest);
+router.route("/postInterests").post(dev, controller.createAssociationPostInterest);
+router.route("/postInterests").delete(dev, controller.deleteAssociationPostInterest);
+
 module.exports = router;

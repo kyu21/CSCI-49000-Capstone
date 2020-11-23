@@ -590,6 +590,124 @@ async function deleteAssociationPostCategory(req, res) {
     }
 }
 
+// GET /dev/postInterests
+async function getAllAssociationsPostInterest(req, res) {
+    try {
+        let allElements = await db.postInterests.findAll({
+            raw: true
+        });
+
+        res.status(200).json(allElements);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            code: "Error",
+            message: `Error getting all associations between post and users interested, please try again.`,
+        });
+    }
+}
+
+// POST /dev/postInterests DEV postId, userId
+async function createAssociationPostInterest(req, res) {
+    try {
+        const {
+            postId,
+            userId
+        } = req.query;
+
+        // check if valid post and valid user
+        let post = await db.posts.findOne({
+            raw: true,
+            where: {
+                id: postId
+            }
+        });
+        if (post !== null) {
+            let user = await db.users.findOne({
+                raw: true,
+                where: {
+                    id: userId
+                }
+            });
+            if (user !== null) {
+                // check if association exists already
+                let postInterest = await db.postInterests.findOne({
+                    raw: true,
+                    where: {
+                        postId: postId,
+                        userId: userId
+                    }
+                });
+                if (postInterest === null) {
+                    postInterest = await db.postInterests.create({
+                        postId: postId,
+                        userId: userId
+                    });
+                    postInterest = postInterest.get({
+                        plain: true
+                    });
+
+                    res.status(201).json(postInterest);
+                } else {
+                    res.status(400).json({
+                        code: "Error",
+                        message: `Assocation between Post ${postId} and User ${userId} already exists, please try again.`,
+                    });
+                }
+            } else {
+                res.status(404).json({
+                    code: "Error",
+                    message: `User ${userId} not found, please try again.`,
+                });
+            }
+        } else {
+            res.status(404).json({
+                code: "Error",
+                message: `Post ${postId} not found, please try again.`,
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            code: "Error",
+            message: `Error creating association between post and users interested, please try again.`,
+        });
+    }
+}
+
+// DELETE /dev/postInterests DEV postId, userId
+async function deleteAssociationPostInterest(req, res) {
+    try {
+        const {
+            postId,
+            userId
+        } = req.query;
+
+        let postInterest = await db.postInterests.findOne({
+            where: {
+                postId: postId,
+                userId: userId
+            }
+        })
+        if (postInterest !== null) {
+            await postInterest.destroy();
+
+            res.sendStatus(204);
+        } else {
+            res.status(400).json({
+                code: "Error",
+                message: `Assocation between Post ${postId} and User ${userId} not found, please try again.`,
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            code: "Error",
+            message: `Error deleting association between post and users interested, please try again.`,
+        });
+    }
+}
+
 module.exports = {
     getAllAssociationsUserZip,
     createAssociationUserZip,
@@ -605,5 +723,8 @@ module.exports = {
     deleteAssociationPostLanguage,
     getAllAssociationsPostCategory,
     createAssociationPostCategory,
-    deleteAssociationPostCategory
+    deleteAssociationPostCategory,
+    getAllAssociationsPostInterest,
+    createAssociationPostInterest,
+    deleteAssociationPostInterest
 };
