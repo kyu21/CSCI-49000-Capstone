@@ -790,6 +790,189 @@ async function removeLanguageFromPost(req, res) {
 	}
 }
 
+// GET /:postId/interests AUTH
+async function getAllInterestedUsersForPost(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// lookup postInterests for all rows with postId
+			let postInterests = await db.postInterests.findAll({
+				raw: true,
+				where: {
+					postId: postId
+				}
+			});
+
+			// check for at least one result
+			if (postInterests.length !== 0) {
+				users = await db.users.findAll({
+					raw: true,
+					where: {
+						id: postInterests.map((e) => e.userId)
+					}
+				});
+			}
+
+			res.status(200).json(postInterests);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
+// POST /:postId/interests AUTH
+async function addLoggedInUsertoInterested(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// error if post owner is logged in user
+			if (currentUser.id !== post.ownerId) {
+				// check if association between post and user exists
+				let postInterestsDB = await db.postInterests.findOne({
+					raw: true,
+					where: {
+						postId: postId,
+						userId: currentUser.id
+					}
+				});
+				if (postInterestsDB === null) {
+					// create association between post and user
+					await db.postInterests.create({
+						postId: postId,
+						userId: currentUser.id
+					})
+				}
+
+				let allInterests = await db.postInterests.findAll({
+					raw: true,
+					where: {
+						postId: postId
+					}
+				});
+				if (allInterests.length !== 0) {
+					allInterests = await db.users.findAll({
+						raw: true,
+						where: {
+							id: allInterests.map((e) => e.userId)
+						}
+					});
+				}
+
+				res.status(201).json(allInterests);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Cannot add owner of post to list of interested users, please try again.`,
+				});
+			}
+
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
+// DELETE /:postId/interests AUTH
+async function removeLoggedInUserfromInterested(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// check if logged in user is a part of interested users
+			let interestedLoggedInUser = await db.postInterests.findOne({
+				where: {
+					postId: postId,
+					userId: currentUser.id
+				}
+			});
+			if (interestedLoggedInUser !== null) {
+				await interestedLoggedInUser.destroy()
+
+				res.sendStatus(204);
+			} else {
+				res.status(404).json({
+					code: "Error",
+					message: `Logged in user is not a part of list of interested users, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
 module.exports = {
 	getAllPosts: getAllPosts,
 	getLoggedInUserPosts: getLoggedInUserPosts,
@@ -802,7 +985,10 @@ module.exports = {
 	removeZipFromPost: removeZipFromPost,
 	getPostLanguages: getPostLanguages,
 	addPostLanguages: addPostLanguages,
-	removeLanguageFromPost: removeLanguageFromPost
+	removeLanguageFromPost: removeLanguageFromPost,
+	getAllInterestedUsersForPost: getAllInterestedUsersForPost,
+	addLoggedInUsertoInterested: addLoggedInUsertoInterested,
+	removeLoggedInUserfromInterested: removeLoggedInUserfromInterested
 };
 
 /*

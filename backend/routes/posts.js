@@ -22,6 +22,9 @@ router.route("/:postId/languages").post(auth, controller.addPostLanguages);
 router.route("/:postId/languages/:language").delete(auth, controller.removeLanguageFromPost);
 
 // interests
+router.route("/:postId/interests").get(auth, controller.getAllInterestedUsersForPost);
+router.route("/:postId/interests").post(auth, controller.addLoggedInUsertoInterested);
+router.route("/:postId/interests").delete(auth, controller.removeLoggedInUserfromInterested);
 
 // categories
 
