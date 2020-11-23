@@ -4,6 +4,10 @@ const auth = require("../utils/auth");
 
 const controller = require("../controllers/posts");
 
+// filter
+router.route("/filter").get(auth, controller.getPostsBasedOnFilter);
+
+// basic post routes
 router.route("/").get(auth, controller.getAllPosts);
 router.route("/me").get(auth, controller.getLoggedInUserPosts);
 router.route("/:postId").get(auth, controller.getPostById);
@@ -30,8 +34,5 @@ router.route("/:postId/interests").delete(auth, controller.removeLoggedInUserfro
 router.route("/:postId/categories").get(auth, controller.getPostCategories);
 router.route("/:postId/categories").post(auth, controller.addPostCategories);
 router.route("/:postId/categories").delete(auth, controller.removeCategoriesFromPost);
-
-// filter
-router.route("/filter").get(auth, controller.getPostsBasedOnFilter);
 
 module.exports = router;
