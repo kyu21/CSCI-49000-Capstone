@@ -375,36 +375,6 @@ async function deletePost(req, res) {
 	}
 }
 
-/*
-	try {
-		const {
-			postId
-		} = req.params;
-
-		let post = await db.posts.findOne({
-			raw: true,
-			where: {
-				id: postId,
-			},
-		});
-
-		if (post !== null) {
-
-		} else {
-			res.status(404).json({
-				code: "Error",
-				message: `Post ${postId} not found, please try again.`,
-			});
-		}
-	} catch (err) {
-		console.log(err);
-		res.status(500).json({
-			code: "Error",
-			message: "Error , please try again.",
-		});
-	}
-*/
-
 // GET /posts/:postId/zips AUTH
 async function getPostZips(req, res) {
 	try {
@@ -610,6 +580,216 @@ async function removeZipFromPost(req, res) {
 	}
 }
 
+// GET /posts/:postId/languages AUTH
+async function getPostLanguages(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			let languages = await db.postLanguages.findAll({
+				raw: true,
+				where: {
+					postId: postId
+				}
+			});
+			if (languages.length !== 0) {
+				languages = await db.languages.findAll({
+					raw: true,
+					where: {
+						id: languages.map(l => l.languageId)
+					}
+				});
+			}
+			res.status(200).json(languages);
+
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
+// POST /posts/:postId/languages AUTH
+async function addPostLanguages(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+		const {
+			languages
+		} = req.body;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// ensure non-empty input
+			if (Array.isArray(languages) && languages.length !== 0) {
+				for (let l of languages) {
+					l = l.toTitleCase()
+
+					// check db if language exists
+					let dbLang = await db.languages.findOne({
+						raw: true,
+						where: {
+							name: l
+						}
+					});
+
+					// create entry for language if not in table already
+					if (dbLang === null) {
+						dbLang = await db.languages.create({
+							name: l
+						});
+
+						// create association between post and language
+						await db.postLanguages.create({
+							postId: postId,
+							languageId: dbLang.id
+						});
+					} else {
+						// language exist - check if association between post and language exists
+						let userLanguage = await db.postLanguages.findOne({
+							raw: true,
+							where: {
+								postId: postId,
+								languageId: dbLang.id
+							}
+						});
+						if (userLanguage === null) {
+							// create association between post and language
+							await db.postLanguages.create({
+								postId: postId,
+								languageId: dbLang.id
+							});
+						}
+					}
+				}
+
+				// get newly updated list of post languages
+				let allLanguages = await db.postLanguages.findAll({
+					raw: true,
+					where: {
+						postId: postId
+					}
+				});
+				if (allLanguages.length !== 0) {
+					allLanguages = await db.languages.findAll({
+						raw: true,
+						where: {
+							id: allLanguages.map(l => l.languageId)
+						}
+					});
+				}
+
+				res.status(201).json(allLanguages)
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Input must consist of non-empty array, please try again.`,
+				});
+			}
+
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
+// DELETE /posts/:postId/languages/:language AUTH
+async function removeLanguageFromPost(req, res) {
+	try {
+		const {
+			postId,
+			language
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			const lang = language.toTitleCase();
+
+			// check if valid language
+			let languageObj = await db.languages.findOne({
+				raw: true,
+				where: {
+					name: lang
+				}
+			});
+			if (languageObj !== null) {
+				// check if association exists between post and language
+				let userLang = await db.postLanguages.findOne({
+					where: {
+						postId: postId,
+						languageId: languageObj.id
+					}
+				});
+
+				if (userLang !== null) {
+					await userLang.destroy();
+					res.sendStatus(204);
+				} else {
+					res.status(404).json({
+						code: "Error",
+						message: `${lang} not found for post ${postId}, please try again.`,
+					});
+				}
+			} else {
+				res.status(404).json({
+					code: "Error",
+					message: `${lang} not found, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
 module.exports = {
 	getAllPosts: getAllPosts,
 	getLoggedInUserPosts: getLoggedInUserPosts,
@@ -619,5 +799,38 @@ module.exports = {
 	deletePost: deletePost,
 	getPostZips: getPostZips,
 	addPostZips: addPostZips,
-	removeZipFromPost: removeZipFromPost
+	removeZipFromPost: removeZipFromPost,
+	getPostLanguages: getPostLanguages,
+	addPostLanguages: addPostLanguages,
+	removeLanguageFromPost: removeLanguageFromPost
 };
+
+/*
+	try {
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+*/

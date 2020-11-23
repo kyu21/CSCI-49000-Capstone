@@ -17,6 +17,9 @@ router.route("/:postId/zips").post(auth, controller.addPostZips);
 router.route("/:postId/zips/:zip").delete(auth, controller.removeZipFromPost);
 
 // languages
+router.route("/:postId/languages").get(auth, controller.getPostLanguages);
+router.route("/:postId/languages").post(auth, controller.addPostLanguages);
+router.route("/:postId/languages/:language").delete(auth, controller.removeLanguageFromPost);
 
 // interests
 
