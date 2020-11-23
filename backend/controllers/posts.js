@@ -415,7 +415,7 @@ async function getPostZips(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error getting zips for post, please try again.",
 		});
 	}
 }
@@ -513,18 +513,20 @@ async function addPostZips(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error adding zips to post, please try again.",
 		});
 	}
 }
 
-// DELETE /posts/:postId/zips/:zip
-async function removeZipFromPost(req, res) {
+// DELETE /posts/:postId/zips AUTH
+async function removeZipsFromPost(req, res) {
 	try {
 		const {
-			postId,
-			zip
+			postId
 		} = req.params;
+		const {
+			zips
+		} = req.body;
 
 		let post = await db.posts.findOne({
 			raw: true,
@@ -534,35 +536,28 @@ async function removeZipFromPost(req, res) {
 		});
 
 		if (post !== null) {
-			// check if valid zip
-			let zipObj = await db.zips.findOne({
-				raw: true,
-				where: {
-					zip: zip
-				}
-			});
-			if (zipObj !== null) {
-				// check if association exists between post and zip
-				let postZip = await db.postZips.findOne({
+			// ensure non-empty input
+			if (Array.isArray(zips) && zips.length !== 0) {
+				// find ids for zips given
+				let dbZips = await db.zips.findAll({
+					raw: true,
 					where: {
-						postId: postId,
-						zipId: zipObj.id
+						zip: zips
+					}
+				});
+				let dbZipIds = dbZips.map((u) => u.id);
+
+				await db.postZips.destroy({
+					where: {
+						zipId: dbZipIds
 					}
 				});
 
-				if (postZip !== null) {
-					await postZip.destroy();
-					res.sendStatus(204);
-				} else {
-					res.status(404).json({
-						code: "Error",
-						message: `Zip ${zip} not found for post ${postId}, please try again.`,
-					});
-				}
+				res.sendStatus(204);
 			} else {
-				res.status(404).json({
+				res.status(400).json({
 					code: "Error",
-					message: `Zip ${zip} not found, please try again.`,
+					message: `Input must consist of non-empty array, please try again.`,
 				});
 			}
 		} else {
@@ -575,7 +570,7 @@ async function removeZipFromPost(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error removing zips from post, please try again.",
 		});
 	}
 }
@@ -621,7 +616,7 @@ async function getPostLanguages(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error getting languages for post, please try again.",
 		});
 	}
 }
@@ -721,18 +716,20 @@ async function addPostLanguages(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error adding languages to post, please try again.",
 		});
 	}
 }
 
 // DELETE /posts/:postId/languages/:language AUTH
-async function removeLanguageFromPost(req, res) {
+async function removeLanguagesFromPost(req, res) {
 	try {
 		const {
-			postId,
-			language
+			postId
 		} = req.params;
+		const {
+			languages
+		} = req.body;
 
 		let post = await db.posts.findOne({
 			raw: true,
@@ -742,37 +739,31 @@ async function removeLanguageFromPost(req, res) {
 		});
 
 		if (post !== null) {
-			const lang = language.toTitleCase();
+			// ensure non-empty input
+			if (Array.isArray(languages) && languages.length !== 0) {
+				// title case input
+				let langs = languages.map((l) => l.toTitleCase());
 
-			// check if valid language
-			let languageObj = await db.languages.findOne({
-				raw: true,
-				where: {
-					name: lang
-				}
-			});
-			if (languageObj !== null) {
-				// check if association exists between post and language
-				let userLang = await db.postLanguages.findOne({
+				// find ids for languages given
+				let dbLang = await db.languages.findAll({
+					raw: true,
 					where: {
-						postId: postId,
-						languageId: languageObj.id
+						name: langs
+					}
+				});
+				let dbLangIds = dbLang.map((u) => u.id);
+
+				await db.postLanguages.destroy({
+					where: {
+						languageId: dbLangIds
 					}
 				});
 
-				if (userLang !== null) {
-					await userLang.destroy();
-					res.sendStatus(204);
-				} else {
-					res.status(404).json({
-						code: "Error",
-						message: `${lang} not found for post ${postId}, please try again.`,
-					});
-				}
+				res.sendStatus(204);
 			} else {
-				res.status(404).json({
+				res.status(400).json({
 					code: "Error",
-					message: `${lang} not found, please try again.`,
+					message: `Input must consist of non-empty array, please try again.`,
 				});
 			}
 		} else {
@@ -785,7 +776,7 @@ async function removeLanguageFromPost(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error removing languages from post, please try again.",
 		});
 	}
 }
@@ -834,7 +825,7 @@ async function getAllInterestedUsersForPost(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error getting list of interested users for post, please try again.",
 		});
 	}
 }
@@ -913,7 +904,7 @@ async function addLoggedInUsertoInterested(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error adding logged in user to list of interested users, please try again.",
 		});
 	}
 }
@@ -968,7 +959,210 @@ async function removeLoggedInUserfromInterested(req, res) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error , please try again.",
+			message: "Error removing logged in user from list of interested users, please try again.",
+		});
+	}
+}
+
+// GET /posts/:postId/categories AUTH
+async function getPostCategories(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			let categories = await db.postCategories.findAll({
+				raw: true,
+				where: {
+					postId: postId
+				}
+			});
+			if (categories.length !== 0) {
+				categories = await db.categories.findAll({
+					raw: true,
+					where: {
+						id: categories.map(c => c.categoryId)
+					}
+				});
+			}
+			res.status(200).json(categories);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error getting categories for post, please try again.",
+		});
+	}
+}
+
+// POST /posts/:postId/categories AUTH
+async function addPostCategories(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+		const {
+			categories
+		} = req.body;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// ensure non-empty input
+			if (Array.isArray(categories) && categories.length !== 0) {
+				for (let c of categories) {
+					c = c.toTitleCase()
+
+					// check db if category exists
+					let dbCategory = await db.categories.findOne({
+						raw: true,
+						where: {
+							name: c
+						}
+					});
+
+					// create entry for category if not in table already
+					if (dbCategory === null) {
+						dbCategory = await db.categories.create({
+							name: c
+						});
+
+						// create association between post and category
+						await db.postCategories.create({
+							postId: postId,
+							categoryId: dbCategory.id
+						});
+					} else {
+						// zip exist - check if association between post and category exists
+						let postZip = await db.postCategories.findOne({
+							raw: true,
+							where: {
+								postId: postId,
+								categoryId: dbCategory.id
+							}
+						});
+						if (postZip === null) {
+							// create association between post and category
+							await db.postCategories.create({
+								postId: postId,
+								categoryId: dbCategory.id
+							});
+						}
+					}
+				}
+
+				// get newly updated list of post categories
+				let allCategories = await db.postCategories.findAll({
+					raw: true,
+					where: {
+						postId: postId
+					}
+				});
+				if (allCategories.length !== 0) {
+					allCategories = await db.categories.findAll({
+						raw: true,
+						where: {
+							id: allCategories.map(c => c.categoryId)
+						}
+					});
+				}
+
+				res.status(201).json(allCategories)
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Input must consist of non-empty array, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error adding categories for post, please try again.",
+		});
+	}
+}
+
+// DELETE /posts/:postId/categories AUTH
+async function removeCategoriesFromPost(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+		const {
+			categories
+		} = req.body;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// ensure non-empty input
+			if (Array.isArray(categories) && categories.length !== 0) {
+				let titleCaseCategories = categories.map((c) => c.toTitleCase());
+
+				// find ids for categories given
+				let dbCategories = await db.categories.findAll({
+					raw: true,
+					where: {
+						name: titleCaseCategories
+					}
+				});
+				let dbCategoryIds = dbCategories.map((u) => u.id);
+
+				await db.postCategories.destroy({
+					where: {
+						categoryId: dbCategoryIds
+					}
+				});
+
+				res.sendStatus(204);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Input must consist of non-empty array, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error removing categories from post, please try again.",
 		});
 	}
 }
@@ -982,13 +1176,17 @@ module.exports = {
 	deletePost: deletePost,
 	getPostZips: getPostZips,
 	addPostZips: addPostZips,
-	removeZipFromPost: removeZipFromPost,
+	removeZipsFromPost: removeZipsFromPost,
 	getPostLanguages: getPostLanguages,
 	addPostLanguages: addPostLanguages,
-	removeLanguageFromPost: removeLanguageFromPost,
+	removeLanguagesFromPost: removeLanguagesFromPost,
 	getAllInterestedUsersForPost: getAllInterestedUsersForPost,
 	addLoggedInUsertoInterested: addLoggedInUsertoInterested,
-	removeLoggedInUserfromInterested: removeLoggedInUserfromInterested
+	removeLoggedInUserfromInterested: removeLoggedInUserfromInterested,
+	getPostCategories: getPostCategories,
+	addPostCategories: addPostCategories,
+	removeCategoriesFromPost: removeCategoriesFromPost
+
 };
 
 /*

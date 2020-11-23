@@ -353,13 +353,16 @@ async function addUserZips(req, res) {
 	}
 }
 
-// DELETE /users/:userId/zips/:zip AUTH
-async function removeZipFromUser(req, res) {
+// DELETE /users/:userId/zips AUTH
+async function removeZipsFromUser(req, res) {
 	try {
 		const {
-			userId,
-			zip
+			userId
 		} = req.params;
+
+		const {
+			zips
+		} = req.body;
 
 		let user = await db.users.findOne({
 			raw: true,
@@ -369,35 +372,28 @@ async function removeZipFromUser(req, res) {
 		});
 
 		if (user !== null) {
-			// check if valid zip
-			let zipObj = await db.zips.findOne({
-				raw: true,
-				where: {
-					zip: zip
-				}
-			});
-			if (zipObj !== null) {
-				// check if association exists between user and zip
-				let userZip = await db.userZips.findOne({
+			// ensure non-empty input
+			if (Array.isArray(zips) && zips.length !== 0) {
+				// find ids for zips given
+				let dbZips = await db.zips.findAll({
+					raw: true,
 					where: {
-						userId: userId,
-						zipId: zipObj.id
+						zip: zips
+					}
+				});
+				let dbZipIds = dbZips.map((u) => u.id);
+
+				await db.userZips.destroy({
+					where: {
+						zipId: dbZipIds
 					}
 				});
 
-				if (userZip !== null) {
-					await userZip.destroy();
-					res.sendStatus(204);
-				} else {
-					res.status(404).json({
-						code: "Error",
-						message: `Zip ${zip} not found for user ${userId}, please try again.`,
-					});
-				}
+				res.sendStatus(204);
 			} else {
-				res.status(404).json({
+				res.status(400).json({
 					code: "Error",
-					message: `Zip ${zip} not found, please try again.`,
+					message: `Input must consist of non-empty array, please try again.`,
 				});
 			}
 		} else {
@@ -559,13 +555,15 @@ async function addUserLanguages(req, res) {
 	}
 }
 
-// DELETE /users/:userId/languages/:language AUTH
-async function removeLanguageFromUser(req, res) {
+// DELETE /users/:userId/languages/ AUTH
+async function removeLanguagesFromUser(req, res) {
 	try {
 		const {
-			userId,
-			language
+			userId
 		} = req.params;
+		const {
+			languages
+		} = req.body;
 
 		let user = await db.users.findOne({
 			raw: true,
@@ -575,37 +573,31 @@ async function removeLanguageFromUser(req, res) {
 		});
 
 		if (user !== null) {
-			const lang = language.toTitleCase();
+			// ensure non-empty input
+			if (Array.isArray(languages) && languages.length !== 0) {
+				// title case input
+				let langs = languages.map((l) => l.toTitleCase());
 
-			// check if valid language
-			let languageObj = await db.languages.findOne({
-				raw: true,
-				where: {
-					name: lang
-				}
-			});
-			if (languageObj !== null) {
-				// check if association exists between user and language
-				let userLang = await db.userLanguages.findOne({
+				// find ids for languages given
+				let dbLang = await db.languages.findAll({
+					raw: true,
 					where: {
-						userId: userId,
-						languageId: languageObj.id
+						name: langs
+					}
+				});
+				let dbLangIds = dbLang.map((u) => u.id);
+
+				await db.userLanguages.destroy({
+					where: {
+						languageId: dbLangIds
 					}
 				});
 
-				if (userLang !== null) {
-					await userLang.destroy();
-					res.sendStatus(204);
-				} else {
-					res.status(404).json({
-						code: "Error",
-						message: `${lang} not found for user ${userId}, please try again.`,
-					});
-				}
+				res.sendStatus(204);
 			} else {
-				res.status(404).json({
+				res.status(400).json({
 					code: "Error",
-					message: `${lang} not found, please try again.`,
+					message: `Input must consist of non-empty array, please try again.`,
 				});
 			}
 		} else {
@@ -631,8 +623,8 @@ module.exports = {
 	deleteLoggedInUser: deleteLoggedInUser,
 	getUserZips: getUserZips,
 	addUserZips: addUserZips,
-	removeZipFromUser: removeZipFromUser,
+	removeZipsFromUser: removeZipsFromUser,
 	getUserLanguages: getUserLanguages,
 	addUserLanguages: addUserLanguages,
-	removeLanguageFromUser: removeLanguageFromUser
+	removeLanguagesFromUser: removeLanguagesFromUser
 };

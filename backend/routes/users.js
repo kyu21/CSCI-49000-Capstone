@@ -14,11 +14,11 @@ router.route("/").delete(auth, controller.deleteLoggedInUser);
 // zips
 router.route("/:userId/zips").get(auth, controller.getUserZips);
 router.route("/:userId/zips").post(auth, controller.addUserZips);
-router.route("/:userId/zips/:zip").delete(auth, controller.removeZipFromUser);
+router.route("/:userId/zips").delete(auth, controller.removeZipsFromUser);
 
 // languages
 router.route("/:userId/languages").get(auth, controller.getUserLanguages);
 router.route("/:userId/languages").post(auth, controller.addUserLanguages);
-router.route("/:userId/languages/:language").delete(auth, controller.removeLanguageFromUser);
+router.route("/:userId/languages").delete(auth, controller.removeLanguagesFromUser);
 
 module.exports = router;
