@@ -12,6 +12,9 @@ router.route("/:postId").put(auth, controller.editPost);
 router.route("/:postId").delete(auth, controller.deletePost);
 
 // zips
+router.route("/:postId/zips").get(auth, controller.getPostZips);
+router.route("/:postId/zips").post(auth, controller.addPostZips);
+router.route("/:postId/zips/:zip").delete(auth, controller.removeZipFromPost);
 
 // languages
 

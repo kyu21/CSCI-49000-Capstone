@@ -375,6 +375,241 @@ async function deletePost(req, res) {
 	}
 }
 
+/*
+	try {
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+*/
+
+// GET /posts/:postId/zips AUTH
+async function getPostZips(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			let zips = await db.postZips.findAll({
+				raw: true,
+				where: {
+					postId: postId
+				}
+			});
+			if (zips.length !== 0) {
+				zips = await db.zips.findAll({
+					raw: true,
+					where: {
+						id: zips.map(z => z.zipId)
+					}
+				});
+			}
+			res.status(200).json(zips);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
+// POST /posts/:postId/zips AUTH
+async function addPostZips(req, res) {
+	try {
+		const {
+			postId
+		} = req.params;
+		const {
+			zips
+		} = req.body;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// ensure non-empty input
+			if (Array.isArray(zips) && zips.length !== 0) {
+				for (const z of zips) {
+					// check db if zip exists
+					let dbZip = await db.zips.findOne({
+						raw: true,
+						where: {
+							zip: z
+						}
+					});
+
+					// create entry for zip if not in table already
+					if (dbZip === null) {
+						dbZip = await db.zips.create({
+							zip: z
+						});
+
+						// create association between post and zip
+						await db.postZips.create({
+							postId: postId,
+							zipId: dbZip.id
+						});
+					} else {
+						// zip exist - check if association between post and zip exists
+						let postZip = await db.postZips.findOne({
+							raw: true,
+							where: {
+								postId: postId,
+								zipId: dbZip.id
+							}
+						});
+						if (postZip === null) {
+							// create association between post and zip
+							await db.postZips.create({
+								postId: postId,
+								zipId: dbZip.id
+							});
+						}
+					}
+				}
+
+				// get newly updated list of post zips
+				let allZips = await db.postZips.findAll({
+					raw: true,
+					where: {
+						postId: postId
+					}
+				});
+				if (allZips.length !== 0) {
+					allZips = await db.zips.findAll({
+						raw: true,
+						where: {
+							id: allZips.map(z => z.zipId)
+						}
+					});
+				}
+
+				res.status(201).json(allZips)
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Input must consist of non-empty array, please try again.`,
+				});
+			}
+
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
+// DELETE /posts/:postId/zips/:zip
+async function removeZipFromPost(req, res) {
+	try {
+		const {
+			postId,
+			zip
+		} = req.params;
+
+		let post = await db.posts.findOne({
+			raw: true,
+			where: {
+				id: postId,
+			},
+		});
+
+		if (post !== null) {
+			// check if valid zip
+			let zipObj = await db.zips.findOne({
+				raw: true,
+				where: {
+					zip: zip
+				}
+			});
+			if (zipObj !== null) {
+				// check if association exists between post and zip
+				let postZip = await db.postZips.findOne({
+					where: {
+						postId: postId,
+						zipId: zipObj.id
+					}
+				});
+
+				if (postZip !== null) {
+					await postZip.destroy();
+					res.sendStatus(204);
+				} else {
+					res.status(404).json({
+						code: "Error",
+						message: `Zip ${zip} not found for post ${postId}, please try again.`,
+					});
+				}
+			} else {
+				res.status(404).json({
+					code: "Error",
+					message: `Zip ${zip} not found, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Post ${postId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error , please try again.",
+		});
+	}
+}
+
 module.exports = {
 	getAllPosts: getAllPosts,
 	getLoggedInUserPosts: getLoggedInUserPosts,
@@ -382,4 +617,7 @@ module.exports = {
 	createPost: createPost,
 	editPost: editPost,
 	deletePost: deletePost,
+	getPostZips: getPostZips,
+	addPostZips: addPostZips,
+	removeZipFromPost: removeZipFromPost
 };
