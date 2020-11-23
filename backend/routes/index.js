@@ -8,6 +8,7 @@ const authRouter = require("./auth");
 const userRouter = require("./users");
 const postsRouter = require("./posts");
 const miscRouter = require("./misc");
+const devRouter = require("./dev")
 
 
 const messagesRouter = require("./messages");
@@ -18,6 +19,7 @@ router.use("/auth", authRouter);
 router.use("/users", userRouter);
 router.use("/posts", postsRouter);
 router.use("/misc", miscRouter);
+router.use("/dev", devRouter);
 
 
 router.use("/messages", messagesRouter);
