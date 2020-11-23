@@ -7,6 +7,7 @@ router.get("/", (req, res, next) => res.send("LocalHelper Backend API"));
 const authRouter = require("./auth");
 const userRouter = require("./users");
 const postsRouter = require("./posts");
+const miscRouter = require("./misc");
 
 
 const messagesRouter = require("./messages");
@@ -16,6 +17,7 @@ const convosRouter = require("./convos");
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
 router.use("/posts", postsRouter);
+router.use("/misc", miscRouter);
 
 
 router.use("/messages", messagesRouter);

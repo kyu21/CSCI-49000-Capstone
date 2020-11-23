@@ -1167,6 +1167,20 @@ async function removeCategoriesFromPost(req, res) {
 	}
 }
 
+// GET /posts/filter AUTH
+async function getPostsBasedOnFilter(req, res) {
+	try {
+		res.send("Work in progress");
+
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: "Error getting posts based on filter, please try again.",
+		});
+	}
+}
+
 module.exports = {
 	getAllPosts: getAllPosts,
 	getLoggedInUserPosts: getLoggedInUserPosts,
@@ -1185,36 +1199,6 @@ module.exports = {
 	removeLoggedInUserfromInterested: removeLoggedInUserfromInterested,
 	getPostCategories: getPostCategories,
 	addPostCategories: addPostCategories,
-	removeCategoriesFromPost: removeCategoriesFromPost
-
+	removeCategoriesFromPost: removeCategoriesFromPost,
+	getPostsBasedOnFilter: getPostsBasedOnFilter
 };
-
-/*
-	try {
-		const {
-			postId
-		} = req.params;
-
-		let post = await db.posts.findOne({
-			raw: true,
-			where: {
-				id: postId,
-			},
-		});
-
-		if (post !== null) {
-
-		} else {
-			res.status(404).json({
-				code: "Error",
-				message: `Post ${postId} not found, please try again.`,
-			});
-		}
-	} catch (err) {
-		console.log(err);
-		res.status(500).json({
-			code: "Error",
-			message: "Error , please try again.",
-		});
-	}
-*/

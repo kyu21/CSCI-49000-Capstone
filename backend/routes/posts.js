@@ -32,5 +32,6 @@ router.route("/:postId/categories").post(auth, controller.addPostCategories);
 router.route("/:postId/categories").delete(auth, controller.removeCategoriesFromPost);
 
 // filter
+router.route("/filter").get(auth, controller.getPostsBasedOnFilter);
 
 module.exports = router;

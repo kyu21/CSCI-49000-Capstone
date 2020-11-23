@@ -223,9 +223,65 @@ async function cascadeDeletePost(postId) {
     }
 }
 
+async function cascadeDeleteZip(zipId) {
+    try {
+        // delete any associations with users
+        await db.userZips.destroy({
+            where: {
+                zipId: zipId
+            }
+        });
+
+        // delete any associations with posts
+        await db.postZips.destroy({
+            where: {
+                zipId: zipId
+            }
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function cascadeDeleteLanguage(languageId) {
+    try {
+        // delete any associations with users
+        await db.userLanguages.destroy({
+            where: {
+                languageId: languageId
+            }
+        });
+
+        // delete any associations with posts
+        await db.postLanguages.destroy({
+            where: {
+                languageId: languageId
+            }
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function cascadeDeleteCategory(categoryId) {
+    try {
+        // delete any associations with posts
+        await db.postCategories.destroy({
+            where: {
+                categoryId: categoryId
+            }
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 module.exports = {
     standardizeUserObject: standardizeUserObject,
     standardizePostObject: standardizePostObject,
     cascadeDeleteUser: cascadeDeleteUser,
-    cascadeDeletePost: cascadeDeletePost
+    cascadeDeletePost: cascadeDeletePost,
+    cascadeDeleteZip: cascadeDeleteZip,
+    cascadeDeleteLanguage: cascadeDeleteLanguage,
+    cascadeDeleteCategory: cascadeDeleteCategory
 };
