@@ -124,7 +124,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
         setState(() {
           _isLoading = false;
         });
-        print(response.statusCode.toString());
         return null;
       } else {
         setState(() {
@@ -143,6 +142,31 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
 // =============================================================================
 // WIDGETS =====================================================================
+
+  showAlertDialog(BuildContext context) {
+    // set up the button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Could not Sign In"),
+      content: Text("Check Email/Password."),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
   Container textSection() {
     return Container(
@@ -274,6 +298,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                 child: ScreenHome(),
                               );
                             }));
+                          } else {
+                            showAlertDialog(context);
                           }
 
                           setState(() {

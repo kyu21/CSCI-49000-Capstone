@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
-import 'Main/initialize.dart';
+import 'Screens/Login/screen_login.dart';
 
 void main() {
   runApp(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
-import 'package:localhelper/Main/initialize.dart';
+import 'package:localhelper/Screens/Login/screen_login.dart';
 import 'package:localhelper/Screens/Settings/screen_userSettings.dart';
 import 'package:provider/provider.dart';
 
