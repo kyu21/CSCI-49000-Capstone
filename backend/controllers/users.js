@@ -615,6 +615,159 @@ async function removeLanguagesFromUser(req, res) {
 	}
 }
 
+// GET /users/convos AUTH
+async function getUserConvos(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		// get convos
+		let convos = await db.userConvos.findAll({
+			raw: true,
+			where: {
+				userId: currentUser.id
+			},
+			order: [
+				['createdAt', 'DESC']
+			]
+		});
+
+		res.status(200).json(convos);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting conversations for the logged in user, please try again.`,
+		});
+	}
+}
+
+// GET /users/convos/:convoId AUTH
+async function getConvoByConvoId(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			convoId
+		} = req.params;
+
+		// check if logged in user is a part of this specific convo
+		let userConvo = await db.userConvos.findOne({
+			raw: true,
+			where: {
+				userId: currentUser.id,
+				convoId: convoId
+			}
+		});
+		if (userConvo !== null) {
+			res.status(200).json(userConvo);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Convo ${convoId} is not found for the logged in user, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting this converastion for the logged in user, please try again.`,
+		});
+	}
+}
+
+// POST /users/convos/:userId AUTH
+async function createConvoWithUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			userId
+		} = req.params;
+
+		// check if valid user
+		let user = await db.users.findOne({
+			raw: true,
+			where: {
+				id: userId
+			}
+		});
+		if (user !== null) {
+			// check if convo already exists between 2 users
+			let userConvos = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					userId: userId
+				}
+			});
+			userConvos = userConvos.map((e) => e.convoId);
+
+			let userConvosLogged = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					userId: currentUser.id
+				}
+			});
+			userConvosLogged = userConvosLogged.map((e) => e.convoId);
+
+			let commonConvoExists = userConvos.some(e => userConvosLogged.includes(e));
+
+			if (!commonConvoExists) {
+				// create convo
+				let convo = await db.convos.create({
+					userId: currentUser.id
+				});
+				convo = convo.get({
+					plain: true
+				});
+
+				await db.userConvos.bulkCreate([{
+					userId: currentUser.id,
+					convoId: convo.id
+				}, {
+					userId: userId,
+					convoId: convo.id
+				}]);
+
+				res.status(201).json(convo);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Conversation already exists between User ${currentUser.id} and User ${userId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `User ${userId} does not exist, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error creating a conversation, please try again.`,
+		});
+	}
+}
+
 module.exports = {
 	getAllUsers: getAllUsers,
 	getLoggedInUser: getLoggedInUser,
@@ -626,5 +779,8 @@ module.exports = {
 	removeZipsFromUser: removeZipsFromUser,
 	getUserLanguages: getUserLanguages,
 	addUserLanguages: addUserLanguages,
-	removeLanguagesFromUser: removeLanguagesFromUser
+	removeLanguagesFromUser: removeLanguagesFromUser,
+	getUserConvos: getUserConvos,
+	getConvoByConvoId: getConvoByConvoId,
+	createConvoWithUser: createConvoWithUser
 };
