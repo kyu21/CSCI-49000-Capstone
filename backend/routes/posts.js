@@ -4,8 +4,8 @@ const auth = require("../utils/auth");
 
 const controller = require("../controllers/posts");
 
-// filter
-router.route("/filter").get(auth, controller.getPostsBasedOnFilter);
+// search
+router.route("/search").get(auth, controller.searchPosts);
 
 // basic post routes
 router.route("/").get(auth, controller.getAllPosts);

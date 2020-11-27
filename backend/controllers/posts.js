@@ -1,5 +1,9 @@
 const db = require("../models");
 
+const {
+	Op
+} = require("sequelize");
+
 const decodeJwt = require("../utils/decodeJwt");
 
 require('@gouch/to-title-case');
@@ -7,7 +11,10 @@ require('@gouch/to-title-case');
 const {
 	standardizePostObject,
 	cascadeDeletePost
-} = require("../utils/standardize")
+} = require("../utils/standardize");
+const {
+	post
+} = require("../routes/posts");
 
 // GET /posts AUTH
 async function getAllPosts(req, res) {
@@ -1167,16 +1174,42 @@ async function removeCategoriesFromPost(req, res) {
 	}
 }
 
-// GET /posts/filter AUTH
-async function getPostsBasedOnFilter(req, res) {
+// GET /posts/search AUTH
+async function searchPosts(req, res) {
 	try {
-		res.send("Work in progress");
+		const {
+			searchTerm
+		} = req.body;
 
+		let posts = await db.posts.findAll({
+			raw: true,
+			where: {
+				[Op.or]: [{
+						title: {
+							[Op.like]: '%' + searchTerm + '%'
+						}
+					},
+					{
+						description: {
+							[Op.like]: '%' + searchTerm + '%'
+						}
+					}
+				]
+			}
+		});
+
+		posts = await Promise.all(
+			posts.map(
+				async (e) => await standardizePostObject(e)
+			)
+		);
+
+		res.status(200).json(posts);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
 			code: "Error",
-			message: "Error getting posts based on filter, please try again.",
+			message: "Error getting posts based on searchTerm, please try again.",
 		});
 	}
 }
@@ -1200,5 +1233,5 @@ module.exports = {
 	getPostCategories: getPostCategories,
 	addPostCategories: addPostCategories,
 	removeCategoriesFromPost: removeCategoriesFromPost,
-	getPostsBasedOnFilter: getPostsBasedOnFilter
+	searchPosts: searchPosts
 };
