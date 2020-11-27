@@ -146,6 +146,50 @@ async function standardizePostObject(post) {
     }
 }
 
+
+async function standardizeConvoObject(convo) {
+    try {
+        const convoId = convo.id;
+
+        // change convo userId to ownerId
+        Object.defineProperty(convo, "ownerId",
+            Object.getOwnPropertyDescriptor(convo, "userId"));
+        delete convo["userId"];
+
+        // get participants of convo
+        const participants = await db.userConvos.findAll({
+            raw: true,
+            where: {
+                convoId: convoId
+            }
+        });
+        const participantsInfo = await db.users.findAll({
+            raw: true,
+            where: {
+                id: participants.map(e => e.userId)
+            }
+        });
+
+        // get messages of convo
+        const messages = await db.messages.findAll({
+            raw: true,
+            where: {
+                convoId: convoId
+            },
+            order: [
+                ['createdAt', 'ASC']
+            ]
+        });
+
+        convo["participants"] = participantsInfo;
+        convo["messages"] = messages;
+
+        return convo;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 async function cascadeDeleteUser(userId) {
     try {
         // delete any associations with zips
@@ -279,6 +323,7 @@ async function cascadeDeleteCategory(categoryId) {
 module.exports = {
     standardizeUserObject: standardizeUserObject,
     standardizePostObject: standardizePostObject,
+    standardizeConvoObject: standardizeConvoObject,
     cascadeDeleteUser: cascadeDeleteUser,
     cascadeDeletePost: cascadeDeletePost,
     cascadeDeleteZip: cascadeDeleteZip,

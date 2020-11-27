@@ -8,7 +8,8 @@ require('@gouch/to-title-case');
 
 const {
 	standardizeUserObject,
-	cascadeDeleteUser
+	cascadeDeleteUser,
+	standardizeConvoObject
 } = require("../utils/standardize")
 
 // GET /users AUTH
@@ -627,7 +628,7 @@ async function getUserConvos(req, res) {
 		});
 
 		// get convos
-		let convos = await db.userConvos.findAll({
+		let convos = await db.convos.findAll({
 			raw: true,
 			where: {
 				userId: currentUser.id
@@ -636,6 +637,13 @@ async function getUserConvos(req, res) {
 				['createdAt', 'DESC']
 			]
 		});
+
+		convos = await Promise.all(
+			convos.map(
+				async (e) =>
+					await standardizeConvoObject(e)
+			)
+		);
 
 		res.status(200).json(convos);
 	} catch (err) {
@@ -671,7 +679,17 @@ async function getConvoByConvoId(req, res) {
 			}
 		});
 		if (userConvo !== null) {
-			res.status(200).json(userConvo);
+			let convo = await db.convos.findOne({
+				raw: true,
+				where: {
+					id: convoId,
+					userId: currentUser.id
+				}
+			});
+
+			convo = await standardizeConvoObject(convo);
+
+			res.status(200).json(convo);
 		} else {
 			res.status(404).json({
 				code: "Error",
@@ -745,6 +763,8 @@ async function createConvoWithUser(req, res) {
 					userId: userId,
 					convoId: convo.id
 				}]);
+
+				convo = await standardizeConvoObject(convo);
 
 				res.status(201).json(convo);
 			} else {
@@ -859,7 +879,7 @@ async function getAllMessagesOfConvo(req, res) {
 	}
 }
 
-// POST /users/convos/:convoId/messages AUTH - maxMessages, sort
+// POST /users/convos/:convoId/messages AUTH
 async function sendMessage(req, res) {
 	try {
 		let decodedJwt = await decodeJwt(req.headers);
@@ -875,23 +895,8 @@ async function sendMessage(req, res) {
 		} = req.params;
 
 		const {
-			maxMessages,
-			sort
-		} = req.query;
-
-		const {
 			body
 		} = req.body;
-
-		let defaultNumMessages = 0;
-		let defaultSort = "ASC";
-
-		if (maxMessages !== undefined && isNumeric(maxMessages)) {
-			defaultNumMessages = parseInt(maxMessages, 10);
-		}
-		if (sort !== undefined && (sort === "ASC" || sort === "DESC")) {
-			defaultSort = sort;
-		}
 
 		// check if convo exists
 		let convo = await db.convos.findOne({
@@ -916,20 +921,15 @@ async function sendMessage(req, res) {
 					body: body
 				});
 
-				let options = {
+				let messages = await db.messages.findAll({
 					raw: true,
 					where: {
 						convoId: convoId
 					},
 					order: [
-						['createdAt', defaultSort]
+						['createdAt', "ASC"]
 					]
-				};
-				if (defaultNumMessages !== 0) {
-					options.limit = defaultNumMessages
-				}
-
-				let messages = await db.messages.findAll(options);
+				});
 
 				res.status(200).json(messages);
 			} else {
