@@ -969,36 +969,16 @@ async function clearAttributes(req, res) {
 			},
 		});
 
-		const {
-			names
-		} = req.body;
+		const attributeTables = ["userZips", "userLanguages"];
 
-		const validNames = ["zips", "languages"];
-
-		if (typeof names === "object" && names.length !== 0) {
-			for (let ele of names) {
-				if (validNames.includes(ele)) {
-					let tableName = `user${ele.toTitleCase()}`
-					await db[tableName].destroy({
-						where: {
-							userId: currentUser.id
-						}
-					});
-
-					res.sendStatus(204);
-				} else {
-					res.status(400).json({
-						code: "Error",
-						message: `Error parsing body. Names should be an array of "zips" and/or "langauges", please try again.`,
-					});
+		for (let table of attributeTables) {
+			await db[table].destroy({
+				where: {
+					userId: currentUser.id
 				}
-			}
-		} else {
-			res.status(400).json({
-				code: "Error",
-				message: `Error parsing body. Names should be an array of "zips" and/or "langauges", please try again.`,
 			});
 		}
+		res.sendStatus(204);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({
