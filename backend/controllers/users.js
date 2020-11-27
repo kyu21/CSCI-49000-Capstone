@@ -958,6 +958,56 @@ async function sendMessage(req, res) {
 	}
 }
 
+// DELETE /users/attributes AUTH
+async function clearAttributes(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			names
+		} = req.body;
+
+		const validNames = ["zips", "languages"];
+
+		if (typeof names === "object" && names.length !== 0) {
+			for (let ele of names) {
+				if (validNames.includes(ele)) {
+					let tableName = `user${ele.toTitleCase()}`
+					await db[tableName].destroy({
+						where: {
+							userId: currentUser.id
+						}
+					});
+
+					res.sendStatus(204);
+				} else {
+					res.status(400).json({
+						code: "Error",
+						message: `Error parsing body. Names should be an array of "zips" and/or "langauges", please try again.`,
+					});
+				}
+			}
+		} else {
+			res.status(400).json({
+				code: "Error",
+				message: `Error parsing body. Names should be an array of "zips" and/or "langauges", please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error clearing attributes, please try again.`,
+		});
+	}
+}
+
 module.exports = {
 	getAllUsers: getAllUsers,
 	getLoggedInUser: getLoggedInUser,
@@ -974,5 +1024,6 @@ module.exports = {
 	getConvoByConvoId: getConvoByConvoId,
 	createConvoWithUser: createConvoWithUser,
 	getAllMessagesOfConvo: getAllMessagesOfConvo,
-	sendMessage: sendMessage
+	sendMessage: sendMessage,
+	clearAttributes: clearAttributes
 };

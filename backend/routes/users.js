@@ -10,6 +10,9 @@ router.route("/me").get(auth, controller.getLoggedInUser);
 router.route("/").put(auth, controller.editLoggedInUser);
 router.route("/").delete(auth, controller.deleteLoggedInUser);
 
+// attributes
+router.route("/attributes").delete(auth, controller.clearAttributes);
+
 // convos
 router.route("/convos").get(auth, controller.getUserConvos);
 router.route("/convos/:convoId").get(auth, controller.getConvoByConvoId);

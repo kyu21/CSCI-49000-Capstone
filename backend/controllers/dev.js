@@ -36,7 +36,6 @@ async function deleteConvo(req, res) {
     }
 }
 
-
 // GET /dev/userZips
 async function getAllAssociationsUserZip(req, res) {
     try {
