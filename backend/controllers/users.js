@@ -628,7 +628,7 @@ async function getUserConvos(req, res) {
 		});
 
 		// get convos
-		let convos = await db.convos.findAll({
+		let convos = await db.userConvos.findAll({
 			raw: true,
 			where: {
 				userId: currentUser.id
@@ -637,6 +637,11 @@ async function getUserConvos(req, res) {
 				['createdAt', 'DESC']
 			]
 		});
+
+		convos.forEach((u) => {
+			u.id = u.convoId;
+			delete u.convoId;
+		})
 
 		convos = await Promise.all(
 			convos.map(
