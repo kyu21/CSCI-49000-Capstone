@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:smart_select/smart_select.dart';
 
 class ScreenRegister extends StatefulWidget {
   @override
@@ -28,8 +29,13 @@ class _ScreenRegisterState extends State<ScreenRegister> {
   bool _notSame = false;
   bool _zipWrong = false;
 
-  // Drop Down
-  String language = "English";
+  // Language Selection
+  List<String> languageSelect = ["English"];
+  List<S2Choice<String>> languages = [
+    S2Choice<String>(value: "English", title: 'English'),
+    S2Choice<String>(value: "Spanish", title: 'Española'),
+    S2Choice<String>(value: "Chinese", title: '中文'),
+  ];
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -48,9 +54,48 @@ class _ScreenRegisterState extends State<ScreenRegister> {
     super.dispose();
   }
 
+  showAlertDialog(BuildContext context) {
+    // set up the button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Could Not Create User"),
+      content: Container(
+        child: FittedBox(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text("One Field is Empty."),
+              SizedBox(height: 10),
+              if (_notSame) Text("Passwords Don't Match."),
+              SizedBox(height: 10),
+              if (_zipWrong) Text("Zip isn't atleast 5 numbers."),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   // Submit Button
   void submitInfo(String first, String last, String gender, String phone,
-      String email, String zip, String password) async {
+      String email, String zip, String password, List<String> lang) async {
     if ((firstController.text.isEmpty ||
             lastController.text.isEmpty ||
             genderController.text.isEmpty ||
@@ -65,7 +110,13 @@ class _ScreenRegisterState extends State<ScreenRegister> {
           _notSame = true;
         if (zipController.text.length < 5) _zipWrong = true;
       });
+
+      if (passwordController.text == conPasswordController.text)
+        _notSame = false;
+      if (zipController.text.length >= 5) _zipWrong = false;
+
       print('Empty Strings');
+      showAlertDialog(context);
     } else {
       List<String> _zipArray = zip.split(" ");
 
@@ -77,6 +128,7 @@ class _ScreenRegisterState extends State<ScreenRegister> {
         'gender': gender,
         'phone': phone,
         'zips': _zipArray,
+        'languages': lang,
         'email': email,
         'password': password,
       });
@@ -110,6 +162,21 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
 // =============================================================================
 // WIDGETS =====================================================================
+
+  // Languages
+  Widget languageDrop() {
+    return SmartSelect<String>.multiple(
+      modalType: S2ModalType.popupDialog,
+      title: 'Languages (Optional)',
+      value: languageSelect,
+      choiceItems: languages,
+      onChange: (state) {
+        setState(() {
+          languageSelect = state.value;
+        });
+      },
+    );
+  }
 
 // Holds all the text in a column
   Container textSection() {
@@ -282,6 +349,9 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                     // Text
                     textSection(),
 
+                    SizedBox(height: 20),
+                    languageDrop(),
+
                     // Submit
                     SizedBox(height: 5),
                     Container(
@@ -301,7 +371,8 @@ class _ScreenRegisterState extends State<ScreenRegister> {
                               phoneController.text,
                               emailController.text,
                               zipController.text,
-                              passwordController.text);
+                              passwordController.text,
+                              languageSelect);
                         },
                         color: Colors.blue,
                         shape: RoundedRectangleBorder(

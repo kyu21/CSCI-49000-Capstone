@@ -27,6 +27,7 @@ dependencies:
   pull_to_refresh: ^1.6.3
   http: ^0.12.2
   provider: ^4.3.2+2
+  smart_select: ^4.3.2
 
 dev_dependencies:
   flutter_test:

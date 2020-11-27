@@ -52,4 +52,10 @@ class AuthSettings extends ChangeNotifier {
     this.email = email;
     notifyListeners();
   }
+
+  // Email
+  void updateZip(String zip) {
+    this.zip = zip;
+    notifyListeners();
+  }
 }

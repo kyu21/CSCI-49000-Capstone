@@ -34,23 +34,23 @@ class _ScreenLoginState extends State<ScreenLogin> {
 // FUNCTIONS ===================================================================
 
   // DEBUG
-  // Future debugger(String token, AuthSettings authSettings) async {
-  //   try {
-  //     Map<String, String> headers = {
-  //       'content-type': 'application/json',
-  //       'accept': 'application/json',
-  //       'authorization': token,
-  //     };
+  Future debugger(String token, AuthSettings authSettings) async {
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
 
-  //     http.Response response = await http
-  //         .get('https://localhelper-backend.herokuapp.com/api/users/me',
-  //             headers: headers)
-  //         .timeout(Duration(seconds: 5));
-  //     log(jsonDecode(response.body).toString());
-  //   } catch (e) {
-  //     print(e);
-  //   }
-  // }
+      http.Response response = await http
+          .get('https://localhelper-backend.herokuapp.com/api/users/me',
+              headers: headers)
+          .timeout(Duration(seconds: 5));
+      log(jsonDecode(response.body).toString());
+    } catch (e) {
+      print(e);
+    }
+  }
 
   // User Info
   Future userInfo(String token, AuthSettings authSettings) async {
@@ -289,7 +289,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             await userInfo(result, authSettings);
 
                             // // DEBUG
-                            // await debugger(result, authSettings);
+                            await debugger(result, authSettings);
 
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {
