@@ -1,7 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
 	return sequelize.define(
-		"convos",
-		{
+		"convos", {
 			id: {
 				type: DataTypes.BIGINT,
 				allowNull: false,
@@ -24,8 +23,7 @@ module.exports = function (sequelize, DataTypes) {
 				type: DataTypes.DATE,
 				allowNull: false,
 			},
-		},
-		{
+		}, {
 			tableName: "convos",
 		}
 	);

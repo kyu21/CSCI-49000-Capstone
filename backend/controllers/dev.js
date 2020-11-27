@@ -1,5 +1,41 @@
 const db = require("../models");
 
+const {
+    cascadeDeleteConvo,
+} = require("../utils/standardize")
+
+// DELETE /dev/convos/:convoId
+async function deleteConvo(req, res) {
+    try {
+        const {
+            convoId
+        } = req.params;
+
+        let convo = await db.convos.findOne({
+            raw: true,
+            where: {
+                id: convoId
+            }
+        });
+        if (convo !== null) {
+            await cascadeDeleteConvo(convoId);
+
+            res.sendStatus(204);
+        } else {
+            res.status(404).json({
+                code: "Error",
+                message: `Convo ${convoId} not found, please try again.`,
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            code: "Error",
+            message: `Error getting all associations between user and zip, please try again.`,
+        });
+    }
+}
+
 // GET /dev/userZips
 async function getAllAssociationsUserZip(req, res) {
     try {
@@ -709,6 +745,7 @@ async function deleteAssociationPostInterest(req, res) {
 }
 
 module.exports = {
+    deleteConvo,
     getAllAssociationsUserZip,
     createAssociationUserZip,
     deleteAssociationUserZip,

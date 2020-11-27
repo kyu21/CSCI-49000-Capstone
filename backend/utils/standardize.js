@@ -1,4 +1,9 @@
+const {
+    Op
+} = require("sequelize");
+
 const db = require("../models");
+
 
 async function standardizeUserObject(user) {
     try {
@@ -54,10 +59,19 @@ async function standardizeUserObject(user) {
             }
         });
 
+        // convos
+        const allConvosInfo = await db.userConvos.findAll({
+            raw: true,
+            where: {
+                userId: userId
+            }
+        });
+
         user["zips"] = allZipsInfo;
         user["languages"] = allLanguagesInfo;
         user["posts"] = allPostsInfo;
         user["interests"] = allInterestsInfo;
+        user["convos"] = allConvosInfo;
 
         return user;
     } catch (err) {
@@ -146,6 +160,50 @@ async function standardizePostObject(post) {
     }
 }
 
+
+async function standardizeConvoObject(convo) {
+    try {
+        const convoId = convo.id;
+
+        // change convo userId to ownerId
+        Object.defineProperty(convo, "ownerId",
+            Object.getOwnPropertyDescriptor(convo, "userId"));
+        delete convo["userId"];
+
+        // get participants of convo
+        const participants = await db.userConvos.findAll({
+            raw: true,
+            where: {
+                convoId: convoId
+            }
+        });
+        const participantsInfo = await db.users.findAll({
+            raw: true,
+            where: {
+                id: participants.map(e => e.userId)
+            }
+        });
+
+        // get messages of convo
+        const messages = await db.messages.findAll({
+            raw: true,
+            where: {
+                convoId: convoId
+            },
+            order: [
+                ['createdAt', 'ASC']
+            ]
+        });
+
+        convo["participants"] = participantsInfo;
+        convo["messages"] = messages;
+
+        return convo;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 async function cascadeDeleteUser(userId) {
     try {
         // delete any associations with zips
@@ -184,6 +242,54 @@ async function cascadeDeleteUser(userId) {
                 )
             );
         }
+
+        // delete any convo and messages user is part of
+        const userConvos = await db.userConvos.findAll({
+            raw: true,
+            where: {
+                userId: userId
+            }
+        });
+        const toBeDeletedConvoIds = userConvos.map(u => u.convoId)
+
+        await db.userConvos.destroy({
+            raw: true,
+            where: {
+                [Op.or]: [{
+                        userId: userId
+                    },
+                    {
+                        convoId: toBeDeletedConvoIds
+                    }
+                ]
+            }
+        });
+        await db.messages.destroy({
+            raw: true,
+            where: {
+                [Op.or]: [{
+                        userId: userId
+                    },
+                    {
+                        convoId: toBeDeletedConvoIds
+                    }
+                ]
+            }
+        })
+
+        // delete any convo user made
+        await db.convos.destroy({
+            where: {
+                [Op.or]: [{
+                        userId: userId
+                    },
+                    {
+                        id: toBeDeletedConvoIds
+                    }
+                ]
+            }
+        });
+
     } catch (err) {
         console.log(err);
     }
@@ -216,6 +322,30 @@ async function cascadeDeletePost(postId) {
         await db.postInterests.destroy({
             where: {
                 postId: postId
+            }
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function cascadeDeleteConvo(convoId) {
+    try {
+        await db.convos.destroy({
+            where: {
+                id: convoId
+            }
+        });
+
+        await db.userConvos.destroy({
+            where: {
+                convoId: convoId
+            }
+        });
+
+        await db.messages.destroy({
+            where: {
+                convoId: convoId
             }
         });
     } catch (err) {
@@ -279,8 +409,10 @@ async function cascadeDeleteCategory(categoryId) {
 module.exports = {
     standardizeUserObject: standardizeUserObject,
     standardizePostObject: standardizePostObject,
+    standardizeConvoObject: standardizeConvoObject,
     cascadeDeleteUser: cascadeDeleteUser,
     cascadeDeletePost: cascadeDeletePost,
+    cascadeDeleteConvo: cascadeDeleteConvo,
     cascadeDeleteZip: cascadeDeleteZip,
     cascadeDeleteLanguage: cascadeDeleteLanguage,
     cascadeDeleteCategory: cascadeDeleteCategory
