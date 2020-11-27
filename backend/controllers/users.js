@@ -768,6 +768,191 @@ async function createConvoWithUser(req, res) {
 	}
 }
 
+// https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
+function isNumeric(str) {
+	if (typeof str != "string") return false // we only process strings!  
+	return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+		!isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+}
+
+// GET /users/convos/:convoId/messages AUTH - maxMessages, sort
+async function getAllMessagesOfConvo(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			convoId
+		} = req.params;
+
+		const {
+			maxMessages,
+			sort
+		} = req.query;
+
+		let defaultNumMessages = 0;
+		let defaultSort = "ASC";
+
+		if (maxMessages !== undefined && isNumeric(maxMessages)) {
+			defaultNumMessages = parseInt(maxMessages, 10);
+		}
+		if (sort !== undefined && (sort === "ASC" || sort === "DESC")) {
+			defaultSort = sort;
+		}
+
+		// check if convo exists
+		let convo = await db.convos.findOne({
+			raw: true,
+			where: {
+				id: convoId,
+			}
+		});
+		if (convo !== null) {
+			// check if logged in user is a part of convo
+			let userConvo = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					convoId: convoId,
+					userId: currentUser.id
+				}
+			});
+			if (userConvo !== null) {
+				let options = {
+					raw: true,
+					where: {
+						convoId: convoId
+					},
+					order: [
+						['createdAt', defaultSort]
+					]
+				};
+				if (defaultNumMessages !== 0) {
+					options.limit = defaultNumMessages
+				}
+
+				let messages = await db.messages.findAll(options);
+
+				res.status(200).json(messages);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Logged in user is not a part of convo ${convoId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Convo ${convoId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting all messages of this conversation, please try again.`,
+		});
+	}
+}
+
+// POST /users/convos/:convoId/messages AUTH - maxMessages, sort
+async function sendMessage(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			convoId
+		} = req.params;
+
+		const {
+			maxMessages,
+			sort
+		} = req.query;
+
+		const {
+			body
+		} = req.body;
+
+		let defaultNumMessages = 0;
+		let defaultSort = "ASC";
+
+		if (maxMessages !== undefined && isNumeric(maxMessages)) {
+			defaultNumMessages = parseInt(maxMessages, 10);
+		}
+		if (sort !== undefined && (sort === "ASC" || sort === "DESC")) {
+			defaultSort = sort;
+		}
+
+		// check if convo exists
+		let convo = await db.convos.findOne({
+			raw: true,
+			where: {
+				id: convoId,
+			}
+		});
+		if (convo !== null) {
+			// check if logged in user is a part of convo
+			let userConvo = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					convoId: convoId,
+					userId: currentUser.id
+				}
+			});
+			if (userConvo !== null) {
+				await db.messages.create({
+					userId: currentUser.id,
+					convoId: convoId,
+					body: body
+				});
+
+				let options = {
+					raw: true,
+					where: {
+						convoId: convoId
+					},
+					order: [
+						['createdAt', defaultSort]
+					]
+				};
+				if (defaultNumMessages !== 0) {
+					options.limit = defaultNumMessages
+				}
+
+				let messages = await db.messages.findAll(options);
+
+				res.status(200).json(messages);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Logged in user is not a part of convo ${convoId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Convo ${convoId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error sending message, please try again.`,
+		});
+	}
+}
+
 module.exports = {
 	getAllUsers: getAllUsers,
 	getLoggedInUser: getLoggedInUser,
@@ -782,5 +967,7 @@ module.exports = {
 	removeLanguagesFromUser: removeLanguagesFromUser,
 	getUserConvos: getUserConvos,
 	getConvoByConvoId: getConvoByConvoId,
-	createConvoWithUser: createConvoWithUser
+	createConvoWithUser: createConvoWithUser,
+	getAllMessagesOfConvo: getAllMessagesOfConvo,
+	sendMessage: sendMessage
 };

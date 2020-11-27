@@ -15,6 +15,10 @@ router.route("/convos").get(auth, controller.getUserConvos);
 router.route("/convos/:convoId").get(auth, controller.getConvoByConvoId);
 router.route("/convos/:userId").post(auth, controller.createConvoWithUser);
 
+// messages
+router.route("/convos/:convoId/messages").get(auth, controller.getAllMessagesOfConvo);
+router.route("/convos/:convoId/messages").post(auth, controller.sendMessage);
+
 // needs to be here because of route precedence
 router.route("/:userId").get(auth, controller.getUserById);
 
