@@ -4,6 +4,9 @@ const dev = require("../utils/dev");
 
 const controller = require("../controllers/dev");
 
+// convos
+router.route("/convos/:convoId").delete(dev, controller.deleteConvo);
+
 // userZips
 router.route("/userZips").get(dev, controller.getAllAssociationsUserZip);
 router.route("/userZips").post(dev, controller.createAssociationUserZip);

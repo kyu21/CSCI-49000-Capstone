@@ -8,7 +8,8 @@ require('@gouch/to-title-case');
 
 const {
 	standardizeUserObject,
-	cascadeDeleteUser
+	cascadeDeleteUser,
+	standardizeConvoObject
 } = require("../utils/standardize")
 
 // GET /users AUTH
@@ -615,6 +616,398 @@ async function removeLanguagesFromUser(req, res) {
 	}
 }
 
+// GET /users/convos AUTH
+async function getUserConvos(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		// get convos
+		let convos = await db.userConvos.findAll({
+			raw: true,
+			where: {
+				userId: currentUser.id
+			},
+			order: [
+				['createdAt', 'DESC']
+			]
+		});
+
+		convos.forEach((u) => {
+			u.id = u.convoId;
+			delete u.convoId;
+		})
+
+		convos = await Promise.all(
+			convos.map(
+				async (e) =>
+					await standardizeConvoObject(e)
+			)
+		);
+
+		res.status(200).json(convos);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting conversations for the logged in user, please try again.`,
+		});
+	}
+}
+
+// GET /users/convos/:convoId AUTH
+async function getConvoByConvoId(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			convoId
+		} = req.params;
+
+		// check if logged in user is a part of this specific convo
+		let userConvo = await db.userConvos.findOne({
+			raw: true,
+			where: {
+				userId: currentUser.id,
+				convoId: convoId
+			}
+		});
+		if (userConvo !== null) {
+			let convo = await db.convos.findOne({
+				raw: true,
+				where: {
+					id: convoId,
+					userId: currentUser.id
+				}
+			});
+
+			convo = await standardizeConvoObject(convo);
+
+			res.status(200).json(convo);
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Convo ${convoId} is not found for the logged in user, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting this converastion for the logged in user, please try again.`,
+		});
+	}
+}
+
+// POST /users/convos/:userId AUTH
+async function createConvoWithUser(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			userId
+		} = req.params;
+
+		// check if valid user
+		let user = await db.users.findOne({
+			raw: true,
+			where: {
+				id: userId
+			}
+		});
+		if (user !== null) {
+			// check if convo already exists between 2 users
+			let userConvos = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					userId: userId
+				}
+			});
+			userConvos = userConvos.map((e) => e.convoId);
+
+			let userConvosLogged = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					userId: currentUser.id
+				}
+			});
+			userConvosLogged = userConvosLogged.map((e) => e.convoId);
+
+			let commonConvoExists = userConvos.some(e => userConvosLogged.includes(e));
+
+			if (!commonConvoExists) {
+				// create convo
+				let convo = await db.convos.create({
+					userId: currentUser.id
+				});
+				convo = convo.get({
+					plain: true
+				});
+
+				await db.userConvos.bulkCreate([{
+					userId: currentUser.id,
+					convoId: convo.id
+				}, {
+					userId: userId,
+					convoId: convo.id
+				}]);
+
+				convo = await standardizeConvoObject(convo);
+
+				res.status(201).json(convo);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Conversation already exists between User ${currentUser.id} and User ${userId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `User ${userId} does not exist, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error creating a conversation, please try again.`,
+		});
+	}
+}
+
+// https://stackoverflow.com/questions/175739/built-in-way-in-javascript-to-check-if-a-string-is-a-valid-number
+function isNumeric(str) {
+	if (typeof str != "string") return false // we only process strings!  
+	return !isNaN(str) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+		!isNaN(parseFloat(str)) // ...and ensure strings of whitespace fail
+}
+
+// GET /users/convos/:convoId/messages AUTH - maxMessages, sort
+async function getAllMessagesOfConvo(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			convoId
+		} = req.params;
+
+		const {
+			maxMessages,
+			sort
+		} = req.query;
+
+		let defaultNumMessages = 0;
+		let defaultSort = "ASC";
+
+		if (maxMessages !== undefined && isNumeric(maxMessages)) {
+			defaultNumMessages = parseInt(maxMessages, 10);
+		}
+		if (sort !== undefined && (sort === "ASC" || sort === "DESC")) {
+			defaultSort = sort;
+		}
+
+		// check if convo exists
+		let convo = await db.convos.findOne({
+			raw: true,
+			where: {
+				id: convoId,
+			}
+		});
+		if (convo !== null) {
+			// check if logged in user is a part of convo
+			let userConvo = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					convoId: convoId,
+					userId: currentUser.id
+				}
+			});
+			if (userConvo !== null) {
+				let options = {
+					raw: true,
+					where: {
+						convoId: convoId
+					},
+					order: [
+						['createdAt', defaultSort]
+					]
+				};
+				if (defaultNumMessages !== 0) {
+					options.limit = defaultNumMessages
+				}
+
+				let messages = await db.messages.findAll(options);
+
+				res.status(200).json(messages);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Logged in user is not a part of convo ${convoId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Convo ${convoId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error getting all messages of this conversation, please try again.`,
+		});
+	}
+}
+
+// POST /users/convos/:convoId/messages AUTH
+async function sendMessage(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			convoId
+		} = req.params;
+
+		const {
+			body
+		} = req.body;
+
+		// check if convo exists
+		let convo = await db.convos.findOne({
+			raw: true,
+			where: {
+				id: convoId,
+			}
+		});
+		if (convo !== null) {
+			// check if logged in user is a part of convo
+			let userConvo = await db.userConvos.findAll({
+				raw: true,
+				where: {
+					convoId: convoId,
+					userId: currentUser.id
+				}
+			});
+			if (userConvo !== null) {
+				await db.messages.create({
+					userId: currentUser.id,
+					convoId: convoId,
+					body: body
+				});
+
+				let messages = await db.messages.findAll({
+					raw: true,
+					where: {
+						convoId: convoId
+					},
+					order: [
+						['createdAt', "ASC"]
+					]
+				});
+
+				res.status(200).json(messages);
+			} else {
+				res.status(400).json({
+					code: "Error",
+					message: `Logged in user is not a part of convo ${convoId}, please try again.`,
+				});
+			}
+		} else {
+			res.status(404).json({
+				code: "Error",
+				message: `Convo ${convoId} not found, please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error sending message, please try again.`,
+		});
+	}
+}
+
+// DELETE /users/attributes AUTH
+async function clearAttributes(req, res) {
+	try {
+		let decodedJwt = await decodeJwt(req.headers);
+		let currentUser = await db.users.findOne({
+			raw: true,
+			where: {
+				email: decodedJwt.email
+			},
+		});
+
+		const {
+			names
+		} = req.body;
+
+		const validNames = ["zips", "languages"];
+
+		if (typeof names === "object" && names.length !== 0) {
+			for (let ele of names) {
+				if (validNames.includes(ele)) {
+					let tableName = `user${ele.toTitleCase()}`
+					await db[tableName].destroy({
+						where: {
+							userId: currentUser.id
+						}
+					});
+
+					res.sendStatus(204);
+				} else {
+					res.status(400).json({
+						code: "Error",
+						message: `Error parsing body. Names should be an array of "zips" and/or "langauges", please try again.`,
+					});
+				}
+			}
+		} else {
+			res.status(400).json({
+				code: "Error",
+				message: `Error parsing body. Names should be an array of "zips" and/or "langauges", please try again.`,
+			});
+		}
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({
+			code: "Error",
+			message: `Error clearing attributes, please try again.`,
+		});
+	}
+}
+
 module.exports = {
 	getAllUsers: getAllUsers,
 	getLoggedInUser: getLoggedInUser,
@@ -626,5 +1019,11 @@ module.exports = {
 	removeZipsFromUser: removeZipsFromUser,
 	getUserLanguages: getUserLanguages,
 	addUserLanguages: addUserLanguages,
-	removeLanguagesFromUser: removeLanguagesFromUser
+	removeLanguagesFromUser: removeLanguagesFromUser,
+	getUserConvos: getUserConvos,
+	getConvoByConvoId: getConvoByConvoId,
+	createConvoWithUser: createConvoWithUser,
+	getAllMessagesOfConvo: getAllMessagesOfConvo,
+	sendMessage: sendMessage,
+	clearAttributes: clearAttributes
 };

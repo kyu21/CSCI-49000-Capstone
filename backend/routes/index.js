@@ -10,20 +10,12 @@ const postsRouter = require("./posts");
 const miscRouter = require("./misc");
 const devRouter = require("./dev")
 
-
-const messagesRouter = require("./messages");
-const convosRouter = require("./convos");
-
 // Mount our subrouters to assemble our apiRouter;
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
 router.use("/posts", postsRouter);
 router.use("/misc", miscRouter);
 router.use("/dev", devRouter);
-
-
-router.use("/messages", messagesRouter);
-router.use("/convos", convosRouter);
 
 // Error handling middleware;
 router.use((req, res, next) => {
