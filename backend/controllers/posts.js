@@ -1174,7 +1174,7 @@ async function removeCategoriesFromPost(req, res) {
 	}
 }
 
-// GET /posts/search AUTH
+// POST /posts/search AUTH
 async function searchPosts(req, res) {
 	try {
 		const {

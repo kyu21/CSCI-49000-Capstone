@@ -5,7 +5,7 @@ const auth = require("../utils/auth");
 const controller = require("../controllers/posts");
 
 // search
-router.route("/search").get(auth, controller.searchPosts);
+router.route("/search").post(auth, controller.searchPosts);
 
 // basic post routes
 router.route("/").get(auth, controller.getAllPosts);
