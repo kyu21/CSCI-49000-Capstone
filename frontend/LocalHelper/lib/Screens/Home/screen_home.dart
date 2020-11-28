@@ -49,14 +49,9 @@ class _ScreenHomeState extends State<ScreenHome> {
 
     // Widget
     return Scaffold(
-      body: AnnotatedRegion<SystemUiOverlayStyle>(
-        value: settings.darkMode
-            ? SystemUiOverlayStyle.dark
-            : SystemUiOverlayStyle.light,
-        child: IndexedStack(
-          index: _currentIndex,
-          children: pageList,
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: pageList,
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: setIndex,
