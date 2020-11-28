@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:localhelper/Screens/Conversations/screen_convo.dart';
 import 'package:localhelper/Screens/Interests/screen_interests.dart';
@@ -48,9 +49,14 @@ class _ScreenHomeState extends State<ScreenHome> {
 
     // Widget
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: pageList,
+      body: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: settings.darkMode
+            ? SystemUiOverlayStyle.dark
+            : SystemUiOverlayStyle.light,
+        child: IndexedStack(
+          index: _currentIndex,
+          children: pageList,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: setIndex,

@@ -186,24 +186,41 @@ class _OwnerDoneState extends State<OwnerDone> {
 
   // Languages
   Widget languageDrop(Settings settings) {
-    return Container(
-      decoration: BoxDecoration(
-        color: settings.colorLight,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: SmartSelect<String>.multiple(
-        modalType: S2ModalType.popupDialog,
-        title: "Language",
-        modalHeader: true,
-        modalTitle: "Pick a Language",
-        value: languageSelect,
-        choiceItems: languages,
-        onChange: (state) {
-          setState(() {
-            languageSelect = state.value;
-          });
-        },
-      ),
+    return Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            "Languages",
+            style: TextStyle(
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SmartSelect<String>.multiple(
+            title: "",
+            placeholder: "",
+            modalType: S2ModalType.popupDialog,
+            modalHeader: true,
+            modalTitle: "Pick a Language",
+            value: languageSelect,
+            choiceItems: languages,
+            onChange: (state) {
+              setState(() {
+                languageSelect = state.value;
+              });
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -429,6 +446,7 @@ class _OwnerDoneState extends State<OwnerDone> {
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
         appBar: AppBar(
           automaticallyImplyLeading: true,
+          brightness: Brightness.dark,
           iconTheme: IconThemeData(
             color: settings.darkMode
                 ? Colors.white
