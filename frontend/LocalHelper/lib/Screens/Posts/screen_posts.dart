@@ -19,7 +19,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
   // Controllers
   RefreshController _refreshController =
       RefreshController(initialRefresh: true);
-  TextEditingController zipController = TextEditingController();
+  TextEditingController termController = TextEditingController();
 
   List postInfo = List(); // Holds a json of people
 
@@ -29,16 +29,12 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   // Toggle booleans
   final int bAll = 0;
-  final int bLocal = 1;
-  final int bRequest = 2;
-  final int bFree = 3;
-  final int bSelf = 4;
+  final int bRequest = 1;
+  final int bFree = 2;
   List<bool> isSelection = [
     true, // All
-    false, // Local
     false, // Request
     false, // Free
-    false, // Self
   ];
 
 // =============================================================================
@@ -46,7 +42,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
   @override
   void dispose() {
-    zipController.dispose();
+    termController.dispose();
     super.dispose();
   }
 
@@ -90,15 +86,33 @@ class _ScreenPostsState extends State<ScreenPosts> {
       'authorization': token,
     };
 
+    // Links
+    String postURL = 'https://localhelper-backend.herokuapp.com/api/posts';
+    String searchURL =
+        'https://localhelper-backend.herokuapp.com/api/posts/search';
+
     // -------------------------------------------------------------------------
     // MAIN --------------------------------------------------------------------
 
     try {
       // HTTP Get
-      http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/posts',
-              headers: headers)
-          .timeout(Duration(seconds: timeout));
+      http.Response response;
+
+      // If using search
+      if (termController.text.isNotEmpty) {
+        String searchString = json.encode({
+          'searchTerm': termController.text,
+        });
+        response = await http
+            .post(searchURL, headers: headers, body: searchString)
+            .timeout(Duration(seconds: timeout));
+
+        // If Empty then get all
+      } else {
+        response = await http
+            .get(postURL, headers: headers)
+            .timeout(Duration(seconds: timeout));
+      }
 
       // If it worked
       if (response.statusCode == 200) {
@@ -122,16 +136,15 @@ class _ScreenPostsState extends State<ScreenPosts> {
 // =============================================================================
 // WIDGETS =====================================================================
 
-  TextFormField zipSearch(Settings settings, AuthSettings authSettings) {
+  // Search By Terms
+  TextFormField termSearch(Settings settings, AuthSettings authSettings) {
     return TextFormField(
-      enabled: !isSelection[bLocal],
       cursorColor: settings.darkMode ? Colors.white : Colors.black,
-      keyboardType: TextInputType.number,
       onEditingComplete: () => _onRefresh(),
-      controller: zipController,
+      controller: termController,
       style: TextStyle(color: settings.darkMode ? Colors.white : Colors.black),
       decoration: InputDecoration(
-        hintText: 'Zip',
+        hintText: 'Search',
         hintStyle:
             TextStyle(color: settings.darkMode ? Colors.white : Colors.black),
         icon: Icon(
@@ -173,35 +186,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: isSelection[bAll]
-                      ? settings.darkMode
-                          ? Colors.black
-                          : Colors.white
-                      : Colors.white70,
-                ),
-              )),
-            ),
-          ),
-
-          // Local
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: 80,
-              height: 25,
-              decoration: BoxDecoration(
-                  color: isSelection[bLocal]
-                      ? settings.darkMode
-                          ? Colors.white
-                          : Colors.black
-                      : Colors.grey,
-                  borderRadius: BorderRadius.circular(10)),
-              child: Center(
-                  child: Text(
-                'Local',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: isSelection[bLocal]
                       ? settings.darkMode
                           ? Colors.black
                           : Colors.white
@@ -268,35 +252,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
               )),
             ),
           ),
-
-          // Self
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              width: 80,
-              height: 25,
-              decoration: BoxDecoration(
-                  color: isSelection[bSelf]
-                      ? settings.darkMode
-                          ? Colors.white
-                          : Colors.black
-                      : Colors.grey,
-                  borderRadius: BorderRadius.circular(10)),
-              child: Center(
-                  child: Text(
-                'Self',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: isSelection[bSelf]
-                      ? settings.darkMode
-                          ? Colors.black
-                          : Colors.white
-                      : Colors.white70,
-                ),
-              )),
-            ),
-          ),
         ],
         onPressed: (index) {
           setState(() {
@@ -315,10 +270,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
             } else {
               isSelection[bAll] = false;
               isSelection[index] = !isSelection[index];
-
-              if (isSelection[bLocal]) {
-                zipController.clear();
-              }
             }
             _onRefresh();
           });
@@ -349,7 +300,21 @@ class _ScreenPostsState extends State<ScreenPosts> {
       },
       child: Scaffold(
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-        body: SmartRefresher(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: settings.darkMode
+                  ? [
+                      settings.colorBackground,
+                      settings.colorBackground,
+                      Colors.black87,
+                    ]
+                  : [Colors.white, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SmartRefresher(
             physics: BouncingScrollPhysics(),
             enablePullDown: true,
             enablePullUp: true,
@@ -373,7 +338,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                           child: Column(
                             children: [
                               // Zip Search
-                              zipSearch(settings, authSettings),
+                              termSearch(settings, authSettings),
 
                               // Toggle Buttons
                               SizedBox(height: 10),
@@ -403,41 +368,12 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                   isSelection[bRequest]) checkRequest = true;
 
                               // Check Zips
-                              if (zipController.text.isNotEmpty) {
-                                for (int i = 0;
-                                    i < postInfo[index]['zips'].length;
-                                    i++) {
-                                  if (postInfo[index]['zips'][i]['zip'] ==
-                                      zipController.text) {
-                                    checkZip = true;
-                                    break;
-                                  }
-                                }
-                              } else {
-                                if (isSelection[bLocal]) {
-                                  if (postInfo[index]['zips'].length > 0) {
-                                    if (postInfo[index]['zips'].last['zip'] ==
-                                        authSettings.zip) checkZip = true;
-
-                                    if (authSettings.zip == "None")
-                                      checkZip = false;
-                                  }
-                                } else {
-                                  checkZip = true;
-                                }
-                              }
+                              checkZip = true;
 
                               // Self Check
-                              if (isSelection[bSelf]) {
-                                if (postInfo[index]['owner']['id'] ==
-                                    authSettings.ownerId) {
-                                  checkSelf = true;
-                                }
-                              } else {
-                                if (postInfo[index]['owner']['id'] !=
-                                    authSettings.ownerId) {
-                                  checkSelf = true;
-                                }
+                              if (postInfo[index]['owner']['id'] !=
+                                  authSettings.ownerId) {
+                                checkSelf = true;
                               }
 
                               // Check Free
@@ -448,7 +384,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
                               // ALL
                               if (isSelection[bAll]) {
-                                if (checkZip) {
+                                if (checkZip && checkSelf) {
                                   postsFound = true;
                                   return Posts(postInfo[index]);
                                 } else {
@@ -474,7 +410,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                             'No Posts Found...',
                                             style: TextStyle(
                                                 color: settings.darkMode
-                                                    ? Colors.white
+                                                    ? settings.colorBlue
                                                     : Colors.black,
                                                 fontWeight: FontWeight.w900,
                                                 fontStyle: FontStyle.italic,
@@ -511,8 +447,8 @@ class _ScreenPostsState extends State<ScreenPosts> {
                           padding: const EdgeInsets.all(10),
                           child: Column(
                             children: [
-                              // Zip Search
-                              zipSearch(settings, authSettings),
+                              // Term Search
+                              termSearch(settings, authSettings),
 
                               // Toggle Buttons
                               SizedBox(height: 10),
@@ -533,7 +469,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
                                       'No Posts Found...',
                                       style: TextStyle(
                                           color: settings.darkMode
-                                              ? Colors.white
+                                              ? settings.colorBlue
                                               : Colors.black,
                                           fontWeight: FontWeight.w900,
                                           fontStyle: FontStyle.italic,
@@ -544,7 +480,9 @@ class _ScreenPostsState extends State<ScreenPosts> {
                         ]),
                       ),
                     ],
-                  )),
+                  ),
+          ),
+        ),
       ),
     );
   }

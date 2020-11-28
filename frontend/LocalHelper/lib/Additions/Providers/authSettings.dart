@@ -14,6 +14,8 @@ class AuthSettings extends ChangeNotifier {
   String phone = "";
   String email = "";
 
+  List<String> languages = [];
+
   // FUNCTIONS =======================================
 
   // Update token
@@ -56,6 +58,18 @@ class AuthSettings extends ChangeNotifier {
   // Email
   void updateZip(String zip) {
     this.zip = zip;
+    notifyListeners();
+  }
+
+  // Add Language
+  void addLanguage(String lang) {
+    languages.add(lang);
+    notifyListeners();
+  }
+
+  // Clear Language
+  void clearLanguage() {
+    languages.clear();
     notifyListeners();
   }
 }

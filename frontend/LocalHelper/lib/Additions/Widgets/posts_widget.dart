@@ -44,10 +44,10 @@ class Posts extends StatelessWidget {
           color: Colors.transparent,
           border: Border(
             top: BorderSide(
-                color: settings.darkMode ? Colors.white : Colors.black,
+                color: settings.darkMode ? settings.colorMiddle : Colors.black,
                 width: 5),
             bottom: BorderSide(
-                color: settings.darkMode ? Colors.white : Colors.black,
+                color: settings.darkMode ? settings.colorMiddle : Colors.black,
                 width: 5),
           ),
         ),
@@ -65,8 +65,9 @@ class Posts extends StatelessWidget {
                         Text(
                           title,
                           style: TextStyle(
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
+                            color: settings.darkMode
+                                ? settings.colorBlue
+                                : Colors.black,
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                           ),
@@ -101,7 +102,7 @@ class Posts extends StatelessWidget {
                   ),
                 ),
                 decoration: BoxDecoration(
-                  color: settings.darkMode ? Colors.black : Colors.white,
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(
                     10,
                   ),

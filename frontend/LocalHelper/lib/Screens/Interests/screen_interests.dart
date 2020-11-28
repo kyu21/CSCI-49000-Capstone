@@ -291,7 +291,7 @@ class _ScreenInterests extends State<ScreenInterests> {
                               'No Posts Found...',
                               style: TextStyle(
                                   color: settings.darkMode
-                                      ? Colors.white
+                                      ? settings.colorBlue
                                       : Colors.black,
                                   fontWeight: FontWeight.w900,
                                   fontStyle: FontStyle.italic,
@@ -342,8 +342,9 @@ class _ScreenInterests extends State<ScreenInterests> {
                     : Text(
                         'No Interests Made...',
                         style: TextStyle(
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
+                            color: settings.darkMode
+                                ? settings.colorBlue
+                                : Colors.black,
                             fontWeight: FontWeight.w900,
                             fontStyle: FontStyle.italic,
                             fontSize: 20),
@@ -377,17 +378,32 @@ class _ScreenInterests extends State<ScreenInterests> {
       },
       child: Scaffold(
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-        body: SmartRefresher(
-          physics: BouncingScrollPhysics(),
-          enablePullDown: true,
-          enablePullUp: true,
-          controller: _refreshController,
-          onLoading: () => _onLoading(),
-          onRefresh: () => _onRefresh(),
-          header: MaterialClassicHeader(),
-          child: interestList.isNotEmpty
-              ? foundPosts(settings, authSettings)
-              : noPosts(settings, authSettings),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: settings.darkMode
+                  ? [
+                      settings.colorBackground,
+                      settings.colorBackground,
+                      Colors.black87,
+                    ]
+                  : [Colors.white, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: SmartRefresher(
+            physics: BouncingScrollPhysics(),
+            enablePullDown: true,
+            enablePullUp: true,
+            controller: _refreshController,
+            onLoading: () => _onLoading(),
+            onRefresh: () => _onRefresh(),
+            header: MaterialClassicHeader(),
+            child: interestList.isNotEmpty
+                ? foundPosts(settings, authSettings)
+                : noPosts(settings, authSettings),
+          ),
         ),
       ),
     );

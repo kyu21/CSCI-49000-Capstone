@@ -165,16 +165,43 @@ class _ScreenRegisterState extends State<ScreenRegister> {
 
   // Languages
   Widget languageDrop() {
-    return SmartSelect<String>.multiple(
-      modalType: S2ModalType.popupDialog,
-      title: 'Languages (Optional)',
-      value: languageSelect,
-      choiceItems: languages,
-      onChange: (state) {
-        setState(() {
-          languageSelect = state.value;
-        });
-      },
+    return Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            "Languages (Optional)",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: SmartSelect<String>.multiple(
+              title: "",
+              placeholder: "",
+              modalType: S2ModalType.popupDialog,
+              modalHeader: true,
+              modalTitle: "Pick a Language",
+              value: languageSelect,
+              choiceItems: languages,
+              onChange: (state) {
+                setState(() {
+                  languageSelect = state.value;
+                });
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 

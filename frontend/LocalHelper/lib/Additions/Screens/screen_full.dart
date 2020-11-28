@@ -203,37 +203,37 @@ class _FullDoneState extends State<FullDone> {
 // =============================================================================
 // WIDGETS =====================================================================
 
-  Widget ownerWidgets(
-      BuildContext context, AuthSettings authSettings, var info) {
+  Widget ownerWidgets(BuildContext context, AuthSettings authSettings,
+      Settings settings, var info) {
     return Column(
       children: [
         // EditPosts
         FlatButton(
-          color: Colors.green[300],
+          color: settings.colorMiddle,
           height: 50,
           minWidth: double.infinity,
           onPressed: () => editPosts(authSettings),
           child: Text(
             'Edit',
             style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: settings.colorBackground),
           ),
         ),
 
         // Delete Posts
         FlatButton(
-          color: Colors.red[300],
+          color: settings.colorOpposite,
           height: 50,
           minWidth: double.infinity,
           onPressed: () => deletePost(authSettings),
           child: Text(
             'Delete',
             style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                color: settings.colorBackground),
           ),
         ),
       ],
@@ -256,7 +256,7 @@ class _FullDoneState extends State<FullDone> {
           },
           title: Text('Interested',
               style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
+                  color: settings.darkMode ? settings.colorBlue : Colors.black,
                   fontSize: 30,
                   fontWeight: FontWeight.bold)),
         ),
@@ -293,7 +293,8 @@ class _FullDoneState extends State<FullDone> {
               ? Colors.white
               : Colors.black, //change your color here
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor:
+            settings.darkMode ? settings.colorBackground : Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: FittedBox(
@@ -301,139 +302,160 @@ class _FullDoneState extends State<FullDone> {
           child: Text(
             title,
             style: TextStyle(
-              color: settings.darkMode ? Colors.white : Colors.black,
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
       ),
-      body: Column(
-        children: [
-          // Owner/Date
-          Padding(
-            padding: const EdgeInsets.all(10),
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Owner: ' + ownerName,
-                      style: TextStyle(
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (address != null) SizedBox(height: 30),
-                    if (address != null)
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: settings.darkMode
+                ? [
+                    settings.colorBackground,
+                    settings.colorBackground,
+                    Colors.black87,
+                  ]
+                : [Colors.white, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Column(
+          children: [
+            // Owner/Date
+            Padding(
+              padding: const EdgeInsets.all(10),
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'Address: ' + address,
+                        'Owner: ' + ownerName,
                         style: TextStyle(
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
+                          color: settings.darkMode
+                              ? settings.colorBlue
+                              : Colors.black,
                           fontSize: 25,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Description
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.transparent,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Description
-                    Text(
-                      'Description:',
-                      style: TextStyle(
-                        color: settings.darkMode ? Colors.white : Colors.black,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Container(
-                      constraints: BoxConstraints(
-                          minHeight: 80,
-                          maxHeight: interestJson.length > 0 ? 200 : 400),
-                      child: SingleChildScrollView(
-                        child: Text(
-                          description,
+                      if (address != null) SizedBox(height: 30),
+                      if (address != null)
+                        Text(
+                          'Address: ' + address,
                           style: TextStyle(
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                            fontSize: 20,
+                            color: settings.darkMode
+                                ? settings.colorBlue
+                                : Colors.black,
+                            fontSize: 25,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ),
-
-                    // Interested Users
-                    if (interestJson.length > 0)
-                      Expanded(
-                        child: Container(
-                          child: Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Text(
-                                  'Interested Users:',
-                                  style: TextStyle(
-                                    color: settings.darkMode
-                                        ? Colors.white
-                                        : Colors.black,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(height: 20),
-                              Expanded(
-                                child: Container(
-                                  child: ListView.builder(
-                                    scrollDirection: Axis.vertical,
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      return Users(interestJson[index]);
-                                    },
-                                    itemCount: interestJson.length,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          if (isOwners)
-            ownerWidgets(context, authSettings, widget.info)
-          else
-            interestedWidget(authSettings, settings, postId),
-        ],
+            // Description
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.transparent,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Description
+                      Text(
+                        'Description:',
+                        style: TextStyle(
+                          color: settings.darkMode
+                              ? settings.colorBlue
+                              : Colors.black,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      Container(
+                        constraints: BoxConstraints(
+                            minHeight: 80,
+                            maxHeight: interestJson.length > 0 ? 200 : 400),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            description,
+                            style: TextStyle(
+                              color: settings.darkMode
+                                  ? Colors.white
+                                  : Colors.black,
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Interested Users
+                      if (interestJson.length > 0)
+                        Expanded(
+                          child: Container(
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    'Interested Users:',
+                                    style: TextStyle(
+                                      color: settings.darkMode
+                                          ? settings.colorBlue
+                                          : Colors.black,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                Expanded(
+                                  child: Container(
+                                    child: ListView.builder(
+                                      scrollDirection: Axis.vertical,
+                                      shrinkWrap: true,
+                                      itemBuilder: (context, index) {
+                                        return Users(interestJson[index]);
+                                      },
+                                      itemCount: interestJson.length,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            if (isOwners)
+              ownerWidgets(context, authSettings, settings, widget.info)
+            else
+              interestedWidget(authSettings, settings, postId),
+          ],
+        ),
       ),
     );
   }

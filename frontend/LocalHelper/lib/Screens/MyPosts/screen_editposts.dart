@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
@@ -114,173 +113,198 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
             style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black),
+                color: settings.darkMode ? settings.colorBlue : Colors.black),
           ),
-          backgroundColor: Colors.transparent,
+          backgroundColor:
+              settings.darkMode ? settings.colorBackground : Colors.transparent,
         ),
-        body: Column(
-          children: [
-            // Title
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: titleController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.black,
-                keyboardType: TextInputType.name,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Title',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  hintText: 'Ex: Babysitting, Tutor, Cleanup ...',
-                  hintStyle: TextStyle(fontSize: 20),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: settings.darkMode
+                  ? [
+                      settings.colorBackground,
+                      settings.colorBackground,
+                      Colors.black87,
+                    ]
+                  : [Colors.white, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-
-            // Address
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: addressController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.black,
-                keyboardType: TextInputType.name,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  labelStyle: TextStyle(
+          ),
+          child: Column(
+            children: [
+              // Title
+              Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20),
+                child: TextField(
+                  controller: titleController,
+                  cursorColor: settings.darkMode ? Colors.white : Colors.black,
+                  keyboardType: TextInputType.name,
+                  style: TextStyle(
                     color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
                   ),
-                  hintText: 'Ex: 3123 Main Street ...',
-                  hintStyle: TextStyle(fontSize: 20),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Request
-            SizedBox(height: 20),
-            SwitchListTile(
-              title: Text(
-                'Request',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              value: request,
-              onChanged: (value) {
-                setState(() {
-                  request = !request;
-                });
-              },
-            ),
-
-            // Free?
-            SizedBox(height: 20),
-            SwitchListTile(
-              title: Text(
-                'Free',
-                style: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold),
-              ),
-              value: free,
-              onChanged: (value) {
-                setState(() {
-                  free = !free;
-                });
-              },
-            ),
-
-            // Description
-            SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: descriptionController,
-                keyboardType: TextInputType.multiline,
-                minLines: 4,
-                maxLines: 6,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Description',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Colors.grey,
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    labelStyle: TextStyle(
+                      color:
+                          settings.darkMode ? settings.colorBlue : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    hintText: 'Ex: Babysitting, Tutor, Cleanup ...',
+                    hintStyle: TextStyle(fontSize: 20),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // Submit Button
-            Expanded(
-              child: Container(
-                color: Colors.transparent,
-                child: Column(
-                  verticalDirection: VerticalDirection.up,
-                  children: [
-                    FlatButton(
-                      onPressed: () async {
-                        if (enableSend) {
-                          setState(() {
-                            enableSend = false;
-                          });
-                          await sendPost(
-                              authSettings.token,
-                              titleController.text,
-                              addressController.text,
-                              descriptionController.text,
-                              request,
-                              free);
-                        }
-                        setState(() {
-                          enableSend = true;
-                        });
-                      },
-                      splashColor:
-                          settings.darkMode ? Colors.red : Colors.black,
-                      highlightColor:
-                          settings.darkMode ? Colors.red : Colors.grey,
-                      minWidth: double.infinity,
-                      height: 60,
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
-                        ),
+              // Address
+              Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20),
+                child: TextField(
+                  controller: addressController,
+                  cursorColor: settings.darkMode ? Colors.white : Colors.black,
+                  keyboardType: TextInputType.name,
+                  style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Address',
+                    labelStyle: TextStyle(
+                      color:
+                          settings.darkMode ? settings.colorBlue : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    hintText: 'Ex: 3123 Main Street ...',
+                    hintStyle: TextStyle(fontSize: 20),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Request
+              SizedBox(height: 20),
+              SwitchListTile(
+                title: Text(
+                  'Request',
+                  style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: settings.darkMode
+                          ? settings.colorBlue
+                          : Colors.black),
+                ),
+                value: request,
+                onChanged: (value) {
+                  setState(() {
+                    request = !request;
+                  });
+                },
+              ),
+
+              // Free?
+              SizedBox(height: 20),
+              SwitchListTile(
+                title: Text(
+                  'Free',
+                  style: TextStyle(
+                      color:
+                          settings.darkMode ? settings.colorBlue : Colors.black,
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold),
+                ),
+                value: free,
+                onChanged: (value) {
+                  setState(() {
+                    free = !free;
+                  });
+                },
+              ),
+
+              // Description
+              SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20),
+                child: TextField(
+                  controller: descriptionController,
+                  keyboardType: TextInputType.multiline,
+                  minLines: 4,
+                  maxLines: 6,
+                  cursorColor: settings.darkMode ? Colors.white : Colors.grey,
+                  style: TextStyle(
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Description',
+                    labelStyle: TextStyle(
+                      color:
+                          settings.darkMode ? settings.colorBlue : Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(
+                        color: Colors.grey,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
+
+              // Submit Button
+              Expanded(
+                child: Container(
+                  color: Colors.transparent,
+                  child: Column(
+                    verticalDirection: VerticalDirection.up,
+                    children: [
+                      FlatButton(
+                        onPressed: () async {
+                          if (enableSend) {
+                            setState(() {
+                              enableSend = false;
+                            });
+                            await sendPost(
+                                authSettings.token,
+                                titleController.text,
+                                addressController.text,
+                                descriptionController.text,
+                                request,
+                                free);
+                          }
+                          setState(() {
+                            enableSend = true;
+                          });
+                        },
+                        splashColor:
+                            settings.darkMode ? Colors.red : Colors.black,
+                        highlightColor:
+                            settings.darkMode ? Colors.red : Colors.grey,
+                        minWidth: double.infinity,
+                        height: 60,
+                        child: Text(
+                          'Save',
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
