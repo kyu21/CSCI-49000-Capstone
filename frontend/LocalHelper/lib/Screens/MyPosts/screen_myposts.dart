@@ -130,9 +130,11 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 decoration: BoxDecoration(
                     color: isSelection[bAll]
                         ? settings.darkMode
-                            ? Colors.white
+                            ? settings.colorBlue
                             : Colors.black
-                        : Colors.grey,
+                        : settings.darkMode
+                            ? settings.colorBackground
+                            : Colors.grey,
                     borderRadius: BorderRadius.circular(10)),
                 child: Center(
                     child: Text(
@@ -142,7 +144,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                     fontWeight: FontWeight.bold,
                     color: isSelection[bAll]
                         ? settings.darkMode
-                            ? Colors.black
+                            ? settings.colorBackground
                             : Colors.white
                         : Colors.white70,
                   ),
@@ -159,9 +161,11 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 decoration: BoxDecoration(
                     color: isSelection[bRequest]
                         ? settings.darkMode
-                            ? Colors.white
+                            ? settings.colorBlue
                             : Colors.black
-                        : Colors.grey,
+                        : settings.darkMode
+                            ? settings.colorBackground
+                            : Colors.grey,
                     borderRadius: BorderRadius.circular(10)),
                 child: Center(
                     child: Text(
@@ -171,7 +175,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                     fontWeight: FontWeight.bold,
                     color: isSelection[bRequest]
                         ? settings.darkMode
-                            ? Colors.black
+                            ? settings.colorBackground
                             : Colors.white
                         : Colors.white70,
                   ),
@@ -188,9 +192,11 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                 decoration: BoxDecoration(
                     color: isSelection[bFree]
                         ? settings.darkMode
-                            ? Colors.white
+                            ? settings.colorBlue
                             : Colors.black
-                        : Colors.grey,
+                        : settings.darkMode
+                            ? settings.colorBackground
+                            : Colors.grey,
                     borderRadius: BorderRadius.circular(10)),
                 child: Center(
                     child: Text(
@@ -200,7 +206,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
                     fontWeight: FontWeight.bold,
                     color: isSelection[bFree]
                         ? settings.darkMode
-                            ? Colors.black
+                            ? settings.colorBackground
                             : Colors.white
                         : Colors.white70,
                   ),
