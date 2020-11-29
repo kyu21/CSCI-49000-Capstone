@@ -34,23 +34,23 @@ class _ScreenLoginState extends State<ScreenLogin> {
 // FUNCTIONS ===================================================================
 
   // DEBUG
-  Future debugger(String token, AuthSettings authSettings) async {
-    try {
-      Map<String, String> headers = {
-        'content-type': 'application/json',
-        'accept': 'application/json',
-        'authorization': token,
-      };
+  // Future debugger(String token, AuthSettings authSettings) async {
+  //   try {
+  //     Map<String, String> headers = {
+  //       'content-type': 'application/json',
+  //       'accept': 'application/json',
+  //       'authorization': token,
+  //     };
 
-      http.Response response = await http
-          .get('https://localhelper-backend.herokuapp.com/api/users/me',
-              headers: headers)
-          .timeout(Duration(seconds: 5));
-      log(jsonDecode(response.body).toString());
-    } catch (e) {
-      print(e);
-    }
-  }
+  //     http.Response response = await http
+  //         .get('https://localhelper-backend.herokuapp.com/api/misc/categories',
+  //             headers: headers)
+  //         .timeout(Duration(seconds: 5));
+  //     // log(jsonDecode(response.body).toString());
+  //   } catch (e) {
+  //     print(e);
+  //   }
+  // }
 
   // User Info
   Future userInfo(String token, AuthSettings authSettings) async {
@@ -85,11 +85,16 @@ class _ScreenLoginState extends State<ScreenLogin> {
       authSettings.phone = _phone;
       authSettings.email = _email;
 
+      // Languages
+      authSettings.clearLanguage();
+      for (int i = 0; i < json['languages'].length; i++) {
+        authSettings.addLanguage(json['languages'][i]['name']);
+      }
+
       // If there is a zip, add it
       if (json['zips'].length > 0) {
         authSettings.zipID = json['zips'].last['id'];
         authSettings.zip = json['zips'].last['zip'];
-
         // If there isn't a zip, fill in an empty one
       } else {
         authSettings.zipID = -1;
@@ -289,7 +294,7 @@ class _ScreenLoginState extends State<ScreenLogin> {
                             await userInfo(result, authSettings);
 
                             // // DEBUG
-                            await debugger(result, authSettings);
+                            // await debugger(result, authSettings);
 
                             Navigator.push(context,
                                 MaterialPageRoute(builder: (context) {

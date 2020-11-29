@@ -1,7 +1,3 @@
-/*
-  Allow the user to update their info.
-*/
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -189,17 +185,42 @@ class _OwnerDoneState extends State<OwnerDone> {
 // WIDGETS =====================================================================
 
   // Languages
-  Widget languageDrop() {
-    return SmartSelect<String>.multiple(
-      modalType: S2ModalType.popupDialog,
-      title: 'Languages',
-      value: languageSelect,
-      choiceItems: languages,
-      onChange: (state) {
-        setState(() {
-          languageSelect = state.value;
-        });
-      },
+  Widget languageDrop(Settings settings) {
+    return Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            "Languages",
+            style: TextStyle(
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SmartSelect<String>.multiple(
+            title: "",
+            placeholder: "",
+            modalType: S2ModalType.popupDialog,
+            modalHeader: true,
+            modalTitle: "Pick a Language",
+            value: languageSelect,
+            choiceItems: languages,
+            onChange: (state) {
+              setState(() {
+                languageSelect = state.value;
+              });
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -246,7 +267,7 @@ class _OwnerDoneState extends State<OwnerDone> {
 // Save button function
   Widget saveButton(Settings settings, AuthSettings authSettings) {
     return FlatButton(
-      color: Colors.green[300],
+      color: settings.colorMiddle,
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
@@ -356,7 +377,8 @@ class _OwnerDoneState extends State<OwnerDone> {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
+                color:
+                    settings.darkMode ? settings.colorBackground : Colors.black,
               ),
             ),
     );
@@ -365,7 +387,7 @@ class _OwnerDoneState extends State<OwnerDone> {
   // Save button function
   Widget deleteButton(Settings settings, AuthSettings authSettings) {
     return FlatButton(
-      color: Colors.red[300],
+      color: settings.colorOpposite,
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
@@ -402,7 +424,8 @@ class _OwnerDoneState extends State<OwnerDone> {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
+                color:
+                    settings.darkMode ? settings.colorBackground : Colors.black,
               ),
             ),
     );
@@ -420,27 +443,43 @@ class _OwnerDoneState extends State<OwnerDone> {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Scaffold(
-          backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-          appBar: AppBar(
-            automaticallyImplyLeading: true,
-            iconTheme: IconThemeData(
-              color: settings.darkMode
-                  ? Colors.white
-                  : Colors.black, //change your color here
-            ),
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: true,
-            title: Text(
-              'User Settings',
-              style: TextStyle(
-                color: settings.darkMode ? Colors.white : Colors.black,
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+        backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+        appBar: AppBar(
+          automaticallyImplyLeading: true,
+          brightness: Brightness.dark,
+          iconTheme: IconThemeData(
+            color: settings.darkMode
+                ? Colors.white
+                : Colors.black, //change your color here
+          ),
+          backgroundColor:
+              settings.darkMode ? settings.colorBackground : Colors.transparent,
+          elevation: 0,
+          centerTitle: true,
+          title: Text(
+            'User Settings',
+            style: TextStyle(
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          body: Column(
+        ),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: settings.darkMode
+                  ? [
+                      settings.colorBackground,
+                      settings.colorBackground,
+                      Colors.black87,
+                    ]
+                  : [Colors.white, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Column(
             children: [
               Expanded(
                 child: Container(
@@ -462,7 +501,7 @@ class _OwnerDoneState extends State<OwnerDone> {
                             labelText: 'First Name',
                             labelStyle: TextStyle(
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBlue
                                   : Colors.black,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -490,7 +529,7 @@ class _OwnerDoneState extends State<OwnerDone> {
                             labelText: 'Last Name',
                             labelStyle: TextStyle(
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBlue
                                   : Colors.black,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -517,7 +556,7 @@ class _OwnerDoneState extends State<OwnerDone> {
                             labelText: 'Gender',
                             labelStyle: TextStyle(
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBlue
                                   : Colors.black,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -545,7 +584,7 @@ class _OwnerDoneState extends State<OwnerDone> {
                             labelText: 'Phone',
                             labelStyle: TextStyle(
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBlue
                                   : Colors.black,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -573,7 +612,7 @@ class _OwnerDoneState extends State<OwnerDone> {
                             labelText: 'Email',
                             labelStyle: TextStyle(
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBlue
                                   : Colors.black,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -605,7 +644,7 @@ class _OwnerDoneState extends State<OwnerDone> {
                             labelText: 'Zip',
                             labelStyle: TextStyle(
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBlue
                                   : Colors.black,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -616,8 +655,8 @@ class _OwnerDoneState extends State<OwnerDone> {
                           ),
                         ),
                       ),
-                      SizedBox(height: 10),
-                      languageDrop(),
+                      SizedBox(height: 15),
+                      languageDrop(settings),
                     ],
                   ),
                 ),
@@ -632,7 +671,9 @@ class _OwnerDoneState extends State<OwnerDone> {
                 ),
               )
             ],
-          )),
+          ),
+        ),
+      ),
     );
   }
 }

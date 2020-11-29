@@ -28,8 +28,8 @@ class Users extends StatelessWidget {
           height: 75,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: Colors.grey,
-            borderRadius: BorderRadius.circular(30),
+            color: settings.darkMode ? settings.colorMiddle : Colors.grey,
+            borderRadius: BorderRadius.circular(10),
           ),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -41,7 +41,9 @@ class Users extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.bold,
-                    color: settings.darkMode ? Colors.white : Colors.black,
+                    color: settings.darkMode
+                        ? settings.colorBackground
+                        : Colors.black,
                   ),
                 ),
 
@@ -62,7 +64,7 @@ class Users extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 20,
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBackground
                                   : Colors.black,
                             ),
                           ),
@@ -73,7 +75,7 @@ class Users extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 20,
                               color: settings.darkMode
-                                  ? Colors.white
+                                  ? settings.colorBackground
                                   : Colors.black,
                             ),
                           ),
