@@ -146,7 +146,7 @@ class _FullDoneState extends State<FullDone> {
       String link = 'https://localhelper-backend.herokuapp.com/api/posts/' +
           widget.info['id'].toString();
       await http.delete(link, headers: headers);
-      Navigator.pop(context, true);
+      Navigator.pop(context);
     } catch (e) {
       print(e);
       Navigator.pop(context);
@@ -164,7 +164,7 @@ class _FullDoneState extends State<FullDone> {
       final free = widget.info['free'];
       return ScreenEditPosts(pId, title, address, des, req, free);
     }));
-    Navigator.pop(context, true);
+    Navigator.pop(context);
   }
 
   // Interests
