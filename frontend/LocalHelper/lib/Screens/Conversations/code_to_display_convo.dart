@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -61,17 +60,29 @@ class _ScreenConvoState extends State<ScreenConvo> {
   }
 
   // takes convoId and adds all users from that convo to a list of users
-  void getUserList(int convoId) {
-    for (int i = 0; i < convoList.length; i++) {
-      if (convoList[i]['id'] == convoId) {
-        usersList.add(convoList[i]['participants'][1]['id']);
-        usersList = usersList.toSet().toList();
-        // adds the name of the person you are talking to
-        nameList.add(convoList[i]['participants'][1]['first'] +
-            ' ' +
-            convoList[i]['participants'][1]['last']);
-        nameList = nameList.toSet().toList();
+  void getUserList(int convoId) async {
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+      };
+      String link =
+          'https://localhelper-backend.herokuapp.com/api/convos/uofc/' +
+              convoId.toString();
+
+      // HTTP Get
+      http.Response response =
+          await http.get(link, headers: headers).timeout(Duration(seconds: 20));
+
+      // If it worked
+      if (response.statusCode == 200) {
+        List json = jsonDecode(response.body);
+        for (int i = 0; i < json.length; i++) {
+          usersList.add(json[i]);
+        }
       }
+    } catch (e) {
+      print(e);
     }
   }
 
@@ -80,17 +91,15 @@ class _ScreenConvoState extends State<ScreenConvo> {
   convoList is an array of json of convos that the user is a part of
   the for loop parses only the convoId part and stores it in ofConvoId
   */
-  void getConvoList() async {
-    final String token =
-        Provider.of<AuthSettings>(context, listen: false).token;
+  void getConvoList(int ownerId) async {
     try {
       Map<String, String> headers = {
         'content-type': 'application/json',
         'accept': 'application/json',
-        'authorization': token,
       };
       String link =
-          'https://localhelper-backend.herokuapp.com/api/users/convos/';
+          'https://localhelper-backend.herokuapp.com/api/convos/cofu/' +
+              ownerId.toString();
 
       // HTTP Get
       http.Response response =
@@ -102,8 +111,34 @@ class _ScreenConvoState extends State<ScreenConvo> {
         convoList = json;
         for (int i = 0; i < convoList.length; i++) {
           ofConvoId.add(convoList[i]['id']);
-          ofConvoId = ofConvoId.toSet().toList();
         }
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  // takes in userIds and returns the first and last name of the account
+  void getUsersName(int userId) async {
+    final String token =
+        Provider.of<AuthSettings>(context, listen: false).token;
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+      String link = 'https://localhelper-backend.herokuapp.com/api/users/' +
+          userId.toString();
+
+      // HTTP Get
+      http.Response response =
+          await http.get(link, headers: headers).timeout(Duration(seconds: 20));
+      // If it worked
+      if (response.statusCode == 200) {
+        var json = jsonDecode(response.body);
+        User newPerson = User(json);
+        nameList.add(newPerson.firstName + ' ' + newPerson.lastName);
       }
     } catch (e) {
       print(e);
@@ -114,15 +149,17 @@ class _ScreenConvoState extends State<ScreenConvo> {
   Widget build(BuildContext context) {
     Settings settings = Provider.of<Settings>(context);
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
-    List revseredNameList = List.from(nameList.reversed);
-    List reversedConvoId = List.from(ofConvoId.reversed);
-
-    // Scuffed code to populate the screen
-    getConvoList();
-    myName(authSettings.ownerId);
+    // Scuffed code
+    getConvoList(authSettings.ownerId);
+    ofConvoId = ofConvoId.toSet().toList();
     for (int i = 0; i < ofConvoId.length; i++) {
       getUserList(ofConvoId[i]);
+      usersList = usersList.toSet().toList();
+      usersList.remove(authSettings.ownerId);
+      getUsersName(usersList[i]);
     }
+    nameList = nameList.toSet().toList();
+    myName(authSettings.ownerId);
 
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
@@ -153,17 +190,15 @@ class _ScreenConvoState extends State<ScreenConvo> {
               heightFactor: 5,
               child: Text(
                 'You have no conversations...',
-                style: TextStyle(
-                  fontSize: 35,
-                  fontStyle: FontStyle.italic,
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
+                style: TextStyle(fontSize: 35, fontStyle: FontStyle.italic),
                 textAlign: TextAlign.center,
               ),
             ),
 
           for (int i = 0; i < nameList.length; i++)
-            Convos(revseredNameList[i], senderName, reversedConvoId[i]),
+            Convos(nameList[i], senderName, ofConvoId[i]),
+
+          // Convos(nameList[0], authSettings.ownerId),
         ],
       ),
     );

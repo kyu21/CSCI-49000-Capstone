@@ -1,0 +1,243 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import 'package:localhelper/Additions/Providers/authSettings.dart';
+import 'package:localhelper/Additions/Providers/settings.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
+
+class Messaging extends StatefulWidget {
+  // senderName is the YOU, the person sending the messages
+  // chattingWith is the person you are talking to
+  final chattingWith;
+  final senderName;
+  final convoId;
+  Messaging(this.chattingWith, this.senderName, this.convoId);
+  @override
+  _MessagingState createState() => _MessagingState();
+}
+
+class _MessagingState extends State<Messaging> {
+  // Variables
+  List messagesJson = List();
+  List messages = List();
+  String messageToSend = '';
+  TextEditingController _textEditingController = TextEditingController();
+
+  // Grabs all messages in a conversation and stores them in a list
+  void getMessages(int convoId) async {
+    final String token =
+        Provider.of<AuthSettings>(context, listen: false).token;
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+      String link =
+          'https://localhelper-backend.herokuapp.com/api/users/convos/' +
+              convoId.toString() +
+              '/messages';
+      // HTTP Get
+      http.Response response =
+          await http.get(link, headers: headers).timeout(Duration(seconds: 20));
+
+      // If it worked
+      if (response.statusCode == 200) {
+        List json = jsonDecode(response.body);
+        for (int i = 0; i < json.length; i++) {
+          messagesJson.add(json[i]);
+          Message m = Message(json[i]);
+          messages.add(m);
+          //gets rid of dups if called multiple times
+          messagesJson = messagesJson.toSet().toList();
+          messages = messages.toSet().toList();
+        }
+      } else {
+        print('GET code ' + response.statusCode.toString());
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  //Sends the message
+  void sendMessage(int convoId, String body) async {
+    final String token =
+        Provider.of<AuthSettings>(context, listen: false).token;
+    Map<String, dynamic> jsonMap = {
+      'body': body,
+    };
+    // Encode
+    String jsonString = json.encode(jsonMap);
+    try {
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+      String link =
+          'https://localhelper-backend.herokuapp.com/api/users/convos/' +
+              convoId.toString() +
+              '/messages';
+
+      // HTTP Post
+      http.Response response = await http
+          .post(
+            link,
+            headers: headers,
+            body: jsonString,
+          )
+          .timeout(Duration(seconds: 20));
+
+      // If it didn't work
+      if (response.statusCode != 200) {
+        print('POST code ' + response.statusCode.toString());
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
+// The send message bar at the bottom of the screen
+  _buildMessageComposer() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      height: 70.0,
+      color: Colors.white,
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _textEditingController,
+              textCapitalization: TextCapitalization.sentences,
+              onChanged: (value) {
+                messageToSend = value;
+              },
+              decoration: InputDecoration.collapsed(
+                  hintText: 'Enter a message here...'),
+            ),
+          ),
+          IconButton(
+            icon: Icon(Icons.send),
+            iconSize: 25.0,
+            onPressed: () {
+              sendMessage(widget.convoId, messageToSend);
+              _textEditingController.clear();
+              //print('convoID: ' + widget.convoId.toString());
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  _buildMessage(Message message, bool isMe) {
+    return Container(
+      margin: isMe
+          ? EdgeInsets.only(
+              top: 8.0,
+              bottom: 8.0,
+              left: 80.0,
+            )
+          : EdgeInsets.only(
+              top: 8.0,
+              bottom: 8.0,
+              right: 80.0,
+            ),
+      padding: EdgeInsets.symmetric(horizontal: 25.0, vertical: 15.0),
+      decoration: BoxDecoration(
+          color: isMe ? Colors.blue : Colors.grey[400],
+          borderRadius: isMe
+              ? BorderRadius.only(
+                  topLeft: Radius.circular(15.0),
+                  bottomLeft: Radius.circular(15.0),
+                )
+              : BorderRadius.only(
+                  topRight: Radius.circular(15.0),
+                  bottomRight: Radius.circular(15.0),
+                )),
+      child: Text(
+        message.text,
+        style: TextStyle(
+          color: isMe ? Colors.white : Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
+
+    String chattingWith = widget.chattingWith;
+    int convoId = widget.convoId;
+    int senderId = authSettings.ownerId;
+
+    // this loads the messages on screen
+    //getMessages(convoId);
+
+    return Scaffold(
+      backgroundColor: settings.darkMode ? Colors.indigo : Colors.blue,
+      appBar: AppBar(
+        backgroundColor: settings.darkMode ? Colors.indigo : Colors.blue,
+        centerTitle: true,
+        elevation: 0.0,
+        title: Text(
+          chattingWith,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+        ),
+      ),
+      body: GestureDetector(
+        //onTap: () => FocusScope.of(context).unfocus(),
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: settings.darkMode ? Colors.grey[600] : Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
+                  ),
+                  child: ListView.builder(
+                    padding: EdgeInsets.only(top: 15.0),
+                    itemCount: messagesJson.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      Message message = messages[index];
+                      bool isMe = message.senderId == authSettings.ownerId;
+                      return _buildMessage(message, isMe);
+                    },
+                  ),
+                ),
+              ),
+            ),
+            //Text(messages[0].toString()),
+            _buildMessageComposer(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 52:07 in the video
+
+class Message {
+  int senderId;
+  String text;
+
+  Message(Map<String, dynamic> data) {
+    senderId = data['userId'];
+    text = data['body'];
+  }
+}
