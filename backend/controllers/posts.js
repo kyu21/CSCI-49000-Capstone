@@ -263,63 +263,232 @@ async function editPost(req, res) {
 			postId
 		} = req.params;
 
-		// check if post exists
-		let post = await db.posts.findOne({
-			raw: true,
-			where: {
-				id: postId
+		const {
+			zips,
+			languages,
+			categories
+		} = req.body;
+
+		let invalidInput = false;
+
+		let newZips;
+		let newLangauges;
+		let newCategories;
+
+		// if not undefined and is object with length > 0
+		if (zips !== undefined) {
+			if (Array.isArray(zips) && zips.length !== 0) {
+				newZips = zips;
+			} else {
+				invalidInput = true;
 			}
-		});
-		if (post !== null) {
-			// check if logged in user is owner of post
-			if (post.ownerId === currentUser.id) {
-				let invalidInput = false;
+		}
 
-				let newInfo = {};
+		if (languages !== undefined) {
+			if (Array.isArray(languages) && languages.length !== 0) {
+				newLangauges = languages.map((l) => l.toTitleCase());
+			} else {
+				invalidInput = true;
+			}
+		}
 
-				// check if body has valid keys
-				const validKeys = ["title", "description", "address", "is_request", "free"];
+		if (categories !== undefined) {
+			if (Array.isArray(categories) && categories.length !== 0) {
+				newCategories = categories.map((c) => c.toTitleCase());
+			} else {
+				invalidInput = true;
+			}
+		}
 
-				for (let key in req.body) {
-					let val = req.body[key];
-
-					// check for correct input type and nonempty input
-					if ((validKeys.slice(0, 3).indexOf(key) > -1 && typeof val === "string" && val.length !== 0) || (validKeys.slice(3).indexOf(key) > -1 && typeof val === "boolean")) {
-						newInfo[key] = val;
-					} else {
-						invalidInput = true;
-						break;
-					}
+		if (!(invalidInput)) {
+			// check if post exists
+			let post = await db.posts.findOne({
+				raw: true,
+				where: {
+					id: postId
 				}
+			});
+			if (post !== null) {
+				// check if logged in user is owner of post
+				if (post.ownerId === currentUser.id) {
+					let newInfo = {};
 
-				if (invalidInput) {
-					res.status(400).json({
-						code: "Error",
-						message: `Invalid input, please try again.`,
-					});
+					// check if body has valid keys
+					const validKeys = {
+						"string": ["title", "description", "address"],
+						"boolean": ["is_request", "free"],
+						"object": ["zips", "languages", "categories"]
+					}
+
+					for (let key in req.body) {
+						let val = req.body[key];
+
+						// check for correct input type and nonempty input
+						if ((validKeys["string"].indexOf(key) > -1 && typeof val === "string" && val.length !== 0) || (validKeys["boolean"].indexOf(key) > -1 && typeof val === "boolean")) {
+							newInfo[key] = val;
+						} else if (validKeys["object"].indexOf(key) > -1 && Array.isArray(val) && val.length !== 0) {
+							if (key === "zips") {
+								// destroy current associations
+								await db.postZips.destroy({
+									where: {
+										postId: postId
+									}
+								});
+
+								// ensure non-empty input
+								if (Array.isArray(newZips) && newZips.length !== 0) {
+									for (const z of newZips) {
+										// check db if zip exists
+										let dbZip = await db.zips.findOne({
+											raw: true,
+											where: {
+												zip: z
+											}
+										});
+
+										// create entry for zip if not in table already
+										if (dbZip === null) {
+											dbZip = await db.zips.create({
+												zip: z
+											});
+										}
+
+										// create association between post and zip
+										await db.postZips.create({
+											postId: postId,
+											zipId: dbZip.id
+										});
+									}
+								} else {
+									invalidInput = true;
+									break;
+								}
+							}
+
+							if (key === "languages") {
+								// destroy current associations
+								await db.postLanguages.destroy({
+									where: {
+										postId: postId
+									}
+								});
+
+								// ensure non-empty input
+								if (Array.isArray(newLangauges) && newLangauges.length !== 0) {
+									for (const l of newLangauges) {
+										// check db if lang exists
+										let dbLang = await db.languages.findOne({
+											raw: true,
+											where: {
+												name: l
+											}
+										});
+
+										// create entry for language if not in table already
+										if (dbLang === null) {
+											dbLang = await db.languages.create({
+												name: l
+											});
+										}
+
+										// create association between post and language
+										await db.postLanguages.create({
+											postId: postId,
+											languageId: dbLang.id
+										});
+									}
+								} else {
+									invalidInput = true;
+									break;
+								}
+							}
+
+							if (key === "categories") {
+								// destroy current associations
+								await db.postCategories.destroy({
+									where: {
+										postId: postId
+									}
+								});
+
+								// ensure non-empty input
+								if (Array.isArray(newCategories) && newCategories.length !== 0) {
+									for (const c of newCategories) {
+										// check db if lang exists
+										let dbCategory = await db.categories.findOne({
+											raw: true,
+											where: {
+												name: c
+											}
+										});
+
+										// create entry for category if not in table already
+										if (dbCategory === null) {
+											dbCategory = await db.categories.create({
+												name: c
+											});
+										}
+
+										// create association between post and category
+										await db.postCategories.create({
+											postId: postId,
+											categoryId: dbCategory.id
+										});
+									}
+								} else {
+									invalidInput = true;
+									break;
+								}
+							}
+
+						} else {
+							invalidInput = true;
+							break;
+						}
+					}
+
+					if (invalidInput) {
+						res.status(400).json({
+							code: "Error",
+							message: `Invalid input, please try again.`,
+						});
+					} else {
+						let editedPost = [];
+
+						// check if newInfo is empty
+						if (Object.keys(newInfo).length === 0 && newInfo.constructor === Object) {
+							editedPost = post
+						} else {
+							let [_, posts] = await db.posts.update(newInfo, {
+								where: {
+									id: postId
+								},
+								returning: true,
+								raw: true,
+							});
+
+							editedPost = posts[0]
+						}
+						editedPost = await standardizePostObject(editedPost);
+
+						res.status(200).json(editedPost);
+					}
 				} else {
-					let [_, posts] = await db.posts.update(newInfo, {
-						where: {
-							id: postId
-						},
-						returning: true,
-						raw: true,
+					res.status(403).json({
+						code: "Error",
+						message: `User ${currentUser.id} is not creator of post ${postId}, please try again.`,
 					});
-
-					let editedPost = await standardizePostObject(posts[0]);
-
-					res.status(200).json(editedPost);
 				}
 			} else {
-				res.status(403).json({
+				res.status(404).json({
 					code: "Error",
-					message: `User ${currentUser.id} is not creator of post ${postId}, please try again.`,
+					message: `Post ${postId} not found, please try again.`,
 				});
 			}
 		} else {
-			res.status(404).json({
+			res.status(400).json({
 				code: "Error",
-				message: `Post ${postId} not found, please try again.`,
+				message: `Invalid input, please try again.`,
 			});
 		}
 

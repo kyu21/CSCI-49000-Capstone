@@ -102,6 +102,11 @@ async function editLoggedInUser(req, res) {
 			},
 		});
 
+		const {
+			zips,
+			languages
+		} = req.body;
+
 		const validKeys = [
 			"first",
 			"last",
@@ -111,14 +116,40 @@ async function editLoggedInUser(req, res) {
 			"password",
 		];
 
+		const validKeysArrays = [
+			"zips", "languages"
+		];
+
 		let invalidNewEmail = false;
 		let invalidInput = false;
 
+		let newZips;
+		let newLangauges;
+
+		// if not undefined and is object with length > 0
+		if (zips !== undefined) {
+			if (Array.isArray(zips) && zips.length !== 0) {
+				newZips = zips;
+			} else {
+				invalidInput = true;
+			}
+		}
+
+		if (languages !== undefined) {
+			if (Array.isArray(languages) && languages.length !== 0) {
+				newLangauges = languages.map((l) => l.toTitleCase());
+			} else {
+				invalidInput = true;
+			}
+		}
+
 		let newInfo = {};
-		for (let key in req.body) {
-			let val = req.body[key]
-			if (typeof val === "string" && val.length > 0) {
-				if (validKeys.indexOf(key) >= 0) {
+
+		if (!(invalidInput)) {
+			for (let key in req.body) {
+				let val = req.body[key]
+
+				if (validKeys.indexOf(key) > -1 && typeof val === "string" && val.length !== 0) {
 					newInfo[key] = val;
 
 					// no duplicate emails
@@ -145,11 +176,88 @@ async function editLoggedInUser(req, res) {
 						);
 						newInfo[key] = hashedPassword;
 					}
-				}
-			} else {
-				invalidInput = true;
-			}
+				} else if (validKeysArrays.indexOf(key) > -1 && Array.isArray(val) && val.length !== 0) {
+					if (key === "zips") {
+						// destroy current associations
+						await db.userZips.destroy({
+							where: {
+								userId: currentUser.id
+							}
+						});
 
+						// ensure non-empty input
+						if (Array.isArray(newZips) && newZips.length !== 0) {
+							for (const z of newZips) {
+								// check db if zip exists
+								let dbZip = await db.zips.findOne({
+									raw: true,
+									where: {
+										zip: z
+									}
+								});
+
+								// create entry for zip if not in table already
+								if (dbZip === null) {
+									dbZip = await db.zips.create({
+										zip: z
+									});
+								}
+
+								// create association between user and zip
+								await db.userZips.create({
+									userId: currentUser.id,
+									zipId: dbZip.id
+								});
+							}
+						} else {
+							invalidInput = true;
+							break;
+						}
+					}
+
+					if (key === "languages") {
+						// destroy current associations
+						await db.userLanguages.destroy({
+							where: {
+								userId: currentUser.id
+							}
+						});
+
+						// ensure non-empty input
+						if (Array.isArray(newLangauges) && newLangauges.length !== 0) {
+							for (const l of newLangauges) {
+								// check db if lang exists
+								let dbLang = await db.languages.findOne({
+									raw: true,
+									where: {
+										name: l
+									}
+								});
+
+								// create entry for language if not in table already
+								if (dbLang === null) {
+									dbLang = await db.languages.create({
+										name: l
+									});
+								}
+
+								// create association between user and language
+								await db.userLanguages.create({
+									userId: currentUser.id,
+									languageId: dbLang.id
+								});
+							}
+						} else {
+							invalidInput = true;
+							break;
+						}
+					}
+
+				} else {
+					invalidInput = true;
+					break;
+				}
+			}
 		}
 
 		if (invalidNewEmail) {
@@ -163,15 +271,24 @@ async function editLoggedInUser(req, res) {
 				message: `Input must consist of non-empty strings, please try again.`,
 			});
 		} else {
-			let [_, users] = await db.users.update(newInfo, {
-				where: {
-					id: currentUser.id
-				},
-				returning: true,
-				raw: true,
-			});
+			let editedUser = [];
 
-			let editedUser = await standardizeUserObject(users[0]);
+			// check if newInfo is empty
+			if (Object.keys(newInfo).length === 0 && newInfo.constructor === Object) {
+				editedUser = currentUser
+			} else {
+				let [_, users] = await db.users.update(newInfo, {
+					where: {
+						id: currentUser.id
+					},
+					returning: true,
+					raw: true,
+				});
+
+				editedUser = users[0]
+			}
+
+			editedUser = await standardizeUserObject(editedUser);
 
 			res.status(200).json(editedUser);
 		}
