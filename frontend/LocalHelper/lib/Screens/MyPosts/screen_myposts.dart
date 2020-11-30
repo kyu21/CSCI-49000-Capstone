@@ -62,28 +62,32 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
 // FUNCTIONS ===================================================================
 
   void _onRefresh() async {
-    setState(() {
-      // Reset start value
-      Provider.of<Settings>(context, listen: false).personalNum = 0;
+    if (this.mounted) {
+      setState(() {
+        // Reset start value
+        Provider.of<Settings>(context, listen: false).personalNum = 0;
 
-      // Clear the lists
-      _testList.clear();
+        // Clear the lists
+        _testList.clear();
 
-      // Find Personal Posts again
-      _onLoading();
+        // Find Personal Posts again
+        _onLoading();
 
-      // Trigger controller complete
-      _refreshController.refreshCompleted();
-    });
+        // Trigger controller complete
+        _refreshController.refreshCompleted();
+      });
+    }
   }
 
   void _onLoading() async {
     // VARIABLES ---------------------------------------------------------------
 
-    setState(() {
-      loading = true;
-      postsFound = false;
-    });
+    if (this.mounted) {
+      setState(() {
+        loading = true;
+        postsFound = false;
+      });
+    }
 
     // Settings
     final int timeout = 10;
@@ -176,7 +180,7 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
         }
 
         // Self Check
-        if (_testList[i]['ownerId'] != ownerID) checkSelf = true;
+        if (_testList[i]['ownerId'] == ownerID) checkSelf = true;
 
         // Add to temp list
         if (checkRequest &&
@@ -194,10 +198,12 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
     } catch (e) {
       print(e);
     }
-    setState(() {
-      loading = false;
-      _refreshController.loadComplete();
-    });
+    if (this.mounted) {
+      setState(() {
+        loading = false;
+        _refreshController.loadComplete();
+      });
+    }
   }
 
 // =============================================================================
@@ -229,14 +235,16 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             scrollPhysics: BouncingScrollPhysics(),
             value: filterOption,
             onChanged: (val) {
-              setState(() {
-                filterOption = val;
-                if (filterOption.contains('All')) {
-                  filterOption.clear();
-                  filterOption.add('All');
-                }
-                _onRefresh();
-              });
+              if (this.mounted) {
+                setState(() {
+                  filterOption = val;
+                  if (filterOption.contains('All')) {
+                    filterOption.clear();
+                    filterOption.add('All');
+                  }
+                  _onRefresh();
+                });
+              }
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: filter,
@@ -275,14 +283,16 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             scrollPhysics: BouncingScrollPhysics(),
             value: languageOption,
             onChanged: (val) {
-              setState(() {
-                languageOption = val;
-                if (languageOption.contains('All')) {
-                  languageOption.clear();
-                  languageOption.add('All');
-                }
-                _onRefresh();
-              });
+              if (this.mounted) {
+                setState(() {
+                  languageOption = val;
+                  if (languageOption.contains('All')) {
+                    languageOption.clear();
+                    languageOption.add('All');
+                  }
+                  _onRefresh();
+                });
+              }
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: language,
@@ -321,14 +331,16 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             scrollPhysics: BouncingScrollPhysics(),
             value: categoryOptions,
             onChanged: (val) {
-              setState(() {
-                categoryOptions = val;
-                if (categoryOptions.contains('All')) {
-                  categoryOptions.clear();
-                  categoryOptions.add('All');
-                }
-                _onRefresh();
-              });
+              if (this.mounted) {
+                setState(() {
+                  categoryOptions = val;
+                  if (categoryOptions.contains('All')) {
+                    categoryOptions.clear();
+                    categoryOptions.add('All');
+                  }
+                  _onRefresh();
+                });
+              }
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: category,

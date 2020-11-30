@@ -35,9 +35,11 @@ class _ScreenHomeState extends State<ScreenHome> {
 // FUNCTIONS ===================================================================
 
   void setIndex(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    if (this.mounted) {
+      setState(() {
+        _currentIndex = index;
+      });
+    }
   }
 
 // =============================================================================

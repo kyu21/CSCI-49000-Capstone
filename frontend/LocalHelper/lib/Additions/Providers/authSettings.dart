@@ -67,6 +67,12 @@ class AuthSettings extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setLanguage(List<String> lang) {
+    languages.clear();
+    languages = lang;
+    notifyListeners();
+  }
+
   // Clear Language
   void clearLanguage() {
     languages.clear();

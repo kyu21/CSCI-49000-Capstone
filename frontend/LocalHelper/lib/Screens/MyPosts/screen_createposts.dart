@@ -83,6 +83,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
         body: jsonString,
       );
 
+      print(response.statusCode);
       if (response.statusCode == 201) {
         return true;
       } else {
@@ -257,7 +258,11 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                       fontWeight: FontWeight.bold,
                     ),
                     hintText: 'Ex: Babysitting, Tutor, Cleanup ...',
-                    hintStyle: TextStyle(fontSize: 20),
+                    hintStyle: TextStyle(
+                        fontSize: 20,
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.grey),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
@@ -284,7 +289,11 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                       fontWeight: FontWeight.bold,
                     ),
                     hintText: 'Ex: 3123 Main Street ...',
-                    hintStyle: TextStyle(fontSize: 20),
+                    hintStyle: TextStyle(
+                        fontSize: 20,
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.grey),
                     enabledBorder: UnderlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey),
                     ),
@@ -410,15 +419,18 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
                             settings.darkMode ? Colors.red : Colors.grey,
                         minWidth: double.infinity,
                         height: 60,
-                        child: Text(
-                          'Submit',
-                          style: TextStyle(
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: enableSend
+                            ? Text(
+                                'Submit',
+                                style: TextStyle(
+                                  color: settings.darkMode
+                                      ? Colors.white
+                                      : Colors.black,
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : CircularProgressIndicator(),
                       ),
                     ],
                   ),

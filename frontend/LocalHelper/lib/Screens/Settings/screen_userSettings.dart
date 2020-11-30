@@ -267,7 +267,7 @@ class _OwnerDoneState extends State<OwnerDone> {
 // Save button function
   Widget saveButton(Settings settings, AuthSettings authSettings) {
     return FlatButton(
-      color: settings.colorMiddle,
+      color: _loading ? Colors.transparent : settings.colorMiddle,
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
@@ -286,6 +286,13 @@ class _OwnerDoneState extends State<OwnerDone> {
             showAlertDialog(context);
           });
         } else {
+          setState(() {
+            _loading = true;
+          });
+
+          // User Input
+          List<String> _zipArray = zipController.text.split(" ");
+
           // User Info
           String infoString = json.encode({
             'first': firstNController.text,
@@ -293,14 +300,9 @@ class _OwnerDoneState extends State<OwnerDone> {
             'gender': genderController.text,
             'phone': phoneController.text,
             'email': emailController.text,
+            'zips': _zipArray,
+            'languages': languageSelect,
           });
-
-          // Zips
-          List<String> _zipArray = zipController.text.split(" ");
-          String zipString = json.encode({'zips': _zipArray});
-
-          // Languages
-          String langString = json.encode({'languages': languageSelect});
 
           // Header
           Map<String, String> headers = {
@@ -312,43 +314,14 @@ class _OwnerDoneState extends State<OwnerDone> {
           String userLink =
               'https://localhelper-backend.herokuapp.com/api/users';
 
-          // Zip and Language
-          String clearLink =
-              'https://localhelper-backend.herokuapp.com/api/users/attributes';
-
-          String zipLink =
-              'https://localhelper-backend.herokuapp.com/api/users/' +
-                  authSettings.ownerId.toString() +
-                  '/zips';
-          String langLink =
-              'https://localhelper-backend.herokuapp.com/api/users/' +
-                  authSettings.ownerId.toString() +
-                  '/languages';
-
           try {
             // Update Info
             var infoResponse =
                 await http.put(userLink, headers: headers, body: infoString);
 
-            // Clear Zip and languages
-            var clearResponse = await http.delete(clearLink, headers: headers);
-
-            // Update Zip
-            var zipResponse =
-                await http.post(zipLink, headers: headers, body: zipString);
-
-            // Update Language
-            var langResponse =
-                await http.post(langLink, headers: headers, body: langString);
-
-            print(clearResponse.statusCode);
             print(infoResponse.statusCode);
-            print(zipResponse.statusCode);
-            print(langResponse.statusCode);
 
-            if (infoResponse.statusCode == 200 &&
-                zipResponse.statusCode == 201 &&
-                langResponse.statusCode == 201) {
+            if (infoResponse.statusCode == 200) {
               // Update info
               authSettings.updateFirst(firstNController.text);
               authSettings.updateLast(lastNController.text);
@@ -356,6 +329,7 @@ class _OwnerDoneState extends State<OwnerDone> {
               authSettings.updatePhone(phoneController.text);
               authSettings.updateEmail(emailController.text);
               authSettings.updateZip(zipController.text);
+              authSettings.setLanguage(languageSelect);
               setState(() {
                 _loading = false;
               });
@@ -387,7 +361,7 @@ class _OwnerDoneState extends State<OwnerDone> {
   // Save button function
   Widget deleteButton(Settings settings, AuthSettings authSettings) {
     return FlatButton(
-      color: settings.colorOpposite,
+      color: _loading ? Colors.transparent : settings.colorOpposite,
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
@@ -395,6 +369,10 @@ class _OwnerDoneState extends State<OwnerDone> {
 
         if (answer) {
           try {
+            setState(() {
+              _loading = true;
+            });
+
             // Header
             Map<String, String> headers = {
               'authorization': authSettings.token,
@@ -418,7 +396,7 @@ class _OwnerDoneState extends State<OwnerDone> {
         }
       },
       child: _loading
-          ? CircularProgressIndicator()
+          ? Container()
           : Text(
               'Delete Account',
               style: TextStyle(

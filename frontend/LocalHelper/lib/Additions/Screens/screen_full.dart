@@ -57,7 +57,6 @@ class _ScreenPostsFullState extends State<ScreenPostsFull> {
       }
     } catch (e) {
       print(e);
-      Navigator.pop(context);
     }
   }
 
@@ -162,7 +161,20 @@ class _FullDoneState extends State<FullDone> {
       final des = widget.info['description'];
       final req = widget.info['is_request'];
       final free = widget.info['free'];
-      return ScreenEditPosts(pId, title, address, des, req, free);
+
+      // Languages
+      List<String> lang = [];
+      for (int i = 0; i < widget.info['languages'].length; i++) {
+        lang.add(widget.info['languages'][i]['name']);
+      }
+
+      // Categories
+      List<String> cat = [];
+      for (int i = 0; i < widget.info['categories'].length; i++) {
+        cat.add(widget.info['categories'][i]['name']);
+      }
+
+      return ScreenEditPosts(pId, title, address, des, req, free, lang, cat);
     }));
     Navigator.pop(context);
   }
@@ -252,7 +264,7 @@ class _FullDoneState extends State<FullDone> {
           onChanged: (value) async {
             interested =
                 await toggleInterests(authSettings, postId, interested);
-            setState(() {});
+            if (this.mounted) setState(() {});
           },
           title: Text('Interested',
               style: TextStyle(
