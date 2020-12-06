@@ -53,7 +53,7 @@ class Convos extends StatelessWidget {
                           MaterialPageRoute(builder: (context) {
                         return Messaging(chattingWith, senderName, convoId);
                       }));
-                      settings.refreshConvos();
+                      //settings.refreshConvos();
                     },
                     child: SizedBox(
                       width: 210,

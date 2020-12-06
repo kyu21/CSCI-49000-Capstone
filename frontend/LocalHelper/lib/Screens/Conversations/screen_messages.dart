@@ -25,6 +25,41 @@ class _MessagingState extends State<Messaging> {
   String messageToSend = '';
   TextEditingController _textEditingController = TextEditingController();
   bool loading = false;
+  bool displayed = false;
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: true);
+
+  void _onRefresh() async {
+    setState(() {
+      // Clear the lists
+      messagesJson.clear();
+      messages.clear();
+
+      // Load data
+      _onLoading();
+
+      displayed = false;
+
+      // Trigger controller complete
+      _refreshController.refreshCompleted();
+    });
+  }
+
+  void _onLoading() async {
+    setState(() {
+      loading = true;
+    });
+
+    setState(() {
+      loading = false;
+      if (!displayed) {
+        getMessages(widget.convoId);
+        displayed = true;
+      }
+
+      _refreshController.loadComplete();
+    });
+  }
 
   // Grabs all messages in a conversation and stores them in a list
   void getMessages(int convoId) async {
@@ -125,12 +160,13 @@ class _MessagingState extends State<Messaging> {
             iconSize: 25.0,
             onPressed: () {
               if (messageToSend != "") {
-                sendMessage(widget.convoId, messageToSend);
-                _textEditingController.clear();
+                setState(() {
+                  sendMessage(widget.convoId, messageToSend);
+                  _textEditingController.clear();
+                  _onRefresh();
+                  _onLoading();
+                });
               }
-              setState(() {
-                getMessages(widget.convoId);
-              });
             },
           )
         ],
@@ -138,6 +174,7 @@ class _MessagingState extends State<Messaging> {
     );
   }
 
+  // Returns a container that represents a singel chat bubble
   _buildMessage(Message message, bool isMe) {
     return Container(
       margin: isMe
@@ -220,14 +257,26 @@ class _MessagingState extends State<Messaging> {
                     topLeft: Radius.circular(30.0),
                     topRight: Radius.circular(30.0),
                   ),
-                  child: ListView.builder(
-                    padding: EdgeInsets.only(top: 15.0),
-                    itemCount: messages.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      Message message = messages[index];
-                      bool isMe = message.senderId == authSettings.ownerId;
-                      return _buildMessage(message, isMe);
-                    },
+                  child: SmartRefresher(
+                    physics: BouncingScrollPhysics(),
+                    reverse: true,
+                    enablePullDown: false,
+                    enablePullUp: true,
+                    controller: _refreshController,
+                    onRefresh: () => _onRefresh(),
+                    onLoading: () => _onLoading(),
+                    header: WaterDropMaterialHeader(),
+                    child: ListView.builder(
+                      reverse: false,
+                      padding: EdgeInsets.only(top: 15.0),
+                      itemCount: messages.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        List messagesReverse = List.from(messages.reversed);
+                        Message message = messagesReverse[index];
+                        bool isMe = message.senderId == authSettings.ownerId;
+                        return _buildMessage(message, isMe);
+                      },
+                    ),
                   ),
                 ),
               ),

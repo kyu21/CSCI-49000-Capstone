@@ -198,8 +198,9 @@ class _ScreenConvoState extends State<ScreenConvo> {
                         style: TextStyle(
                           fontSize: 40,
                           fontWeight: FontWeight.bold,
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
+                          color: settings.darkMode
+                              ? settings.colorBlue
+                              : Colors.black,
                         ),
                         textAlign: TextAlign.start,
                       ),
