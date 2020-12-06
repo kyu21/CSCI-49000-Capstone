@@ -7,6 +7,10 @@ Zachary Garces
 Thomas Westfall  
 Alexander Yang
 
+## API Documentation
+
+[Postman Documentation](https://documenter.getpostman.com/view/6750906/TVev5Qyx)
+
 ## How to Run
 
 1. Download flutter

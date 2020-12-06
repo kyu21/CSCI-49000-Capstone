@@ -1,7 +1,3 @@
-/*
-  Allow the user to update their info.
-*/
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
@@ -9,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
+import 'package:smart_select/smart_select.dart';
 
 class ScreenUserSettings extends StatefulWidget {
   @override
@@ -18,6 +15,7 @@ class ScreenUserSettings extends StatefulWidget {
 class _ScreenUserSettingsState extends State<ScreenUserSettings> {
   // Json info
   var info;
+  List<String> languageSelect = [];
 
   Future getOwnerDetails(String token) async {
     try {
@@ -27,6 +25,11 @@ class _ScreenUserSettingsState extends State<ScreenUserSettings> {
       String link = 'https://localhelper-backend.herokuapp.com/api/users/me';
       var result = await http.get(link, headers: headers);
       info = jsonDecode(result.body);
+
+      // Add Languages
+      for (int i = 0; i < info['languages'].length; i++) {
+        languageSelect.add(info['languages'][i]['name']);
+      }
     } catch (e) {
       print(e);
       Navigator.pop(context);
@@ -49,7 +52,7 @@ class _ScreenUserSettingsState extends State<ScreenUserSettings> {
 
           // When finished
         } else if (snapshot.connectionState == ConnectionState.done) {
-          return OwnerDone(info, authSettings);
+          return OwnerDone(info, authSettings, languageSelect);
         }
 
         // Failsafe
@@ -86,9 +89,11 @@ class OwnerDone extends StatefulWidget {
   // Json
   final info;
   final AuthSettings authSettings;
-  OwnerDone(this.info, this.authSettings);
+  final List<String> languageSelect;
+  OwnerDone(this.info, this.authSettings, this.languageSelect);
   @override
-  _OwnerDoneState createState() => _OwnerDoneState(this.info, authSettings);
+  _OwnerDoneState createState() =>
+      _OwnerDoneState(this.info, authSettings, languageSelect);
 }
 
 class _OwnerDoneState extends State<OwnerDone> {
@@ -107,7 +112,16 @@ class _OwnerDoneState extends State<OwnerDone> {
 
   // Loading
   bool _loading = false;
-  bool _invalidZip = false;
+  bool _zipWrong = false;
+  bool _noLang = false;
+
+  // Language Selection
+  List<String> languageSelect;
+  List<S2Choice<String>> languages = [
+    S2Choice<String>(value: "English", title: 'English'),
+    S2Choice<String>(value: "Spanish", title: 'Española'),
+    S2Choice<String>(value: "Chinese", title: '中文'),
+  ];
 
 // =============================================================================
 // FUNCTIONS ===================================================================
@@ -124,13 +138,14 @@ class _OwnerDoneState extends State<OwnerDone> {
   }
 
   // Constructor
-  _OwnerDoneState(this.info, AuthSettings authSettings) {
+  _OwnerDoneState(this.info, AuthSettings authSettings, List<String> lang) {
     firstNController.text = info['first'];
     lastNController.text = info['last'];
     genderController.text = info['gender'];
     phoneController.text = info['phone'];
     emailController.text = info['email'];
-    zipController.text = authSettings.zip;
+    zipController.text = info['zips'].last['zip'];
+    languageSelect = lang;
   }
 
   Future<bool> _showMyDialog() async {
@@ -169,147 +184,165 @@ class _OwnerDoneState extends State<OwnerDone> {
 // =============================================================================
 // WIDGETS =====================================================================
 
+  // Languages
+  Widget languageDrop(Settings settings) {
+    return Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: Text(
+            "Languages",
+            style: TextStyle(
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
+              fontSize: 25,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: SmartSelect<String>.multiple(
+            title: "",
+            placeholder: "",
+            modalType: S2ModalType.popupDialog,
+            modalHeader: true,
+            modalTitle: "Pick a Language",
+            value: languageSelect,
+            choiceItems: languages,
+            onChange: (state) {
+              setState(() {
+                languageSelect = state.value;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Warning
+  showAlertDialog(BuildContext context) {
+    // set up the button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Could Not Save Info."),
+      content: Container(
+        child: FittedBox(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Text("One Field is Empty."),
+              SizedBox(height: 10),
+              if (_zipWrong) Text("Zip isn't atleast 5 numbers."),
+              SizedBox(height: 10),
+              if (_noLang) Text("Select atleast ONE language."),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
 // Save button function
   Widget saveButton(Settings settings, AuthSettings authSettings) {
     return FlatButton(
+      color: _loading ? Colors.transparent : settings.colorMiddle,
       height: 60,
       minWidth: double.infinity,
       onPressed: () async {
-        if (zipController.text.length < 5) {
+        if (firstNController.text.isEmpty ||
+            lastNController.text.isEmpty ||
+            genderController.text.isEmpty ||
+            phoneController.text.isEmpty ||
+            emailController.text.isEmpty ||
+            zipController.text.isEmpty ||
+            zipController.text.length < 5 ||
+            languageSelect.isEmpty) {
           setState(() {
-            _invalidZip = true;
+            _zipWrong = zipController.text.length < 5 ? true : false;
+            _noLang = languageSelect.isEmpty ? true : false;
+            _loading = false;
+            showAlertDialog(context);
           });
-          return false;
-        }
+        } else {
+          setState(() {
+            _loading = true;
+          });
 
-        try {
-          // Put body
-          Map<String, dynamic> jsonMap = {
+          // User Input
+          List<String> _zipArray = zipController.text.split(" ");
+
+          // User Info
+          String infoString = json.encode({
             'first': firstNController.text,
             'last': lastNController.text,
             'gender': genderController.text,
             'phone': phoneController.text,
             'email': emailController.text,
-          };
-
-          // Encode
-          String jsonString = json.encode(jsonMap);
+            'zips': _zipArray,
+            'languages': languageSelect,
+          });
 
           // Header
           Map<String, String> headers = {
             'authorization': authSettings.token,
             "Content-Type": "application/json",
           };
-          String link = 'https://localhelper-backend.herokuapp.com/api/users';
-          var result = await http.put(link, headers: headers, body: jsonString);
 
-          // ZIP CHECK
-          http.Response zipResponse = await http
-              .get('https://localhelper-backend.herokuapp.com/api/zips',
-                  headers: headers)
-              .timeout(Duration(seconds: 5));
+          // Links
+          String userLink =
+              'https://localhelper-backend.herokuapp.com/api/users';
 
-          var zipJson = jsonDecode(zipResponse.body);
+          try {
+            // Update Info
+            var infoResponse =
+                await http.put(userLink, headers: headers, body: infoString);
 
-          int _zipID = -1;
-          String _zip = "";
-          bool _found = false;
-          for (int i = 0; i < zipJson.length; i++) {
-            if (zipJson[i]['zip'] == zipController.text.toString()) {
-              _zipID = zipJson[i]['id'];
-              _zip = zipJson[i]['zip'];
-              _found = true;
-              break;
+            print(infoResponse.statusCode);
+
+            if (infoResponse.statusCode == 200) {
+              // Update info
+              authSettings.updateFirst(firstNController.text);
+              authSettings.updateLast(lastNController.text);
+              authSettings.updateGender(genderController.text);
+              authSettings.updatePhone(phoneController.text);
+              authSettings.updateEmail(emailController.text);
+              authSettings.updateZip(zipController.text);
+              authSettings.setLanguage(languageSelect);
+              setState(() {
+                _loading = false;
+              });
+              Navigator.pop(context);
             }
+          } catch (e) {
+            print(e);
           }
 
-          // If the zip was in the database
-          if (_found) {
-            authSettings.zipID = _zipID;
-            authSettings.zip = _zip;
-
-            // Check if the Zip was already added before
-            http.Response zipCheck = await http
-                .get('https://localhelper-backend.herokuapp.com/api/users/me',
-                    headers: headers)
-                .timeout(Duration(seconds: 5));
-
-            var zipCheckJson = jsonDecode(zipCheck.body);
-
-            bool _found = false;
-            for (int i = 0; i < zipCheckJson['zips'].length; i++) {
-              if (zipCheckJson['zips'][i]['zip'] == _zip) {
-                _found = true;
-                break;
-              }
-            }
-
-            // If it wasn't added before add it
-            if (!_found) {
-              Map<String, dynamic> jsonMap = {
-                'userId': authSettings.ownerId,
-                'zipId': _zipID,
-              };
-
-              // Encode
-              String jsonString = json.encode(jsonMap);
-
-              http.Response zipPut = await http
-                  .post(
-                      'https://localhelper-backend.herokuapp.com/api/userZips',
-                      headers: headers,
-                      body: jsonString)
-                  .timeout(Duration(seconds: 5));
-              print(zipPut.statusCode);
-            }
-          }
-
-          // If it wasn't in the database add a new one
-          else {
-            // Put body
-            Map<String, dynamic> jsonMap = {
-              'zip': zipController.text,
-              'name': "NEW",
-            };
-
-            // Encode
-            String jsonString = json.encode(jsonMap);
-
-            // Header
-            Map<String, String> headers = {
-              'authorization': authSettings.token,
-              "Content-Type": "application/json",
-            };
-            String link = 'https://localhelper-backend.herokuapp.com/api/zips';
-            var newZip =
-                await http.post(link, headers: headers, body: jsonString);
-
-            var newJson = jsonDecode(newZip.body);
-
-            authSettings.zipID = newJson['id'];
-            authSettings.zip = newJson['zip'];
-          }
-
-          if (result.statusCode == 200) {
-            // Update info
-            authSettings.updateFirst(jsonMap['first']);
-            authSettings.updateLast(jsonMap['last']);
-            authSettings.updateGender(jsonMap['gender']);
-            authSettings.updatePhone(jsonMap['phone']);
-            authSettings.updateEmail(jsonMap['email']);
-
-            setState(() {
-              _loading = false;
-            });
-            Navigator.pop(context);
-          }
-        } catch (e) {
-          print(e);
+          setState(() {
+            _loading = false;
+          });
         }
-
-        setState(() {
-          _loading = false;
-        });
       },
       child: _loading
           ? CircularProgressIndicator()
@@ -318,7 +351,8 @@ class _OwnerDoneState extends State<OwnerDone> {
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
+                color:
+                    settings.darkMode ? settings.colorBackground : Colors.black,
               ),
             ),
     );
@@ -327,14 +361,18 @@ class _OwnerDoneState extends State<OwnerDone> {
   // Save button function
   Widget deleteButton(Settings settings, AuthSettings authSettings) {
     return FlatButton(
-      color: Colors.red[300],
-      height: 80,
+      color: _loading ? Colors.transparent : settings.colorOpposite,
+      height: 60,
       minWidth: double.infinity,
       onPressed: () async {
         bool answer = await _showMyDialog();
 
         if (answer) {
           try {
+            setState(() {
+              _loading = true;
+            });
+
             // Header
             Map<String, String> headers = {
               'authorization': authSettings.token,
@@ -342,8 +380,7 @@ class _OwnerDoneState extends State<OwnerDone> {
             };
             String link = 'https://localhelper-backend.herokuapp.com/api/users';
             var result = await http.delete(link, headers: headers);
-            print(result.statusCode);
-            if (result.statusCode == 200) {
+            if (result.statusCode == 204) {
               setState(() {
                 _loading = false;
               });
@@ -359,13 +396,14 @@ class _OwnerDoneState extends State<OwnerDone> {
         }
       },
       child: _loading
-          ? CircularProgressIndicator()
+          ? Container()
           : Text(
               'Delete Account',
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
+                color:
+                    settings.darkMode ? settings.colorBackground : Colors.black,
               ),
             ),
     );
@@ -386,187 +424,232 @@ class _OwnerDoneState extends State<OwnerDone> {
         backgroundColor: settings.darkMode ? Colors.black : Colors.white,
         appBar: AppBar(
           automaticallyImplyLeading: true,
+          brightness: Brightness.dark,
           iconTheme: IconThemeData(
             color: settings.darkMode
                 ? Colors.white
                 : Colors.black, //change your color here
           ),
-          backgroundColor: Colors.transparent,
+          backgroundColor:
+              settings.darkMode ? settings.colorBackground : Colors.transparent,
           elevation: 0,
           centerTitle: true,
           title: Text(
             'User Settings',
             style: TextStyle(
-              color: settings.darkMode ? Colors.white : Colors.black,
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
               fontSize: 30,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        body: Column(
-          children: [
-            // First Name
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: firstNController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'First Name',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: settings.darkMode
+                  ? [
+                      settings.colorBackground,
+                      settings.colorBackground,
+                      Colors.black87,
+                    ]
+                  : [Colors.white, Colors.white],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: Column(
+            children: [
+              Expanded(
+                child: Container(
+                  child: ListView(
+                    children: [
+                      // First Name
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: TextField(
+                          controller: firstNController,
+                          cursorColor:
+                              settings.darkMode ? Colors.white : Colors.grey,
+                          keyboardType: TextInputType.name,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'First Name',
+                            labelStyle: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBlue
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Last Name
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: TextField(
+                          controller: lastNController,
+                          cursorColor:
+                              settings.darkMode ? Colors.white : Colors.grey,
+                          keyboardType: TextInputType.name,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Last Name',
+                            labelStyle: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBlue
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Gender
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: TextField(
+                          controller: genderController,
+                          cursorColor:
+                              settings.darkMode ? Colors.white : Colors.grey,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Gender',
+                            labelStyle: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBlue
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Phone
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: TextField(
+                          controller: phoneController,
+                          cursorColor:
+                              settings.darkMode ? Colors.white : Colors.grey,
+                          keyboardType: TextInputType.phone,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Phone',
+                            labelStyle: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBlue
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Email
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: TextField(
+                          controller: emailController,
+                          cursorColor:
+                              settings.darkMode ? Colors.white : Colors.grey,
+                          keyboardType: TextInputType.emailAddress,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Email',
+                            labelStyle: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBlue
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // Zip
+                      Padding(
+                        padding: const EdgeInsets.only(left: 20, right: 20),
+                        child: TextField(
+                          controller: zipController,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[0-9 ]')),
+                          ],
+                          cursorColor:
+                              settings.darkMode ? Colors.white : Colors.grey,
+                          keyboardType: TextInputType.number,
+                          style: TextStyle(
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'Zip',
+                            labelStyle: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBlue
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            enabledBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 15),
+                      languageDrop(settings),
+                    ],
                   ),
                 ),
               ),
-            ),
-
-            // Last Name
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: lastNController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.name,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Last Name',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Gender
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: genderController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Gender',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Phone
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: phoneController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.phone,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Phone',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Email
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: emailController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.emailAddress,
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(
-                    color: settings.darkMode ? Colors.white : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Zip
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20),
-              child: TextField(
-                controller: zipController,
-                cursorColor: settings.darkMode ? Colors.white : Colors.grey,
-                keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: TextStyle(
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                decoration: InputDecoration(
-                  labelText: 'Zip',
-                  labelStyle: TextStyle(
-                    color: _invalidZip
-                        ? Colors.red
-                        : settings.darkMode
-                            ? Colors.white
-                            : Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-            ),
-
-            // Save
-            SizedBox(height: 40),
-            saveButton(settings, authSettings),
-            Expanded(
-              child: Container(
+              SizedBox(height: 50),
+              Container(
                 child: Column(
-                  verticalDirection: VerticalDirection.up,
                   children: [
+                    saveButton(settings, authSettings),
                     deleteButton(settings, authSettings),
                   ],
                 ),
-              ),
-            ),
-          ],
+              )
+            ],
+          ),
         ),
       ),
     );

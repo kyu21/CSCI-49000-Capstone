@@ -57,3 +57,6 @@ lerna-debug.log*
 
 # environment files
 .env
+
+# local files
+todo.txt

@@ -8,93 +8,84 @@ class Posts extends StatelessWidget {
 // VARIABLES ===================================================================
 
   final info;
-  final int type;
 
 // =============================================================================
 // FUNCTIONS ===================================================================
 
-  Posts(this.info, {this.type = 0});
+  Posts(this.info);
 
 // =============================================================================
 
   @override
   Widget build(BuildContext context) {
+    int postID;
     String title;
     String description;
-    int postId;
     bool request;
     bool free;
 
-    // Info
-    switch (type) {
-      case 0:
-        title = info['post']['title'];
-        description = info['post']['description'];
-        postId = info['post']['id'];
-        request = info['post']['is_request'];
-        free = info['post']['free'];
-        break;
-      case 1:
-        title = info['title'];
-        description = info['description'];
-        postId = info['id'];
-        request = info['is_request'];
-        free = info['free'];
-        break;
-    }
+    postID = info['id'];
+    title = info['title'];
+    description = info['description'];
+    request = info['is_request'];
+    free = info['free'];
 
     // Providers
     Settings settings = Provider.of<Settings>(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        border: Border(
-          top: BorderSide(
-              color: settings.darkMode ? Colors.white : Colors.black, width: 5),
-          bottom: BorderSide(
-              color: settings.darkMode ? Colors.white : Colors.black, width: 5),
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return ScreenPostsFull(postID);
+        }));
+        settings.refreshPage();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          border: Border(
+            top: BorderSide(
+                color: settings.darkMode ? settings.colorMiddle : Colors.black,
+                width: 5),
+            bottom: BorderSide(
+                color: settings.darkMode ? settings.colorMiddle : Colors.black,
+                width: 5),
+          ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Title
-            Center(
-              child: Container(
-                child: FittedBox(
-                  child: Row(
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          color:
-                              settings.darkMode ? Colors.white : Colors.black,
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              Center(
+                child: Container(
+                  child: FittedBox(
+                    child: Row(
+                      children: [
+                        Text(
+                          title,
+                          style: TextStyle(
+                            color: settings.darkMode
+                                ? settings.colorBlue
+                                : Colors.black,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      if (request) Icon(Icons.star, color: Colors.purple[800]),
-                      if (!free)
-                        Icon(Icons.monetization_on, color: Colors.yellow[800]),
-                    ],
+                        if (request)
+                          Icon(Icons.star, color: Colors.purple[800]),
+                        if (!free)
+                          Icon(Icons.monetization_on,
+                              color: Colors.yellow[800]),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // Description
-            SizedBox(height: 20),
-            GestureDetector(
-              onTap: () async {
-                await Navigator.push(context,
-                    MaterialPageRoute(builder: (context) {
-                  return ScreenPostsFull(postId);
-                }));
-                settings.refreshPage();
-              },
-              child: Container(
+              // Description
+              SizedBox(height: 20),
+              Container(
                 constraints: BoxConstraints(
                   maxHeight: 300,
                 ),
@@ -111,15 +102,16 @@ class Posts extends StatelessWidget {
                   ),
                 ),
                 decoration: BoxDecoration(
-                  color: settings.darkMode ? Colors.black : Colors.white,
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(
                     10,
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 10),
-          ],
+
+              SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );

@@ -100,256 +100,322 @@ class OwnerDone extends StatelessWidget {
               ? Colors.white
               : Colors.black, //change your color here
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor:
+            settings.darkMode ? settings.colorBackground : Colors.transparent,
         elevation: 0,
         centerTitle: true,
         title: Text(
           info['first'] + ' ' + info['last'],
           style: TextStyle(
-            color: settings.darkMode ? Colors.white : Colors.black,
+            color: settings.darkMode ? settings.colorMiddle : Colors.black,
             fontSize: 30,
             fontWeight: FontWeight.bold,
           ),
         ),
       ),
-      body: ListView(
-        children: [
-          // Gender
-          FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    child: Icon(
-                      Icons.family_restroom,
-                      size: 20,
-                      color: settings.darkMode ? Colors.white : Colors.black,
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: settings.darkMode
+                ? [
+                    settings.colorBackground,
+                    settings.colorBackground,
+                    Colors.black87,
+                  ]
+                : [Colors.white, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: ListView(
+          children: [
+            // Gender
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Icon(
+                        Icons.family_restroom,
+                        size: 20,
+                        color: settings.darkMode
+                            ? settings.colorBlue
+                            : Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(5),
-                  child: Text(
-                    'Gender: ' + info['gender'],
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: EdgeInsets.all(5),
+                    child: Text(
+                      'Gender: ' + info['gender'],
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Phone
-          FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    child: Icon(
-                      Icons.phone,
-                      size: 20,
-                      color: settings.darkMode ? Colors.white : Colors.black,
+            // Phone
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Icon(
+                        Icons.phone,
+                        size: 20,
+                        color: settings.darkMode
+                            ? settings.colorBlue
+                            : Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    'Phone: ' + info['phone'],
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      'Phone: ' + info['phone'],
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Email
-          FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    child: Icon(
-                      Icons.email,
-                      size: 20,
-                      color: settings.darkMode ? Colors.white : Colors.black,
+            // Email
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Icon(
+                        Icons.email,
+                        size: 20,
+                        color: settings.darkMode
+                            ? settings.colorBlue
+                            : Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    'Email: ' + info['email'],
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      'Email: ' + info['email'],
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Zip
-          FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    child: Icon(
-                      Icons.house,
-                      size: 20,
-                      color: settings.darkMode ? Colors.white : Colors.black,
+            // Zip
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Icon(
+                        Icons.house,
+                        size: 20,
+                        color: settings.darkMode
+                            ? settings.colorBlue
+                            : Colors.black,
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    'Main Zip:',
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      'Main Zip:',
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            padding: EdgeInsets.all(10),
-            child: info['zips'].length > 0
-                ? Text(
-                    info['zips'].last['zip'],
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
+            Container(
+              padding: EdgeInsets.all(10),
+              child: info['zips'].length > 0
+                  ? Text(
+                      info['zips'].last['zip'],
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                      ),
+                    )
+                  : Text(
+                      'None',
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                      ),
                     ),
-                  )
-                : Text(
-                    'None',
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                    ),
-                  ),
-          ),
-
-          // // Languages
-          // Container(
-          //   padding: EdgeInsets.all(10),
-          //   child: Text(
-          //     'Languages: ',
-          //     style: TextStyle(
-          //       color: settings.darkMode ? Colors.white : Colors.black,
-          //       fontSize: 30,
-          //       fontWeight: FontWeight.bold,
-          //     ),
-          //   ),
-          // ),
-
-          // Container(
-          //   padding: EdgeInsets.all(10),
-          //   child: info['languages'].length > 0
-          //       ? ListView.builder(
-          //           physics: NeverScrollableScrollPhysics(),
-          //           scrollDirection: Axis.vertical,
-          //           shrinkWrap: true,
-          //           itemCount: info['languages'].length,
-          //           itemBuilder: (context, index) {
-          //             return Text(
-          //               info['languages'][index]['name'],
-          //               style: TextStyle(
-          //                 color:
-          //                     settings.darkMode ? Colors.white : Colors.black,
-          //                 fontSize: 30,
-          //               ),
-          //             );
-          //           },
-          //         )
-          //       : Text(
-          //           'None',
-          //           style: TextStyle(
-          //             color: settings.darkMode ? Colors.white : Colors.black,
-          //             fontSize: 30,
-          //           ),
-          //         ),
-          // ),
-
-          // Posts
-          FittedBox(
-            alignment: Alignment.centerLeft,
-            fit: BoxFit.scaleDown,
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    child: Icon(
-                      Icons.contact_mail,
-                      size: 20,
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: Text(
-                    'Posts: ',
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
             ),
-          ),
-          Container(
-            padding: EdgeInsets.all(10),
-            child: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              scrollDirection: Axis.vertical,
-              shrinkWrap: true,
-              itemCount: info['posts'].length,
-              itemBuilder: (context, index) {
-                if (info['posts'].length > 0) {
-                  return Text(
-                    info['posts'][index]['title'],
-                    style: TextStyle(
-                      color: settings.darkMode ? Colors.white : Colors.black,
-                      fontSize: 30,
+
+            // Languages
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Icon(
+                        Icons.contact_mail,
+                        size: 20,
+                        color: settings.darkMode
+                            ? settings.colorBlue
+                            : Colors.black,
+                      ),
                     ),
-                  );
-                } else {
-                  return Text('None');
-                }
-              },
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      'Languages: ',
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+            Container(
+              padding: EdgeInsets.all(10),
+              child: ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: info['languages'].length,
+                itemBuilder: (context, index) {
+                  if (info['languages'].length > 0) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        info['languages'][index]['name'],
+                        style: TextStyle(
+                          color: settings.darkMode
+                              ? settings.colorMiddle
+                              : Colors.black,
+                          fontSize: 30,
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Text('None');
+                  }
+                },
+              ),
+            ),
+
+            // Posts
+            FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      child: Icon(
+                        Icons.contact_mail,
+                        size: 20,
+                        color: settings.darkMode
+                            ? settings.colorBlue
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: Text(
+                      'Posts: ',
+                      style: TextStyle(
+                        color: settings.darkMode
+                            ? settings.colorMiddle
+                            : Colors.black,
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              child: ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                itemCount: info['posts'].length,
+                itemBuilder: (context, index) {
+                  if (info['posts'].length > 0) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        info['posts'][index]['title'],
+                        style: TextStyle(
+                          color: settings.darkMode
+                              ? settings.colorMiddle
+                              : Colors.black,
+                          fontSize: 30,
+                        ),
+                      ),
+                    );
+                  } else {
+                    return Text('None');
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

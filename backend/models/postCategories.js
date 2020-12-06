@@ -1,6 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
     return sequelize.define(
-        "postKeywords", {
+        "postCategories", {
             id: {
                 type: DataTypes.BIGINT,
                 allowNull: false,
@@ -15,11 +15,11 @@ module.exports = function (sequelize, DataTypes) {
                     key: "id",
                 },
             },
-            keywordId: {
+            categoryId: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references: {
-                    model: "keywords",
+                    model: "categories",
                     key: "id",
                 },
             },
@@ -32,7 +32,7 @@ module.exports = function (sequelize, DataTypes) {
                 allowNull: false,
             },
         }, {
-            tableName: "postKeywords",
+            tableName: "postCategories",
         }
     );
 };

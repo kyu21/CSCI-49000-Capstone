@@ -1,5 +1,5 @@
 module.exports = function (sequelize, DataTypes) {
-    return sequelize.define('keywords', {
+    return sequelize.define('categories', {
         id: {
             type: DataTypes.BIGINT,
             allowNull: false,
@@ -20,6 +20,6 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
         }
     }, {
-        tableName: 'keywords'
+        tableName: 'categories'
     });
 };

@@ -5,7 +5,6 @@ import 'package:localhelper/Screens/Login/screen_register.dart';
 import 'package:provider/provider.dart';
 import '../../Additions/Providers/authSettings.dart';
 import '../Home/screen_home.dart';
-import 'dart:developer';
 
 class ScreenStart extends StatelessWidget {
   @override
@@ -43,10 +42,10 @@ class _ScreenLoginState extends State<ScreenLogin> {
   //     };
 
   //     http.Response response = await http
-  //         .get('https://localhelper-backend.herokuapp.com/api/users/me',
+  //         .get('https://localhelper-backend.herokuapp.com/api/misc/categories',
   //             headers: headers)
   //         .timeout(Duration(seconds: 5));
-  //     log(jsonDecode(response.body).toString());
+  //     // log(jsonDecode(response.body).toString());
   //   } catch (e) {
   //     print(e);
   //   }
@@ -85,11 +84,16 @@ class _ScreenLoginState extends State<ScreenLogin> {
       authSettings.phone = _phone;
       authSettings.email = _email;
 
+      // Languages
+      authSettings.clearLanguage();
+      for (int i = 0; i < json['languages'].length; i++) {
+        authSettings.addLanguage(json['languages'][i]['name']);
+      }
+
       // If there is a zip, add it
       if (json['zips'].length > 0) {
         authSettings.zipID = json['zips'].last['id'];
         authSettings.zip = json['zips'].last['zip'];
-
         // If there isn't a zip, fill in an empty one
       } else {
         authSettings.zipID = -1;
@@ -124,7 +128,6 @@ class _ScreenLoginState extends State<ScreenLogin> {
         setState(() {
           _isLoading = false;
         });
-        print(response.statusCode.toString());
         return null;
       } else {
         setState(() {
@@ -143,6 +146,31 @@ class _ScreenLoginState extends State<ScreenLogin> {
 
 // =============================================================================
 // WIDGETS =====================================================================
+
+  showAlertDialog(BuildContext context) {
+    // set up the button
+    Widget okButton = FlatButton(
+      child: Text("OK"),
+      onPressed: () => Navigator.of(context, rootNavigator: true).pop(),
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Could not Sign In"),
+      content: Text("Check Email/Password."),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
 
   Container textSection() {
     return Container(
@@ -274,6 +302,8 @@ class _ScreenLoginState extends State<ScreenLogin> {
                                 child: ScreenHome(),
                               );
                             }));
+                          } else {
+                            showAlertDialog(context);
                           }
 
                           setState(() {
