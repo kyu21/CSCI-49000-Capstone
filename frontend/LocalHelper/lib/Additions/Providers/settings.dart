@@ -14,6 +14,7 @@ class Settings extends ChangeNotifier {
   // Refreshers
   bool refreshPosts = false;
   bool refreshMyposts = false;
+  bool refreshConvo = false;
 
   // Colors
   final Color colorBackground = HexColor.fromHex('#011638');
@@ -43,6 +44,12 @@ class Settings extends ChangeNotifier {
   void refreshPage() {
     refreshPosts = true;
     refreshMyposts = true;
+
+    notifyListeners();
+  }
+
+  void refreshConvos() {
+    refreshConvo = true;
     notifyListeners();
   }
 }

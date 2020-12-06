@@ -5,6 +5,7 @@ import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class Messaging extends StatefulWidget {
   // senderName is the YOU, the person sending the messages
@@ -23,6 +24,7 @@ class _MessagingState extends State<Messaging> {
   List messages = List();
   String messageToSend = '';
   TextEditingController _textEditingController = TextEditingController();
+  bool loading = false;
 
   // Grabs all messages in a conversation and stores them in a list
   void getMessages(int convoId) async {
@@ -122,9 +124,13 @@ class _MessagingState extends State<Messaging> {
             icon: Icon(Icons.send),
             iconSize: 25.0,
             onPressed: () {
-              sendMessage(widget.convoId, messageToSend);
-              _textEditingController.clear();
-              //print('convoID: ' + widget.convoId.toString());
+              if (messageToSend != "") {
+                sendMessage(widget.convoId, messageToSend);
+                _textEditingController.clear();
+              }
+              setState(() {
+                getMessages(widget.convoId);
+              });
             },
           )
         ],
@@ -178,12 +184,17 @@ class _MessagingState extends State<Messaging> {
     int senderId = authSettings.ownerId;
 
     // this loads the messages on screen
-    //getMessages(convoId);
+    //
+    // setState(() {
+    //   getMessages(convoId);
+    // });
 
     return Scaffold(
-      backgroundColor: settings.darkMode ? Colors.indigo : Colors.blue,
+      backgroundColor:
+          settings.darkMode ? settings.colorBackground : Colors.blue,
       appBar: AppBar(
-        backgroundColor: settings.darkMode ? Colors.indigo : Colors.blue,
+        backgroundColor:
+            settings.darkMode ? settings.colorBackground : Colors.blue,
         centerTitle: true,
         elevation: 0.0,
         title: Text(
@@ -198,7 +209,7 @@ class _MessagingState extends State<Messaging> {
             Expanded(
               child: Container(
                 decoration: BoxDecoration(
-                  color: settings.darkMode ? Colors.grey[600] : Colors.white,
+                  color: settings.darkMode ? Colors.indigo : Colors.white,
                   borderRadius: BorderRadius.only(
                     topLeft: Radius.circular(30.0),
                     topRight: Radius.circular(30.0),
@@ -211,7 +222,7 @@ class _MessagingState extends State<Messaging> {
                   ),
                   child: ListView.builder(
                     padding: EdgeInsets.only(top: 15.0),
-                    itemCount: messagesJson.length,
+                    itemCount: messages.length,
                     itemBuilder: (BuildContext context, int index) {
                       Message message = messages[index];
                       bool isMe = message.senderId == authSettings.ownerId;

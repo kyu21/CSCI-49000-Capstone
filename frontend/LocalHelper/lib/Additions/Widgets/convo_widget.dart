@@ -31,7 +31,9 @@ class Convos extends StatelessWidget {
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: settings.darkMode ? Colors.grey[850] : Colors.grey[400],
+          color: settings.darkMode
+              ? settings.colorBackground
+              : settings.colorMiddle,
           borderRadius: BorderRadius.all(
             Radius.circular(18),
           ),
@@ -51,6 +53,7 @@ class Convos extends StatelessWidget {
                           MaterialPageRoute(builder: (context) {
                         return Messaging(chattingWith, senderName, convoId);
                       }));
+                      settings.refreshConvos();
                     },
                     child: SizedBox(
                       width: 210,

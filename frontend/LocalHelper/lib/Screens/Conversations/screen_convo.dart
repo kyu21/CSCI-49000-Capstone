@@ -33,6 +33,44 @@ class _ScreenConvoState extends State<ScreenConvo> {
   // list of users in String form with first and last name
   List<String> nameList = List();
 
+  // Refresher related
+  bool loading = false;
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: true);
+
+  void _onRefresh() async {
+    setState(() {
+      // Clear the lists
+      convoList.clear();
+      usersList.clear();
+      ofConvoId.clear();
+      nameList.clear();
+
+      // Load data
+      _onLoading();
+
+      // Trigger controller complete
+      _refreshController.refreshCompleted();
+    });
+  }
+
+  void _onLoading() async {
+    setState(() {
+      loading = true;
+    });
+
+    getConvoList();
+    if (ofConvoId.length != 0)
+      for (int i = 0; i < ofConvoId.length; i++) {
+        getUserList(ofConvoId[i]);
+      }
+
+    setState(() {
+      loading = false;
+      _refreshController.loadComplete();
+    });
+  }
+
 // Grabs the currently logged in user's name
   void myName(int userId) async {
     final String token =
@@ -120,51 +158,76 @@ class _ScreenConvoState extends State<ScreenConvo> {
     // Scuffed code to populate the screen
     getConvoList();
     myName(authSettings.ownerId);
-    for (int i = 0; i < ofConvoId.length; i++) {
-      getUserList(ofConvoId[i]);
+    // for (int i = 0; i < ofConvoId.length; i++) {
+    //   getUserList(ofConvoId[i]);
+    // }
+
+    if (settings.refreshConvo) {
+      settings.refreshConvo = false;
+      _onRefresh();
     }
 
-    return Scaffold(
-      backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-      body: ListView(
-        children: [
-          // conversations if any
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Your Conversations',
-              //convoList.toString(),
-              //ofConvoId.toString(),
-              //usersList.toString(),
-              //nameList.toString(),
-              //senderName,
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: settings.darkMode ? Colors.white : Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
-          ),
-          // empty
-          if (nameList.isEmpty)
-            Center(
-              widthFactor: 5,
-              heightFactor: 5,
-              child: Text(
-                'You have no conversations...',
-                style: TextStyle(
-                  fontSize: 35,
-                  fontStyle: FontStyle.italic,
-                  color: settings.darkMode ? Colors.white : Colors.black,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).requestFocus(FocusNode());
+      },
+      child: Scaffold(
+        backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+        body: SmartRefresher(
+          physics: BouncingScrollPhysics(),
+          enablePullDown: false,
+          enablePullUp: true,
+          controller: _refreshController,
+          onRefresh: () => _onRefresh(),
+          onLoading: () => _onLoading(),
+          header: WaterDropMaterialHeader(),
+          child: loading
+              ? CircularProgressIndicator()
+              : ListView(
+                  children: [
+                    // conversations if any
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Your Conversations',
+                        //convoList.toString(),
+                        //ofConvoId.toString(),
+                        //usersList.toString(),
+                        //nameList.toString(),
+                        //senderName,
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color:
+                              settings.darkMode ? Colors.white : Colors.black,
+                        ),
+                        textAlign: TextAlign.start,
+                      ),
+                    ),
+                    // empty
+                    if (nameList.isEmpty)
+                      Center(
+                        widthFactor: 5,
+                        heightFactor: 5,
+                        child: Text(
+                          'You have no conversations...',
+                          style: TextStyle(
+                            fontSize: 35,
+                            fontStyle: FontStyle.italic,
+                            color:
+                                settings.darkMode ? Colors.white : Colors.black,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
 
-          for (int i = 0; i < nameList.length; i++)
-            Convos(revseredNameList[i], senderName, reversedConvoId[i]),
-        ],
+                    if (nameList.length != 0)
+                      for (int i = 0; i < nameList.length; i++)
+                        Convos(revseredNameList[i], senderName,
+                            reversedConvoId[i]),
+                  ],
+                ),
+        ),
       ),
     );
   }
