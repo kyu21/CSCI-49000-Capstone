@@ -414,6 +414,45 @@ class OwnerDone extends StatelessWidget {
                 },
               ),
             ),
+            FlatButton(
+              color: settings.darkMode ? settings.colorMiddle : Colors.grey,
+              height: 60,
+              minWidth: double.infinity,
+              child: Text(
+                'Create Conversation',
+                style: TextStyle(fontSize: 30, color: settings.colorBackground),
+              ),
+              onPressed: () async {
+                try {
+                  String userId = info['id'].toString();
+                  final String token =
+                      Provider.of<AuthSettings>(context, listen: false).token;
+                  Map<String, String> headers = {
+                    'content-type': 'application/json',
+                    'accept': 'application/json',
+                    'authorization': token,
+                  };
+                  // userId is the person you are talking to
+                  String link =
+                      'https://localhelper-backend.herokuapp.com/api/users/convos/' +
+                          userId;
+                  print(link);
+                  // Http Post
+                  http.Response response = await http.post(link,
+                      headers: headers,
+                      body: []).timeout(Duration(seconds: 20));
+                  // if successfully created
+                  if (response.statusCode == 201) {
+                    print('Sucessfully created a convo.');
+                  } else {
+                    print('Failed to create convo.');
+                    print(response.statusCode);
+                  }
+                } catch (e) {
+                  print(e);
+                }
+              },
+            ),
           ],
         ),
       ),
