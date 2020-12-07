@@ -39,78 +39,89 @@ class Posts extends StatelessWidget {
         }));
         settings.refreshPage();
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          border: Border(
-            top: BorderSide(
-                color: settings.darkMode ? settings.colorMiddle : Colors.black,
-                width: 5),
-            bottom: BorderSide(
-                color: settings.darkMode ? settings.colorMiddle : Colors.black,
-                width: 5),
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: AlignmentDirectional.topCenter,
+              end: AlignmentDirectional.bottomCenter,
+              colors: settings.darkMode
+                  ? [
+                      settings.colorBlue,
+                      settings.colorMiddle,
+                      settings.colorMiddle,
+                    ]
+                  : [
+                      Colors.grey,
+                      Colors.grey,
+                    ],
+            ),
+            borderRadius: BorderRadius.circular(10),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Title
-              Center(
-                child: Container(
-                  child: FittedBox(
-                    child: Row(
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
-                            color: settings.darkMode
-                                ? settings.colorBlue
-                                : Colors.black,
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
+          child: Padding(
+            padding: const EdgeInsets.all(25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Title
+                Center(
+                  child: Container(
+                    child: FittedBox(
+                      child: Row(
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              color: settings.darkMode
+                                  ? settings.colorBackground
+                                  : Colors.black,
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        if (request)
-                          Icon(Icons.star, color: Colors.purple[800]),
-                        if (!free)
-                          Icon(Icons.monetization_on,
-                              color: Colors.yellow[800]),
-                      ],
+                          if (request)
+                            Icon(Icons.star, color: Colors.purple[800]),
+                          if (!free)
+                            Icon(Icons.monetization_on,
+                                color: Colors.yellow[800]),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // Description
-              SizedBox(height: 20),
-              Container(
-                constraints: BoxConstraints(
-                  maxHeight: 300,
-                ),
-                width: double.infinity,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    description,
-                    style: TextStyle(
-                      height: 1.5,
-                      fontSize: 20,
-                      color: settings.darkMode ? Colors.white : Colors.black,
+                // Description
+                SizedBox(height: 20),
+                Container(
+                  constraints: BoxConstraints(
+                    maxHeight: 300,
+                  ),
+                  width: double.infinity,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      description,
+                      style: TextStyle(
+                        height: 1.5,
+                        fontSize: 20,
+                        color: settings.darkMode
+                            ? settings.colorBackground
+                            : Colors.black,
+                      ),
+                    ),
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(
+                      10,
                     ),
                   ),
                 ),
-                decoration: BoxDecoration(
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(
-                    10,
-                  ),
-                ),
-              ),
 
-              SizedBox(height: 10),
-            ],
+                SizedBox(height: 10),
+              ],
+            ),
           ),
         ),
       ),

@@ -138,8 +138,19 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
 
         // Filters
         if (filterOption.contains('All')) {
-          checkRequest = true;
-          checkFree = true;
+          // Request
+          if (filterOption.contains('Request')) {
+            checkRequest = _testList[i]['is_request'];
+          } else {
+            checkRequest = true;
+          }
+
+          // Free
+          if (filterOption.contains('Free')) {
+            checkFree = _testList[i]['free'];
+          } else {
+            checkFree = true;
+          }
         } else {
           // Request
           if (filterOption.contains('Request') == _testList[i]['is_request']) {
@@ -235,16 +246,10 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             scrollPhysics: BouncingScrollPhysics(),
             value: filterOption,
             onChanged: (val) {
-              if (this.mounted) {
-                setState(() {
-                  filterOption = val;
-                  if (filterOption.contains('All')) {
-                    filterOption.clear();
-                    filterOption.add('All');
-                  }
-                  _onRefresh();
-                });
-              }
+              setState(() {
+                filterOption = val;
+                _onRefresh();
+              });
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: filter,
@@ -283,16 +288,23 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             scrollPhysics: BouncingScrollPhysics(),
             value: languageOption,
             onChanged: (val) {
-              if (this.mounted) {
-                setState(() {
-                  languageOption = val;
+              setState(() {
+                final bool allBefore = languageOption.contains('All');
+                languageOption = val;
+                if (allBefore) {
+                  if (languageOption.length > 1) {
+                    if (languageOption.contains('All')) {
+                      languageOption.remove('All');
+                    }
+                  }
+                } else {
                   if (languageOption.contains('All')) {
                     languageOption.clear();
                     languageOption.add('All');
                   }
-                  _onRefresh();
-                });
-              }
+                }
+                _onRefresh();
+              });
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: language,
@@ -331,16 +343,23 @@ class _ScreenMyPosts extends State<ScreenMyPosts> {
             scrollPhysics: BouncingScrollPhysics(),
             value: categoryOptions,
             onChanged: (val) {
-              if (this.mounted) {
-                setState(() {
-                  categoryOptions = val;
+              setState(() {
+                final bool allBefore = categoryOptions.contains('All');
+                categoryOptions = val;
+                if (allBefore) {
+                  if (categoryOptions.length > 1) {
+                    if (categoryOptions.contains('All')) {
+                      categoryOptions.remove('All');
+                    }
+                  }
+                } else {
                   if (categoryOptions.contains('All')) {
                     categoryOptions.clear();
                     categoryOptions.add('All');
                   }
-                  _onRefresh();
-                });
-              }
+                }
+                _onRefresh();
+              });
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: category,
