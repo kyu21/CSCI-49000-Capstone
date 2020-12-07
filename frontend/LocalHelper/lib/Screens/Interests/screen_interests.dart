@@ -133,8 +133,19 @@ class _ScreenInterests extends State<ScreenInterests> {
 
         // Filters
         if (filterOption.contains('All')) {
-          checkRequest = true;
-          checkFree = true;
+          // Request
+          if (filterOption.contains('Request')) {
+            checkRequest = interestList[i]['is_request'];
+          } else {
+            checkRequest = true;
+          }
+
+          // Free
+          if (filterOption.contains('Free')) {
+            checkFree = interestList[i]['free'];
+          } else {
+            checkFree = true;
+          }
         } else {
           // Request
           if (filterOption.contains('Request') ==
@@ -151,10 +162,19 @@ class _ScreenInterests extends State<ScreenInterests> {
         if (categoryOptions.contains('All')) {
           checkCategory = true;
         } else {
-          if (interestList[i]['categories'].length > 0) {
-            for (int j = 0; j < interestList[i]['categories'].length; j++) {
-              if (categoryOptions
-                  .contains(interestList[i]['categories'][j]['name'])) {
+          http.Response responseCat = await http
+              .get(
+                  'https://localhelper-backend.herokuapp.com/api/posts/' +
+                      interestList[i]['id'].toString() +
+                      '/categories',
+                  headers: headers)
+              .timeout(Duration(seconds: timeout));
+
+          var cat = jsonDecode(responseCat.body);
+
+          if (cat.length > 0) {
+            for (int j = 0; j < cat.length; j++) {
+              if (categoryOptions.contains(cat[j]['name'])) {
                 checkCategory = true;
               }
             }
@@ -165,10 +185,19 @@ class _ScreenInterests extends State<ScreenInterests> {
         if (languageOption.contains('All')) {
           checkLanguage = true;
         } else {
-          if (interestList[i]['languages'].length > 0) {
-            for (int j = 0; j < interestList[i]['languages'].length; j++) {
-              if (languageOption
-                  .contains(interestList[i]['languages'][j]['name'])) {
+          http.Response responseLang = await http
+              .get(
+                  'https://localhelper-backend.herokuapp.com/api/posts/' +
+                      interestList[i]['id'].toString() +
+                      '/languages',
+                  headers: headers)
+              .timeout(Duration(seconds: timeout));
+
+          var lang = jsonDecode(responseLang.body);
+
+          if (lang.length > 0) {
+            for (int j = 0; j < lang.length; j++) {
+              if (languageOption.contains(lang[j]['name'])) {
                 checkLanguage = true;
               }
             }
@@ -231,10 +260,6 @@ class _ScreenInterests extends State<ScreenInterests> {
             onChanged: (val) {
               setState(() {
                 filterOption = val;
-                if (filterOption.contains('All')) {
-                  filterOption.clear();
-                  filterOption.add('All');
-                }
                 _onRefresh();
               });
             },
@@ -276,10 +301,19 @@ class _ScreenInterests extends State<ScreenInterests> {
             value: languageOption,
             onChanged: (val) {
               setState(() {
+                final bool allBefore = languageOption.contains('All');
                 languageOption = val;
-                if (languageOption.contains('All')) {
-                  languageOption.clear();
-                  languageOption.add('All');
+                if (allBefore) {
+                  if (languageOption.length > 1) {
+                    if (languageOption.contains('All')) {
+                      languageOption.remove('All');
+                    }
+                  }
+                } else {
+                  if (languageOption.contains('All')) {
+                    languageOption.clear();
+                    languageOption.add('All');
+                  }
                 }
                 _onRefresh();
               });
@@ -322,10 +356,19 @@ class _ScreenInterests extends State<ScreenInterests> {
             value: categoryOptions,
             onChanged: (val) {
               setState(() {
+                final bool allBefore = categoryOptions.contains('All');
                 categoryOptions = val;
-                if (categoryOptions.contains('All')) {
-                  categoryOptions.clear();
-                  categoryOptions.add('All');
+                if (allBefore) {
+                  if (categoryOptions.length > 1) {
+                    if (categoryOptions.contains('All')) {
+                      categoryOptions.remove('All');
+                    }
+                  }
+                } else {
+                  if (categoryOptions.contains('All')) {
+                    categoryOptions.clear();
+                    categoryOptions.add('All');
+                  }
                 }
                 _onRefresh();
               });

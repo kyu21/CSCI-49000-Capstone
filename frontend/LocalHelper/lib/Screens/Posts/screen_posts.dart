@@ -30,9 +30,10 @@ class _ScreenPostsState extends State<ScreenPosts> {
   bool postsFound = false;
 
   // Filters
-  List<String> filterOption = ['All'];
+  List<String> filterOption = ['All', 'Local'];
   List<String> filter = [
     'All',
+    'Local',
     'Request',
     'Free',
   ];
@@ -100,6 +101,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
         Provider.of<AuthSettings>(context, listen: false).token;
     final int ownerID =
         Provider.of<AuthSettings>(context, listen: false).ownerId;
+    final String zip = Provider.of<AuthSettings>(context, listen: false).zip;
 
     // Header
     Map<String, String> headers = {
@@ -153,6 +155,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
       // Checks
       for (int i = 0; i < postInfo.length; i++) {
+        bool checkLocal = false;
         bool checkRequest = false;
         bool checkFree = false;
         bool checkCategory = false;
@@ -161,16 +164,50 @@ class _ScreenPostsState extends State<ScreenPosts> {
 
         // Filters
         if (filterOption.contains('All')) {
-          checkRequest = true;
-          checkFree = true;
+          // Request
+          if (filterOption.contains('Request')) {
+            checkRequest = postInfo[i]['is_request'];
+          } else {
+            checkRequest = true;
+          }
+
+          // Free
+          if (filterOption.contains('Free')) {
+            checkFree = postInfo[i]['free'];
+          } else {
+            checkFree = true;
+          }
+
+          //Local
+          if (filterOption.contains('Local')) {
+            for (var j = 0; j < postInfo[i]['zips'].length; j++) {
+              if (postInfo[i]['zips'][j]['zip'] == zip) {
+                checkLocal = true;
+                break;
+              }
+            }
+          } else {
+            checkLocal = true;
+          }
         } else {
           // Request
           if (filterOption.contains('Request') == postInfo[i]['is_request']) {
             checkRequest = true;
           }
-          // Request
+
+          // Free
           if (filterOption.contains('Free') == postInfo[i]['free']) {
             checkFree = true;
+          }
+
+          // Local
+          if (filterOption.contains('Local')) {
+            for (var j = 0; j < postInfo[i]['zips'].length; j++) {
+              if (postInfo[i]['zips'][j]['zip'] == zip) {
+                checkLocal = true;
+                break;
+              }
+            }
           }
         }
 
@@ -210,6 +247,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
             checkFree &&
             checkCategory &&
             checkLanguage &&
+            checkLocal &&
             checkSelf) tempList.add(postInfo[i]);
       }
 
@@ -258,10 +296,6 @@ class _ScreenPostsState extends State<ScreenPosts> {
             onChanged: (val) {
               setState(() {
                 filterOption = val;
-                if (filterOption.contains('All')) {
-                  filterOption.clear();
-                  filterOption.add('All');
-                }
                 _onRefresh();
               });
             },
@@ -303,10 +337,19 @@ class _ScreenPostsState extends State<ScreenPosts> {
             value: languageOption,
             onChanged: (val) {
               setState(() {
+                final bool allBefore = languageOption.contains('All');
                 languageOption = val;
-                if (languageOption.contains('All')) {
-                  languageOption.clear();
-                  languageOption.add('All');
+                if (allBefore) {
+                  if (languageOption.length > 1) {
+                    if (languageOption.contains('All')) {
+                      languageOption.remove('All');
+                    }
+                  }
+                } else {
+                  if (languageOption.contains('All')) {
+                    languageOption.clear();
+                    languageOption.add('All');
+                  }
                 }
                 _onRefresh();
               });
@@ -349,10 +392,19 @@ class _ScreenPostsState extends State<ScreenPosts> {
             value: categoryOptions,
             onChanged: (val) {
               setState(() {
+                final bool allBefore = categoryOptions.contains('All');
                 categoryOptions = val;
-                if (categoryOptions.contains('All')) {
-                  categoryOptions.clear();
-                  categoryOptions.add('All');
+                if (allBefore) {
+                  if (categoryOptions.length > 1) {
+                    if (categoryOptions.contains('All')) {
+                      categoryOptions.remove('All');
+                    }
+                  }
+                } else {
+                  if (categoryOptions.contains('All')) {
+                    categoryOptions.clear();
+                    categoryOptions.add('All');
+                  }
                 }
                 _onRefresh();
               });
