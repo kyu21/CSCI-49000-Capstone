@@ -35,34 +35,32 @@ class _MessagingState extends State<Messaging> {
       messagesJson.clear();
       messages.clear();
 
-      // Load data
-      _onLoading();
-
       displayed = false;
 
       // Trigger controller complete
       _refreshController.refreshCompleted();
     });
+    // Load data
+    await _onLoading();
   }
 
-  void _onLoading() async {
+  Future _onLoading() async {
     setState(() {
       loading = true;
     });
 
+    if (!displayed) {
+      await getMessages(widget.convoId);
+      displayed = true;
+    }
     setState(() {
       loading = false;
-      if (!displayed) {
-        getMessages(widget.convoId);
-        displayed = true;
-      }
-
       _refreshController.loadComplete();
     });
   }
 
   // Grabs all messages in a conversation and stores them in a list
-  void getMessages(int convoId) async {
+  Future getMessages(int convoId) async {
     final String token =
         Provider.of<AuthSettings>(context, listen: false).token;
     try {
@@ -99,7 +97,7 @@ class _MessagingState extends State<Messaging> {
   }
 
   //Sends the message
-  void sendMessage(int convoId, String body) async {
+  Future sendMessage(int convoId, String body) async {
     final String token =
         Provider.of<AuthSettings>(context, listen: false).token;
     Map<String, dynamic> jsonMap = {
@@ -158,10 +156,10 @@ class _MessagingState extends State<Messaging> {
           IconButton(
             icon: Icon(Icons.send),
             iconSize: 25.0,
-            onPressed: () {
+            onPressed: () async {
               if (messageToSend != "") {
+                await sendMessage(widget.convoId, messageToSend);
                 setState(() {
-                  sendMessage(widget.convoId, messageToSend);
                   _textEditingController.clear();
                   _onRefresh();
                 });
@@ -239,7 +237,7 @@ class _MessagingState extends State<Messaging> {
         ),
       ),
       body: GestureDetector(
-        //onTap: () => FocusScope.of(context).unfocus(),
+        onTap: () => FocusScope.of(context).unfocus(),
         child: Column(
           children: [
             Expanded(
@@ -259,12 +257,12 @@ class _MessagingState extends State<Messaging> {
                   child: SmartRefresher(
                     physics: BouncingScrollPhysics(),
                     reverse: true,
-                    enablePullDown: false,
-                    enablePullUp: true,
+                    enablePullDown: true,
+                    enablePullUp: false,
                     controller: _refreshController,
                     onRefresh: () => _onRefresh(),
                     onLoading: () => _onLoading(),
-                    header: WaterDropMaterialHeader(),
+                    header: MaterialClassicHeader(),
                     child: ListView.builder(
                       reverse: false,
                       padding: EdgeInsets.only(top: 15.0),
@@ -288,8 +286,6 @@ class _MessagingState extends State<Messaging> {
     );
   }
 }
-
-// 52:07 in the video
 
 class Message {
   int senderId;
