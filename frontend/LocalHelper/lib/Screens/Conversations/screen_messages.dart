@@ -164,7 +164,6 @@ class _MessagingState extends State<Messaging> {
                   sendMessage(widget.convoId, messageToSend);
                   _textEditingController.clear();
                   _onRefresh();
-                  _onLoading();
                 });
               }
             },

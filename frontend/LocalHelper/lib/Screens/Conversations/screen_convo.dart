@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -34,45 +35,56 @@ class _ScreenConvoState extends State<ScreenConvo> {
   List<String> nameList = List();
 
   // Refresher related
-  bool loading = false;
-  RefreshController _refreshController =
-      RefreshController(initialRefresh: true);
+  // bool loading = false;
+  // RefreshController _refreshController =
+  //     RefreshController(initialRefresh: true);
 
-  void _onRefresh() async {
-    setState(() {
-      // Clear the lists
-      convoList.clear();
-      usersList.clear();
-      ofConvoId.clear();
-      nameList.clear();
+  // @override
+  // void initState() {
+  //   getConvoList();
+  //   super.initState();
+  // }
 
-      // Load data
-      _onLoading();
+  // void _onRefresh() async {
+  //   if (this.mounted) {
+  //     setState(() {
+  //       // Clear the lists
+  //       convoList.clear();
+  //       usersList.clear();
+  //       ofConvoId.clear();
+  //       nameList.clear();
 
-      // Trigger controller complete
-      _refreshController.refreshCompleted();
-    });
-  }
+  //       // Load data
+  //       _onLoading();
 
-  void _onLoading() async {
-    setState(() {
-      loading = true;
-    });
+  //       // Trigger controller complete
+  //       _refreshController.refreshCompleted();
+  //     });
+  //   }
+  // }
 
-    getConvoList();
-    if (ofConvoId.length != 0)
-      for (int i = 0; i < ofConvoId.length; i++) {
-        getUserList(ofConvoId[i]);
-      }
+  // void _onLoading() async {
+  //   if (this.mounted) {
+  //     setState(() {
+  //       loading = true;
+  //     });
+  //   }
 
-    setState(() {
-      loading = false;
-      _refreshController.loadComplete();
-    });
-  }
+  //   getConvoList();
+  //   if (ofConvoId.length != 0)
+  //     for (int i = 0; i < ofConvoId.length; i++) {
+  //       getUserList(ofConvoId[i]);
+  //     }
+  //   if (this.mounted) {
+  //     setState(() {
+  //       loading = false;
+  //       _refreshController.loadComplete();
+  //     });
+  //   }
+  // }
 
 // Grabs the currently logged in user's name
-  void myName(int userId) async {
+  Future myName(int userId) async {
     final String token =
         Provider.of<AuthSettings>(context, listen: false).token;
     try {
@@ -99,7 +111,7 @@ class _ScreenConvoState extends State<ScreenConvo> {
   }
 
   // takes convoId and adds all users from that convo to a list of users
-  void getUserList(int convoId) {
+  Future getUserList(int convoId) async {
     for (int i = 0; i < convoList.length; i++) {
       if (convoList[i]['id'] == convoId) {
         usersList.add(convoList[i]['participants'][1]['id']);
@@ -118,7 +130,7 @@ class _ScreenConvoState extends State<ScreenConvo> {
   convoList is an array of json of convos that the user is a part of
   the for loop parses only the convoId part and stores it in ofConvoId
   */
-  void getConvoList() async {
+  Future getConvoList() async {
     final String token =
         Provider.of<AuthSettings>(context, listen: false).token;
     try {
@@ -148,88 +160,224 @@ class _ScreenConvoState extends State<ScreenConvo> {
     }
   }
 
+  Future getAllInfo() async {
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
+    await getConvoList();
+    if (ofConvoId.length != 0) {
+      await myName(authSettings.ownerId);
+      for (int i = 0; i < ofConvoId.length; i++) {
+        await getUserList(ofConvoId[i]);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Settings settings = Provider.of<Settings>(context);
-    AuthSettings authSettings = Provider.of<AuthSettings>(context);
-    List revseredNameList = List.from(nameList.reversed);
-    List reversedConvoId = List.from(ofConvoId.reversed);
+    return FutureBuilder(
+      future: getAllInfo(),
+      builder: (context, snapshot) {
+        // No connection
+        if (snapshot.connectionState == ConnectionState.none) {
+          return ConvoNone();
 
-    // Scuffed code to populate the screen
-    getConvoList();
-    myName(authSettings.ownerId);
-    // for (int i = 0; i < ofConvoId.length; i++) {
-    //   getUserList(ofConvoId[i]);
-    // }
+          // Currently Loading
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return ConvoWait();
 
-    if (settings.refreshConvo) {
-      settings.refreshConvo = false;
-      _onRefresh();
-    }
+          // Finished Loading
+        } else if (snapshot.connectionState == ConnectionState.done) {
+          return ConvoDone(
+              senderName, convoList, usersList, ofConvoId, nameList);
+        }
 
-    return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).requestFocus(FocusNode());
+        // failsafe
+        return ConvoNone();
       },
-      child: Scaffold(
-        backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-        body: SmartRefresher(
-          physics: BouncingScrollPhysics(),
-          enablePullDown: false,
-          enablePullUp: true,
-          controller: _refreshController,
-          onRefresh: () => _onRefresh(),
-          onLoading: () => _onLoading(),
-          header: WaterDropMaterialHeader(),
-          child: loading
-              ? CircularProgressIndicator()
-              : ListView(
-                  children: [
-                    // conversations if any
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        'Your Conversations',
-                        //convoList.toString(),
-                        //ofConvoId.toString(),
-                        //usersList.toString(),
-                        //nameList.toString(),
-                        //senderName,
-                        style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                          color: settings.darkMode
-                              ? settings.colorBlue
-                              : Colors.black,
-                        ),
-                        textAlign: TextAlign.start,
-                      ),
-                    ),
-                    // empty
-                    if (nameList.isEmpty)
-                      Center(
-                        widthFactor: 5,
-                        heightFactor: 5,
-                        child: Text(
-                          'You have no conversations...',
-                          style: TextStyle(
-                            fontSize: 35,
-                            fontStyle: FontStyle.italic,
-                            color:
-                                settings.darkMode ? Colors.white : Colors.black,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
+    );
+  }
+}
 
-                    if (nameList.length != 0)
-                      for (int i = 0; i < nameList.length; i++)
-                        Convos(revseredNameList[i], senderName,
-                            reversedConvoId[i]),
-                  ],
-                ),
-        ),
+class ConvoNone extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Conversation Not Found!'),
       ),
     );
   }
 }
+
+class ConvoWait extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+// need senderName nameList ofConvoId
+class ConvoDone extends StatefulWidget {
+  final String senderName;
+  final List convoList;
+  final List usersList;
+  final List ofConvoId;
+  final List nameList;
+  ConvoDone(this.senderName, this.convoList, this.usersList, this.ofConvoId,
+      this.nameList);
+
+  @override
+  _ConvoDoneState createState() =>
+      _ConvoDoneState(senderName, convoList, usersList, ofConvoId, nameList);
+}
+
+class _ConvoDoneState extends State<ConvoDone> {
+  // Variables
+  String senderName;
+  // in json still all the convo user is in
+  List convoList;
+  // list of users in userId form from all the convos
+  List usersList;
+  // list of convoIds in int form
+  List<int> ofConvoId;
+  // list of users in String form with first and last name
+  List<String> nameList;
+
+  // Constructor
+  _ConvoDoneState(this.senderName, this.convoList, this.usersList,
+      this.ofConvoId, this.nameList);
+
+  ListView notFound(Settings settings) {
+    return ListView(
+      children: [
+        // conversations if any
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Your Conversations',
+            //convoList.toString(),
+            //ofConvoId.toString(),
+            //usersList.toString(),
+            //nameList.toString(),
+            //senderName,
+            style: TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
+            ),
+            textAlign: TextAlign.start,
+          ),
+        ),
+        // empty
+        if (nameList.isEmpty)
+          Center(
+            widthFactor: 5,
+            heightFactor: 5,
+            child: Text(
+              'You have no conversations...',
+              style: TextStyle(
+                fontSize: 35,
+                fontStyle: FontStyle.italic,
+                color: settings.darkMode ? Colors.white : Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+      ],
+    );
+  }
+
+  ListView foundConvo(
+      Settings settings, List recipientName, String senderName, List convoId) {
+    return ListView(
+      children: [
+        // conversations if any
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            'Your Conversations',
+            //convoList.toString(),
+            //ofConvoId.toString(),
+            //usersList.toString(),
+            //nameList.toString(),
+            //senderName,
+            style: TextStyle(
+              fontSize: 40,
+              fontWeight: FontWeight.bold,
+              color: settings.darkMode ? settings.colorBlue : Colors.black,
+            ),
+            textAlign: TextAlign.start,
+          ),
+        ),
+
+        if (nameList.length != 0)
+          for (int i = 0; i < nameList.length; i++)
+            Convos(recipientName[i], senderName, convoId[i]),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+    //AuthSettings authSettings = Provider.of<AuthSettings>(context);
+    List revseredNameList = List.from(nameList.reversed);
+    List reversedConvoId = List.from(ofConvoId.reversed);
+
+    return Scaffold(
+      backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+      body: ListView(
+        children: [
+          // conversations if any
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              'Your Conversations',
+              //convoList.toString(),
+              //ofConvoId.toString(),
+              //usersList.toString(),
+              //nameList.toString(),
+              //senderName,
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: settings.darkMode ? settings.colorBlue : Colors.black,
+              ),
+              textAlign: TextAlign.start,
+            ),
+          ),
+          // empty
+          if (nameList.isEmpty)
+            Center(
+              widthFactor: 5,
+              heightFactor: 5,
+              child: Text(
+                'You have no conversations...',
+                style: TextStyle(
+                  fontSize: 35,
+                  fontStyle: FontStyle.italic,
+                  color: settings.darkMode ? Colors.white : Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+
+          //if (nameList.length != 0)
+          for (int i = 0; i < nameList.length; i++)
+            Convos(revseredNameList[i], senderName, reversedConvoId[i]),
+        ],
+      ),
+    );
+  }
+}
+
+// return Scaffold(
+//       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+//       body: ofConvoId.isNotEmpty
+//           ? foundConvo(settings, revseredNameList, senderName, reversedConvoId)
+//           : notFound(settings),
+//     );
