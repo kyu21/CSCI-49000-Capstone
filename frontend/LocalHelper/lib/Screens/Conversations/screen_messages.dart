@@ -212,23 +212,15 @@ class _MessagingState extends State<Messaging> {
   Widget build(BuildContext context) {
     Settings settings = Provider.of<Settings>(context);
     AuthSettings authSettings = Provider.of<AuthSettings>(context);
-
     String chattingWith = widget.chattingWith;
-    int convoId = widget.convoId;
-    int senderId = authSettings.ownerId;
-
-    // this loads the messages on screen
-    //
-    // setState(() {
-    //   getMessages(convoId);
-    // });
 
     return Scaffold(
       backgroundColor:
-          settings.darkMode ? settings.colorBackground : Colors.blue,
+          settings.darkMode ? settings.colorBackground : settings.colorOpposite,
       appBar: AppBar(
-        backgroundColor:
-            settings.darkMode ? settings.colorBackground : Colors.blue,
+        backgroundColor: settings.darkMode
+            ? settings.colorBackground
+            : settings.colorOpposite,
         centerTitle: true,
         elevation: 0.0,
         title: Text(
@@ -278,7 +270,6 @@ class _MessagingState extends State<Messaging> {
                 ),
               ),
             ),
-            //Text(messages[0].toString()),
             _buildMessageComposer(),
           ],
         ),

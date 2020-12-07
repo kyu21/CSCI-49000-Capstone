@@ -443,11 +443,7 @@ class OwnerDone extends StatelessWidget {
                       body: []).timeout(Duration(seconds: 20));
                   // if successfully created
                   if (response.statusCode == 201) {
-                    print('Sucessfully created a convo.');
-                  } else {
-                    print('Failed to create convo.');
-                    print(response.statusCode);
-                  }
+                  } else {}
                 } catch (e) {
                   print(e);
                 }

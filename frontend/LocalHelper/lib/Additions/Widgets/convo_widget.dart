@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:localhelper/Additions/Providers/settings.dart';
 import 'package:localhelper/Additions/Providers/authSettings.dart';
 import 'package:localhelper/Screens/Conversations/screen_messages.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class Convos extends StatelessWidget {
 // VARIABLES ===================================================================
@@ -26,7 +24,6 @@ class Convos extends StatelessWidget {
 
     // Providers
     Settings settings = Provider.of<Settings>(context);
-    AuthSettings authSettings = Provider.of<AuthSettings>(context);
     return Padding(
       padding: const EdgeInsets.only(top: 16, left: 16, right: 16, bottom: 16),
       child: Container(
@@ -53,7 +50,6 @@ class Convos extends StatelessWidget {
                           MaterialPageRoute(builder: (context) {
                         return Messaging(chattingWith, senderName, convoId);
                       }));
-                      //settings.refreshConvos();
                     },
                     child: SizedBox(
                       width: 210,
@@ -70,11 +66,9 @@ class Convos extends StatelessWidget {
                     ),
                   ),
                   Container(
-                    // color: Colors.white,
                     alignment: Alignment.bottomRight,
                     width: 150,
                     height: 55,
-                    // add something here maybe
                     child: Text(
                       'CONVO ID: ' + convoId.toString(),
                       style: TextStyle(
