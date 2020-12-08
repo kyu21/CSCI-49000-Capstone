@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
           ? SystemUiOverlayStyle.dark
               .copyWith(systemNavigationBarColor: Colors.black)
           : SystemUiOverlayStyle.light
-              .copyWith(systemNavigationBarColor: Colors.white),
+              .copyWith(systemNavigationBarColor: Colors.grey),
       child: ScreenStart(),
     );
   }
