@@ -207,40 +207,55 @@ class _ConvoDoneState extends State<ConvoDone> {
 
     return Scaffold(
       backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-      body: ListView(
-        children: [
-          // conversations if any
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Text(
-              'Your Conversations',
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: settings.darkMode ? settings.colorBlue : Colors.black,
-              ),
-              textAlign: TextAlign.start,
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: settings.darkMode
+                ? [
+                    settings.colorBackground,
+                    settings.colorBackground,
+                    Colors.black87,
+                  ]
+                : [Colors.white, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          // empty
-          if (nameList.isEmpty)
-            Center(
-              widthFactor: 5,
-              heightFactor: 5,
+        ),
+        child: ListView(
+          children: [
+            // conversations if any
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Text(
-                'You have no conversations...',
+                'Your Conversations',
                 style: TextStyle(
-                  fontSize: 35,
-                  fontStyle: FontStyle.italic,
-                  color: settings.darkMode ? Colors.white : Colors.black,
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: settings.darkMode ? settings.colorBlue : Colors.black,
                 ),
-                textAlign: TextAlign.center,
+                textAlign: TextAlign.start,
               ),
             ),
+            // empty
+            if (nameList.isEmpty)
+              Center(
+                widthFactor: 5,
+                heightFactor: 5,
+                child: Text(
+                  'You have no conversations...',
+                  style: TextStyle(
+                    fontSize: 35,
+                    fontStyle: FontStyle.italic,
+                    color: settings.darkMode ? Colors.white : Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
 
-          for (int i = 0; i < nameList.length; i++)
-            Convos(revseredNameList[i], senderName, reversedConvoId[i]),
-        ],
+            for (int i = 0; i < nameList.length; i++)
+              Convos(revseredNameList[i], senderName, reversedConvoId[i]),
+          ],
+        ),
       ),
     );
   }
