@@ -86,47 +86,56 @@ class OwnerWait extends StatelessWidget {
 }
 
 class OwnerDone extends StatelessWidget {
-  final info;
-  OwnerDone(this.info);
-  @override
-  Widget build(BuildContext context) {
-    Settings settings = Provider.of<Settings>(context);
-    return Scaffold(
-      backgroundColor: settings.darkMode ? Colors.black : Colors.white,
-      appBar: AppBar(
-        automaticallyImplyLeading: true,
-        iconTheme: IconThemeData(
-          color: settings.darkMode
-              ? Colors.white
-              : Colors.black, //change your color here
-        ),
-        backgroundColor:
-            settings.darkMode ? settings.colorBackground : Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          info['first'] + ' ' + info['last'],
-          style: TextStyle(
-            color: settings.darkMode ? settings.colorMiddle : Colors.black,
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+// VARIABLES ===================================================================
+
+// =============================================================================
+// FUNCTIONS ===================================================================
+
+  void makeConvo(BuildContext context) async {
+    try {
+      String userId = info['id'].toString();
+      final String token =
+          Provider.of<AuthSettings>(context, listen: false).token;
+      Map<String, String> headers = {
+        'content-type': 'application/json',
+        'accept': 'application/json',
+        'authorization': token,
+      };
+      // userId is the person you are talking to
+      String link =
+          'https://localhelper-backend.herokuapp.com/api/users/convos/' +
+              userId;
+      // Http Post
+      await http.post(link,
+          headers: headers, body: []).timeout(Duration(seconds: 20));
+
+      Navigator.pop(context);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+// =============================================================================
+// WIDGETS =====================================================================
+
+  Widget convoButton(BuildContext context, Settings settings) {
+    return FlatButton(
+      color: settings.darkMode ? settings.colorMiddle : Colors.grey,
+      height: 60,
+      minWidth: double.infinity,
+      child: Text(
+        'Create Conversation',
+        style: TextStyle(fontSize: 30, color: settings.colorBackground),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: settings.darkMode
-                ? [
-                    settings.colorBackground,
-                    settings.colorBackground,
-                    Colors.black87,
-                  ]
-                : [Colors.white, Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+      onPressed: () {
+        makeConvo(context);
+      },
+    );
+  }
+
+  Widget infoList(Settings settings) {
+    return Expanded(
+      child: Container(
         child: ListView(
           children: [
             // Gender
@@ -387,6 +396,8 @@ class OwnerDone extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Posts List
             Container(
               padding: EdgeInsets.all(10),
               child: ListView.builder(
@@ -414,41 +425,62 @@ class OwnerDone extends StatelessWidget {
                 },
               ),
             ),
-            FlatButton(
-              color: settings.darkMode ? settings.colorMiddle : Colors.grey,
-              height: 60,
-              minWidth: double.infinity,
-              child: Text(
-                'Create Conversation',
-                style: TextStyle(fontSize: 30, color: settings.colorBackground),
-              ),
-              onPressed: () async {
-                try {
-                  String userId = info['id'].toString();
-                  final String token =
-                      Provider.of<AuthSettings>(context, listen: false).token;
-                  Map<String, String> headers = {
-                    'content-type': 'application/json',
-                    'accept': 'application/json',
-                    'authorization': token,
-                  };
-                  // userId is the person you are talking to
-                  String link =
-                      'https://localhelper-backend.herokuapp.com/api/users/convos/' +
-                          userId;
-                  print(link);
-                  // Http Post
-                  http.Response response = await http.post(link,
-                      headers: headers,
-                      body: []).timeout(Duration(seconds: 20));
-                  // if successfully created
-                  if (response.statusCode == 201) {
-                  } else {}
-                } catch (e) {
-                  print(e);
-                }
-              },
-            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+// =============================================================================
+// MAIN ========================================================================
+
+  final info;
+  OwnerDone(this.info);
+  @override
+  Widget build(BuildContext context) {
+    Settings settings = Provider.of<Settings>(context);
+    AuthSettings authSettings = Provider.of<AuthSettings>(context);
+    return Scaffold(
+      backgroundColor: settings.darkMode ? Colors.black : Colors.white,
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        iconTheme: IconThemeData(
+          color: settings.darkMode
+              ? Colors.white
+              : Colors.black, //change your color here
+        ),
+        backgroundColor:
+            settings.darkMode ? settings.colorBackground : Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: Text(
+          info['first'] + ' ' + info['last'],
+          style: TextStyle(
+            color: settings.darkMode ? settings.colorMiddle : Colors.black,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: settings.darkMode
+                ? [
+                    settings.colorBackground,
+                    settings.colorBackground,
+                    Colors.black87,
+                  ]
+                : [Colors.white, Colors.white],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Column(
+          children: [
+            infoList(settings),
+            if (authSettings.ownerId != info['id'])
+              convoButton(context, settings),
           ],
         ),
       ),
