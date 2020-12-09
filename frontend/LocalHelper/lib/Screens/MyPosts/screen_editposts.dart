@@ -47,7 +47,7 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
     S2Choice<String>(value: "Bengali", title: 'বাংলা'),
     S2Choice<String>(value: "Portuguese", title: 'Português'),
     S2Choice<String>(value: "Russian", title: 'русский'),
-    S2Choice<String>(value: "Japanese", title: '日本人'),
+    S2Choice<String>(value: "Japanese", title: '日本語'),
   ];
 
   // Categories
