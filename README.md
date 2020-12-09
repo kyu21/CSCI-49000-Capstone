@@ -7,6 +7,10 @@ Zachary Garces
 Thomas Westfall  
 Alexander Yang
 
+## Slides
+
+[Slides](slides.pdf)
+
 ## API Documentation
 
 [Postman Documentation](https://documenter.getpostman.com/view/6750906/TVev5Qyx)

@@ -1,16 +1,14 @@
 var fs = require("fs");
 var path = require("path");
 
-const dbConfig = require("../config/config.js");
-
 const Sequelize = require("sequelize");
-const sequelize = new Sequelize(dbConfig.DB, dbConfig.USER, dbConfig.PASSWORD, {
-	host: process.env.DB_HOST,
-	port: process.env.DB_PORT,
-	dialect: dbConfig.dialect,
-	dialectOption: {
-		ssl: true,
-		native: true,
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+	dialect: "postgres",
+	dialectOptions: {
+		ssl: {
+			require: true,
+			rejectUnauthorized: false
+		}
 	},
 	define: {
 		timestamps: true,
