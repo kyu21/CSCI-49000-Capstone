@@ -32,6 +32,12 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
     S2Choice<String>(value: "English", title: 'English'),
     S2Choice<String>(value: "Spanish", title: 'Española'),
     S2Choice<String>(value: "Chinese", title: '中文'),
+    S2Choice<String>(value: "Hindi", title: 'हिंदी'),
+    S2Choice<String>(value: "Arabic", title: 'عربى'),
+    S2Choice<String>(value: "Bengali", title: 'বাংলা'),
+    S2Choice<String>(value: "Portuguese", title: 'Português'),
+    S2Choice<String>(value: "Russian", title: 'русский'),
+    S2Choice<String>(value: "Japanese", title: '日本人'),
   ];
 
   // Categories
@@ -40,7 +46,11 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
     'Teaching',
     'Shopping',
     'Entertainment',
-    'General',
+    'Repair',
+    'Delivery',
+    'Babysitting',
+    'Tech Support',
+    'Coaching',
     'Other',
   ];
 
@@ -59,6 +69,10 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
   Future<bool> sendPost(String token, String title, String address, String desc,
       bool request, bool free, AuthSettings authSettings) async {
     List<String> _zip = authSettings.zip.split(' ');
+
+    if (desc.isEmpty) desc = "No Description.";
+    if (address.isEmpty) address = "No Address.";
+    if (title.isEmpty) title = "No Title.";
 
     String jsonString = json.encode({
       'title': title,

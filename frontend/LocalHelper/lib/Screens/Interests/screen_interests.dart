@@ -44,7 +44,11 @@ class _ScreenInterests extends State<ScreenInterests> {
     'Teaching',
     'Shopping',
     'Entertainment',
-    'General',
+    'Repair',
+    'Delivery',
+    'Babysitting',
+    'Tech Support',
+    'Coaching',
     'Other',
   ];
 
@@ -55,6 +59,12 @@ class _ScreenInterests extends State<ScreenInterests> {
     'English',
     'Spanish',
     'Chinese',
+    'Hindi',
+    'Arabic',
+    'Bengali',
+    'Portuguese',
+    'Russian',
+    'Japanese',
   ];
 
 // =============================================================================

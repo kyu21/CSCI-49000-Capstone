@@ -121,6 +121,12 @@ class _OwnerDoneState extends State<OwnerDone> {
     S2Choice<String>(value: "English", title: 'English'),
     S2Choice<String>(value: "Spanish", title: 'Española'),
     S2Choice<String>(value: "Chinese", title: '中文'),
+    S2Choice<String>(value: "Hindi", title: 'हिंदी'),
+    S2Choice<String>(value: "Arabic", title: 'عربى'),
+    S2Choice<String>(value: "Bengali", title: 'বাংলা'),
+    S2Choice<String>(value: "Portuguese", title: 'Português'),
+    S2Choice<String>(value: "Russian", title: 'русский'),
+    S2Choice<String>(value: "Japanese", title: '日本人'),
   ];
 
 // =============================================================================

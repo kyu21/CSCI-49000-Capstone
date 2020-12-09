@@ -45,7 +45,11 @@ class _ScreenPostsState extends State<ScreenPosts> {
     'Teaching',
     'Shopping',
     'Entertainment',
-    'General',
+    'Repair',
+    'Delivery',
+    'Babysitting',
+    'Tech Support',
+    'Coaching',
     'Other',
   ];
 
@@ -56,6 +60,12 @@ class _ScreenPostsState extends State<ScreenPosts> {
     'English',
     'Spanish',
     'Chinese',
+    'Hindi',
+    'Arabic',
+    'Bengali',
+    'Portuguese',
+    'Russian',
+    'Japanese',
   ];
 
 // =============================================================================
