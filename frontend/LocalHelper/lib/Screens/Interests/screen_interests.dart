@@ -49,6 +49,7 @@ class _ScreenInterests extends State<ScreenInterests> {
     'Babysitting',
     'Tech Support',
     'Coaching',
+    'Cleaning',
     'Other',
   ];
 

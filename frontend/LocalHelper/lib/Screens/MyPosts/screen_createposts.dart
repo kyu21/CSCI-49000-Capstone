@@ -51,6 +51,7 @@ class _ScreenCreatePostsState extends State<ScreenCreatePosts> {
     'Babysitting',
     'Tech Support',
     'Coaching',
+    'Cleaning',
     'Other',
   ];
 

@@ -61,6 +61,7 @@ class _ScreenEditPostsState extends State<ScreenEditPosts> {
     'Babysitting',
     'Tech Support',
     'Coaching',
+    'Cleaning',
     'Other',
   ];
 

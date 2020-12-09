@@ -50,6 +50,7 @@ class _ScreenPostsState extends State<ScreenPosts> {
     'Babysitting',
     'Tech Support',
     'Coaching',
+    'Cleaning',
     'Other',
   ];
 
