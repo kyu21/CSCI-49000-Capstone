@@ -29,8 +29,10 @@ class MyApp extends StatelessWidget {
     ]);
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: settings.darkMode
-          ? SystemUiOverlayStyle.dark
-              .copyWith(systemNavigationBarColor: Colors.black)
+          ? SystemUiOverlayStyle.dark.copyWith(
+              systemNavigationBarColor: Colors.black,
+              statusBarIconBrightness: Brightness.light,
+              statusBarColor: Colors.transparent)
           : SystemUiOverlayStyle.light
               .copyWith(systemNavigationBarColor: Colors.grey),
       child: ScreenStart(),
