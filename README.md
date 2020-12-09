@@ -9,7 +9,7 @@ Alexander Yang
 
 ## Slides
 
-[Slides](slides.pdf)
+[Slides](Slides.pdf)
 
 ## API Documentation
 
